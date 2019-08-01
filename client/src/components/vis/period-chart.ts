@@ -19,6 +19,8 @@ export interface Option {
     size?: number;
     minSize?: number;
     missing?: boolean;   // whether highlight missing data
+    circleStroke?: number,
+    scaleFactor?: number
 }
 
 export class PeriodChart extends pip.Events {
@@ -27,16 +29,19 @@ export class PeriodChart extends pip.Events {
         // svg layout
         height: null,
         width: null,
-        margin: { top: 30, right: 10, bottom: 5, left: 30 },
+        margin: { top: 30, right: 0, bottom: 5, left: 0 },
         // animation
         duration: 750,
         delay: 50,
         // glyph parameters
         nCol: null,
-        padding: 18,
+        // padding: 18,
+        padding: 0,
         size: 100,      // width = height = size (include padding)
         minSize: 6,
-        missing: false
+        missing: false,
+        circleStroke: 1,
+        scaleFactor: 0.9
     };
 
     private svgContainer: d3.Selection<HTMLElement, any, any, any>;
@@ -60,7 +65,7 @@ export class PeriodChart extends pip.Events {
         if (nCol !== null) {
             self.option.size = Math.floor((width - margin.left - margin.right) / nCol);
         }
-
+        
         self.option.nCol = Math.floor((width - margin.left - margin.right) / (self.option.size));
 
         if (self.option.height === null) {
@@ -76,6 +81,8 @@ export class PeriodChart extends pip.Events {
             .attr('class', 'multi-period-chart')
             .attr('width', self.option.width)
             .attr('height', self.option.height);
+
+        
 
 
         // let radialGradient = self.svg.append('defs')
@@ -99,16 +106,16 @@ export class PeriodChart extends pip.Events {
         let self = this;
         const option = self.option;
 
-        let { width, height, margin, padding, size, nCol } = self.option;
+        let { width, height, margin, padding, size, nCol, circleStroke } = self.option;
 
         const [w, h] = [
             width - margin.left - margin.right,
             height - margin.top - margin.bottom,
         ];
 
-        let outerRadius = size / 2 - padding / 2,
+        let outerRadius = (size / 2) - (padding / 2) - (circleStroke / 2),
             // innerRadius = option.minSize;
-            innerRadius = Math.max(outerRadius / 6, option.minSize);
+            innerRadius = Math.max(outerRadius / 10, option.minSize);
 
         // layout setting
         _.each(self.data, d => {
@@ -119,7 +126,7 @@ export class PeriodChart extends pip.Events {
         });
 
         // define circular axis scale for each glyph
-        let { angle, radius, area, area0 } = self.getScale(innerRadius, outerRadius);
+        let { angle, radius, area, area0 } = self.getScale(innerRadius, outerRadius - 2 * self.option.nCol);
 
         // zoom
         let {zoom, zoomRect} = self.addZoom(w, h);
@@ -127,7 +134,7 @@ export class PeriodChart extends pip.Events {
         let zoomG = self.svg.append('g');
 
         let g = zoomG.append('g')
-            .attr('transform', `translate(${option.margin.left},${option.margin.top})`);
+            // .attr('transform', `translate(${option.margin.left},${option.margin.top})`);
 
         self.normalize();
         // add glyphs
@@ -198,7 +205,9 @@ export class PeriodChart extends pip.Events {
                 _g.enter().append('g')
                     .merge(_g as any)
                     .attr('class', `feature-cell feature-cell-${data.name}`)
-                    .attr('transform', d => `translate(${d.col * size + size / 2}, ${d.row * size + size / 2})`)
+                    .attr('transform', d => {
+                        return `translate(${d.col * size + size / 2}, ${d.row * size + size / 2}), scale(${self.option.scaleFactor})`
+                    })
                     .each(function(d, count) {
                         const randomID = self.generateRandomID();
                         featurePlot(d3.select(this), d, data.name, randomID);
@@ -304,13 +313,13 @@ export class PeriodChart extends pip.Events {
         let label1 = self.svg.append('text')
             .attr('class', 'radial-text-md')
             .attr('x', 1)
-            .attr('y', 14)
+            .attr('y', 0)//14)
             .text('');
 
         let label2 = self.svg.append('text')
             .attr('class', 'radial-text-md')
             .attr('x', 1)
-            .attr('y', 30)
+            .attr('y', 0)//30)
             .text('');
 
         return {label1, label2};
@@ -324,6 +333,8 @@ export class PeriodChart extends pip.Events {
         let self = this;
         let option = self.option;
 
+        
+
         // plot data on each station
         _.each(self.data, (data, count) => {
             let cell = g
@@ -331,7 +342,10 @@ export class PeriodChart extends pip.Events {
                 .data(data.info)
                 .enter().append('g')
                 .attr('class', `feature-cell feature-cell-${data.name}`)
-                .attr('transform', d =>`translate(${d.col * size + size / 2}, ${d.row * size + size / 2})`)
+                .attr('transform', d => {
+                    return `translate(${d.col * size + size / 2}, ${d.row * size + size / 2}), scale(${self.option.scaleFactor})`
+                })
+
                 .each(function(d) {
                     const randomID = self.generateRandomID();
                     featurePlot(d3.select(this), d, data.name, randomID);
@@ -391,36 +405,42 @@ export class PeriodChart extends pip.Events {
 
 
             const ratio = outerRadius / 3;
-
-
-            target.append('circle')
-                .attr('r', outerRadius + 3);
+            // const targetRadius = size / 2;
+            const targetRadius = outerRadius;// - self.option.circleStroke / 2;
 
             target.append('circle')
-                .attr('r', outerRadius - ratio);
+                .attr('stroke-width', self.option.circleStroke)
+                .attr('r', targetRadius);
 
             target.append('circle')
-                .attr('r', outerRadius - ratio * 2);
+                .attr('stroke-width', self.option.circleStroke)
+                .attr('r', targetRadius - ratio);
+
+            target.append('circle')
+                .attr('stroke-width', self.option.circleStroke)
+                .attr('r', targetRadius - ratio * 2);
 
 
             //vertical/horizontal lines for the 'target'
             target.append('line')
-                .attr('x1', -(outerRadius + 3))
-                .attr('x2', outerRadius + 2)
+                .attr('x1', -(targetRadius + self.option.circleStroke / 2))
+                .attr('x2', targetRadius + self.option.circleStroke / 2)
+                .attr('stroke-width', self.option.circleStroke)
                 .attr('y1', 0)
                 .attr('y2',0)
 
             target.append('line')
                 .attr('x1', 0)
                 .attr('x2', 0)
-                .attr('y1', -(outerRadius + 2))
-                .attr('y2',outerRadius + 2)
+                .attr('stroke-width', self.option.circleStroke)
+                .attr('y1', -(targetRadius + self.option.circleStroke / 2))
+                .attr('y2', targetRadius + self.option.circleStroke / 2)
 
 
             _cell.append('circle')
                 .attr('clip-path', `url(#clip_${id})`)
                 .attr('class', 'wrapper')
-                .attr('r', outerRadius)
+                .attr('r', targetRadius)
                 .attr('fill', 'url(#blueGradient)')
             _cell.append('circle')
                 .attr('class', 'radial-cursor')
@@ -441,8 +461,13 @@ export class PeriodChart extends pip.Events {
                 _cell.append('text')
                     .attr('class', 'radial-text-md')
                     .attr('x', -14)
-                    .attr('y', outerRadius + outerRadius * 0.5)
-                    .text(o.name);
+                    .text(o.name)
+                    .attr('y', () => {
+                        debugger;
+                        return targetRadius + 2 * $('text')[0].getBBox().y
+
+                    })//targetRadius + targetRadius * 0.5)
+                    
             }
 
             if (option.missing) {

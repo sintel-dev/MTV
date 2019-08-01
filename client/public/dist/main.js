@@ -50531,22 +50531,21 @@ var Content = (function () {
                     name: data[0].dataset.name,
                     info: data[0].period
                 }], {
-                width: $('.pchart').width() - 100,
+                width: $('.tab-pane').width(),
                 nCol: 3
             });
             self.periodCharts['month'] = new period_chart_1.PeriodChart($('#month')[0], [{
                     name: data[0].dataset.name,
                     info: data[0].period[0].children
                 }], {
-                width: $('.pchart').width() - 60,
+                width: $('.tab-pane').width(),
                 nCol: 4,
-                padding: 30
             });
             self.periodCharts['day'] = new period_chart_1.PeriodChart($('#day')[0], [{
                     name: data[0].dataset.name,
                     info: data[0].period[0].children[0].children
                 }], {
-                width: $('.pchart').width(),
+                width: $('.tab-pane').width(),
                 nCol: 7
             });
         }
@@ -51975,14 +51974,16 @@ var PeriodChart = (function (_super) {
         _this.option = {
             height: null,
             width: null,
-            margin: { top: 30, right: 10, bottom: 5, left: 30 },
+            margin: { top: 30, right: 0, bottom: 5, left: 0 },
             duration: 750,
             delay: 50,
             nCol: null,
-            padding: 18,
+            padding: 0,
             size: 100,
             minSize: 6,
-            missing: false
+            missing: false,
+            circleStroke: 1,
+            scaleFactor: 0.9
         };
         _this.defaultHeight = 300;
         var self = _this;
@@ -52012,24 +52013,23 @@ var PeriodChart = (function (_super) {
     PeriodChart.prototype.plot = function () {
         var self = this;
         var option = self.option;
-        var _a = self.option, width = _a.width, height = _a.height, margin = _a.margin, padding = _a.padding, size = _a.size, nCol = _a.nCol;
+        var _a = self.option, width = _a.width, height = _a.height, margin = _a.margin, padding = _a.padding, size = _a.size, nCol = _a.nCol, circleStroke = _a.circleStroke;
         var _b = [
             width - margin.left - margin.right,
             height - margin.top - margin.bottom,
         ], w = _b[0], h = _b[1];
-        var outerRadius = size / 2 - padding / 2, innerRadius = Math.max(outerRadius / 6, option.minSize);
+        var outerRadius = (size / 2) - (padding / 2) - (circleStroke / 2), innerRadius = Math.max(outerRadius / 10, option.minSize);
         _.each(self.data, function (d) {
             _.each(d.info, function (dd, i) {
                 dd.col = i % nCol;
                 dd.row = Math.floor(i / nCol);
             });
         });
-        var _c = self.getScale(innerRadius, outerRadius), angle = _c.angle, radius = _c.radius, area = _c.area, area0 = _c.area0;
+        var _c = self.getScale(innerRadius, outerRadius - 2 * self.option.nCol), angle = _c.angle, radius = _c.radius, area = _c.area, area0 = _c.area0;
         var _d = self.addZoom(w, h), zoom = _d.zoom, zoomRect = _d.zoomRect;
         zoom.on('zoom', zoomHandler);
         var zoomG = self.svg.append('g');
-        var g = zoomG.append('g')
-            .attr('transform', "translate(" + option.margin.left + "," + option.margin.top + ")");
+        var g = zoomG.append('g');
         self.normalize();
         var featurePlot = self.addGlyphs(g, angle, radius, area, area0, size, innerRadius, outerRadius).featurePlot;
         var _e = self.addLabels(g, size), label1 = _e.label1, label2 = _e.label2;
@@ -52086,7 +52086,9 @@ var PeriodChart = (function (_super) {
                 _g.enter().append('g')
                     .merge(_g)
                     .attr('class', "feature-cell feature-cell-" + data.name)
-                    .attr('transform', function (d) { return "translate(" + (d.col * size + size / 2) + ", " + (d.row * size + size / 2) + ")"; })
+                    .attr('transform', function (d) {
+                    return "translate(" + (d.col * size + size / 2) + ", " + (d.row * size + size / 2) + "), scale(" + self.option.scaleFactor + ")";
+                })
                     .each(function (d, count) {
                     var randomID = self.generateRandomID();
                     featurePlot(d3.select(this), d, data.name, randomID);
@@ -52181,12 +52183,12 @@ var PeriodChart = (function (_super) {
         var label1 = self.svg.append('text')
             .attr('class', 'radial-text-md')
             .attr('x', 1)
-            .attr('y', 14)
+            .attr('y', 0)
             .text('');
         var label2 = self.svg.append('text')
             .attr('class', 'radial-text-md')
             .attr('x', 1)
-            .attr('y', 30)
+            .attr('y', 0)
             .text('');
         return { label1: label1, label2: label2 };
     };
@@ -52202,7 +52204,9 @@ var PeriodChart = (function (_super) {
                 .data(data.info)
                 .enter().append('g')
                 .attr('class', "feature-cell feature-cell-" + data.name)
-                .attr('transform', function (d) { return "translate(" + (d.col * size + size / 2) + ", " + (d.row * size + size / 2) + ")"; })
+                .attr('transform', function (d) {
+                return "translate(" + (d.col * size + size / 2) + ", " + (d.row * size + size / 2) + "), scale(" + self.option.scaleFactor + ")";
+            })
                 .each(function (d) {
                 var randomID = self.generateRandomID();
                 featurePlot(d3.select(this), d, data.name, randomID);
@@ -52235,26 +52239,32 @@ var PeriodChart = (function (_super) {
             var target = _cell.append('g')
                 .attr('class', 'target');
             var ratio = outerRadius / 3;
+            var targetRadius = outerRadius;
             target.append('circle')
-                .attr('r', outerRadius + 3);
+                .attr('stroke-width', self.option.circleStroke)
+                .attr('r', targetRadius);
             target.append('circle')
-                .attr('r', outerRadius - ratio);
+                .attr('stroke-width', self.option.circleStroke)
+                .attr('r', targetRadius - ratio);
             target.append('circle')
-                .attr('r', outerRadius - ratio * 2);
+                .attr('stroke-width', self.option.circleStroke)
+                .attr('r', targetRadius - ratio * 2);
             target.append('line')
-                .attr('x1', -(outerRadius + 3))
-                .attr('x2', outerRadius + 2)
+                .attr('x1', -(targetRadius + self.option.circleStroke / 2))
+                .attr('x2', targetRadius + self.option.circleStroke / 2)
+                .attr('stroke-width', self.option.circleStroke)
                 .attr('y1', 0)
                 .attr('y2', 0);
             target.append('line')
                 .attr('x1', 0)
                 .attr('x2', 0)
-                .attr('y1', -(outerRadius + 2))
-                .attr('y2', outerRadius + 2);
+                .attr('stroke-width', self.option.circleStroke)
+                .attr('y1', -(targetRadius + self.option.circleStroke / 2))
+                .attr('y2', targetRadius + self.option.circleStroke / 2);
             _cell.append('circle')
                 .attr('clip-path', "url(#clip_" + id + ")")
                 .attr('class', 'wrapper')
-                .attr('r', outerRadius)
+                .attr('r', targetRadius)
                 .attr('fill', 'url(#blueGradient)');
             _cell.append('circle')
                 .attr('class', 'radial-cursor')
@@ -52272,8 +52282,11 @@ var PeriodChart = (function (_super) {
                 _cell.append('text')
                     .attr('class', 'radial-text-md')
                     .attr('x', -14)
-                    .attr('y', outerRadius + outerRadius * 0.5)
-                    .text(o.name);
+                    .text(o.name)
+                    .attr('y', function () {
+                    debugger;
+                    return targetRadius + 2 * $('text')[0].getBBox().y;
+                });
             }
             if (option.missing) {
                 var missedData_1 = [];

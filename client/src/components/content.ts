@@ -371,7 +371,7 @@ class Content {
                     info: data[0].period
                 }],
                 {
-                    width: $('.pchart').width() - 100,
+                    width: $('.tab-pane').width(),
                     nCol: 3
                 }
             );
@@ -384,9 +384,9 @@ class Content {
                     info: data[0].period[0].children
                 }],
                 {
-                    width: $('.pchart').width() - 60,
+                    width: $('.tab-pane').width(),
                     nCol: 4,
-                    padding: 30
+                    // padding: 30
                 }
             );
 
@@ -398,7 +398,7 @@ class Content {
                     info: data[0].period[0].children[0].children
                 }],
                 {
-                    width: $('.pchart').width(),
+                    width: $('.tab-pane').width(),
                     nCol: 7
                 }
             );
