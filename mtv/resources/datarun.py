@@ -3,7 +3,7 @@ import logging
 from bson import ObjectId
 from flask import request
 from flask_restful import Resource
-
+from time import time
 from mtv import model
 from mtv.resources.experiment import validate_experiment_id
 
@@ -11,6 +11,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 def get_datarun(datarun_doc):
+    start_time = time()
     datarun = {
         'id': str(datarun_doc.id),
         'experiment': str(datarun_doc.experiment.id),
@@ -50,6 +51,9 @@ def get_datarun(datarun_doc):
             'year': raw_doc.year,
             'data': raw_doc.data
         })
+    end_time = time()
+    print(end_time - start_time)
+
 
     return datarun
 

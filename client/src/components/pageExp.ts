@@ -512,6 +512,8 @@ class PageExp {
       mmin = mmin > st ? st : mmin;
       mmax = mmax < ed ? ed : mmax;
     });
+    console.log(mmin, mmax);
+    console.log(data);
     let xDomain: [number, number] = [mmin, mmax];
 
     if (_.isUndefined(self.focusChart)) {
