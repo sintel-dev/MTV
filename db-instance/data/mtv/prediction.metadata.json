@@ -1,0 +1,1 @@
+{"options":{},"indexes":[{"v":2,"key":{"_id":1},"name":"_id_","ns":"mtv.prediction"},{"v":2,"key":{"datarun":1},"name":"datarun_1","ns":"mtv.prediction","background":false}],"uuid":"a2db733dacf64d419a6b9e1bd4ed734a"}
