@@ -153,3 +153,5 @@ ENV/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+mtv-client/coverage
+mtv-client/node_modules
