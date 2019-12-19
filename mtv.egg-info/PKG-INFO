@@ -14,7 +14,8 @@ Description: <p align="left">
         <!-- [![PyPI Shield](https://img.shields.io/pypi/v/mtv.svg)](https://pypi.python.org/pypi/mtv) -->
         [![Build Status](https://travis-ci.com/dyuliu/mtv.svg?branch=master)](https://travis-ci.com/dyuliu/mtv)
         [![Coverage Status](https://coveralls.io/repos/github/dyuliu/MTV/badge.svg)](https://coveralls.io/github/dyuliu/MTV)
-        
+        [![Github All Releases](https://img.shields.io/github/downloads/dyuliu/MTV/total)](https://github.com/dyuliu/MTV/releases)
+        [![Docker Pulls](https://img.shields.io/docker/pulls/dyuliu/mtv)](https://hub.docker.com/r/dyuliu/mtv)
         
         # MTV
         
@@ -27,7 +28,6 @@ Description: <p align="left">
         ## License
         
         [The MIT License](https://github.com/HDI-Project/MTV/blob/master/LICENSE)
-        
         
         
         ## Before You Begin
@@ -176,26 +176,26 @@ Description: <p align="left">
           $ make docker-db-up
           ```
         
-        - Run up the application. 
+        - Run the application
         
           ```bash
-          $ make docker-up
+          $ docker-compose up -d
           ```
         
           The application should be successfully running on **port 3000** using the **production** environment by default. Just go to [http://localhost:3000](http://localhost:3000) in your chrome browser to start your exploration.
         
-          Note: if MTV is deployed in a remote server, please change the variable `server` in `.client/src/config.ts` to the server IP address with right port.
+          **Note:** if MTV is deployed in a remote server, please change the variable `server` in `.client/src/config.ts` to the server IP address with right port.
         
         - Stop the application
         
           ```bash
-          $ make docker-down
+          $ docker-compose stop
           ```
         
-        - Clean the related containers and data volumes if needed
+        - Remove the related containers and volumes (optional step)
         
           ```bash
-          $ make docker-clean
+          $ docker-compose down -v
           ```
         
           
@@ -204,9 +204,9 @@ Description: <p align="left">
         
         - Install [Docker](https://docs.docker.com/install/) and [Compose](https://docs.docker.com/compose/install/)
         
-        - Download MTV project and **enter the project directory**
+        - Download MTV project and put the MTV docker image into the project direction 
         
-        - Download required docker images and then load them by running the following commands. **If you have installed MTV docker images before**, please firstly run `make clean-docker`.
+        - Enter the MTV folder and install the docker image by running
         
           ```bash
           $ docker load --input mtv.tar
@@ -214,13 +214,13 @@ Description: <p align="left">
           Loaded image: mongo:4.0
           ```
         
-        - Restore data to the docker image "mongo:4.0"
+        - Restore data back to database running on mongo:4.0 container
         
           ```bash
           $ docker-compose -f docker-compose-db.yml up
           ```
         
-        - Running up the application. Please check the file `docker-compose.yml` under the ProjectRoot and make sure line 18 (`build: .`) is **commented** and line 17 (`image: dyuliu/mtv`) is **uncommented**.
+        - Run the application. Please check the file `docker-compose.yml` and make sure line 18 (`build: .`) is **commented** and line 17 (`image: dyuliu/mtv`) is **uncommented**.
         
           ```bash
           $ docker-compose up -d
@@ -228,10 +228,10 @@ Description: <p align="left">
         
           Your application should run on **port 3000** with the ***production*** environment by default. Just go to [http://localhost:3000](http://localhost:3000) in your browser to start your exploration.
         
-        - Stopping the application
+        - Stop the application
         
           ```bash
-          $ docker-compose down
+          $ docker-compose stop
           ```
         
         
@@ -251,5 +251,5 @@ Classifier: Programming Language :: Python :: 3
 Classifier: Programming Language :: Python :: 3.6
 Requires-Python: >=3.6
 Description-Content-Type: text/markdown
-Provides-Extra: dev
 Provides-Extra: test
+Provides-Extra: dev
