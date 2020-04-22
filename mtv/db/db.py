@@ -84,16 +84,21 @@ def update_db(fs, utc=True):
             nm_range = (np.nanmin(v['X_nm'], axis=0)[0], np.nanmax(v['X_nm'], axis=0)[0])
             raw_range = (np.nanmin(v['X_raw'], axis=0)[0], np.nanmax(v['X_raw'], axis=0)[0])
 
-            # the first window does not have prediction values
+            y_hat_is_list = isinstance(v['y_hat'][0][0], list)
+            # For prediction-based method, the first window does not have prediction values
             # fill the first window with the original values
             for i, idx in enumerate(v['raw_index']):
                 if idx == v['target_index'][0]:
                     break
 
+                if y_hat_is_list:
+                    y_hat_raw = [_inverse_scale_transform(v['X_nm'][i][0], *nm_range, *raw_range) for h in v['y_hat'][0][0]]
+                else:
+                    y_hat_raw = _inverse_scale_transform(v['y_hat'][i][0], *nm_range, *raw_range)
                 data.append([
                     float(idx),
                     _inverse_scale_transform(v['X_nm'][i][0], *nm_range, *raw_range),
-                    _inverse_scale_transform(v['X_nm'][i][0], *nm_range, *raw_range),
+                    y_hat_raw,
                     0.0,
                     v['X_nm'][i][0],
                     v['X_nm'][i][0],
@@ -107,16 +112,33 @@ def update_db(fs, utc=True):
                 else:
                     raw_es = v['es'][i] / (nm_range[1] - nm_range[0]) * \
                         (raw_range[1] - raw_range[0])
+                if y_hat_is_list:
+                    y_hat_raw = [_inverse_scale_transform(h, *nm_range, *raw_range) for h in v['y_hat'][i][0]]
+                else:
+                    y_hat_raw = _inverse_scale_transform(v['y_hat'][i][0], *nm_range, *raw_range)
                 data.append([
                     float(idx),
                     _inverse_scale_transform(v['y'][i][0], *nm_range, *raw_range),
-                    _inverse_scale_transform(v['y_hat'][i][0], *nm_range, *raw_range),
+                    y_hat_raw,
                     raw_es,
                     v['y'][i][0],
                     v['y_hat'][i][0],
                     v['es'][i]
                 ])
 
+            # convert format
+            for i in range(len(data)):
+                data[i][1] = float(data[i][1])
+                if  y_hat_is_list:
+                    data[i][2] = [ float(d2) for d2 in data[i][2] ]
+                    data[i][5] = [ float(d5) for d5 in data[i][5] ]
+                else:
+                    data[i][2] = float(data[i][2])
+                    data[i][5] = float(data[i][5])
+                data[i][3] = float(data[i][3])
+                data[i][4] = float(data[i][4])
+                data[i][6] = float(data[i][6])
+            
             doc = {
                 'signal': datarun.signal.id,
                 'datarun': datarun.id,

@@ -90,9 +90,9 @@ class FocusChart extends Component<Props, State> {
   getScale() {
     const { width, height } = this.state;
     const { dataRun } = this.props;
-    const { maxTimeSeries } = dataRun;
+    const { maxTimeSeries, timeSeries } = dataRun;
     const [minTX, maxTX] = d3.extent(maxTimeSeries, (time: Array<number>) => time[0]);
-    const [minTY, maxTY] = d3.extent(maxTimeSeries, (time: Array<number>) => time[1]);
+    const [minTY, maxTY] = d3.extent(timeSeries, (time: Array<number>) => time[1]);
     const drawableWidth = width - 2 * CHART_MARGIN - TRANSLATE_LEFT;
     const drawableHeight = height - 3.5 * CHART_MARGIN;
 
@@ -126,6 +126,27 @@ class FocusChart extends Component<Props, State> {
       .line()
       .x((d) => xCoord(d[0]))
       .y((d) => yCoord(d[1]));
+    return line(data);
+  }
+
+  drawPredLine(data) {
+    console.log(data);
+    const { periodRange } = this.props;
+    const { zoomValue } = periodRange;
+    const { xCoord, yCoord } = this.getScale();
+    const xCoordCopy = xCoord.copy();
+    // @ts-ignore
+    if (zoomValue !== 1) {
+      // @ts-ignore
+      xCoord.domain(zoomValue.rescaleX(xCoordCopy).domain());
+    }
+
+    const line = d3
+      .line()
+      .x((d) => xCoord(d[0]))
+      .y((d) => {
+        return Array.isArray(d[1]) ? yCoord(d[1][2]) : yCoord(d[1]);
+      });
     return line(data);
   }
 
@@ -340,7 +361,7 @@ class FocusChart extends Component<Props, State> {
           <g className="chart-data" clipPath="url(#focusClip)">
             <g className="wawe-data">
               <path className="chart-wawes" d={this.drawLine(timeSeries)} />
-              {isPredictionVisible && <path className="predictions" d={this.drawLine(timeseriesPred)} />}
+              {isPredictionVisible && <path className="predictions" d={this.drawPredLine(timeseriesPred)} />}
             </g>
             <rect className="zoom" width={focusChartWidth} height={height} />
             {eventWindows.map((currentEvent) => this.renderEvents(currentEvent))}

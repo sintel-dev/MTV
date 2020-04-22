@@ -26,6 +26,8 @@ requirements = [
     # Math
     'numpy>=1.15.4,<1.17',
     'pandas>=0.23.4,<0.25',
+    'dtw>=1.4.0',
+    'scikit-learn>=0.22.2',
 
     # Flask
     'Flask==1.0.2',
@@ -75,7 +77,7 @@ development_requirements = [
     # distribute on PyPI
     'twine>=1.10.0',
     'wheel>=0.30.0',
-    'jupyter>=1.0.0'
+    'jupyter>=1.0.0',
 ]
 
 

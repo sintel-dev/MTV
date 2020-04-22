@@ -42,7 +42,8 @@ const loggerMiddleware = createLogger({
   collapsed: true,
 });
 
-const middleWares = [thunkMiddleWare, api, loggerMiddleware];
+// const middleWares = [thunkMiddleWare, api, loggerMiddleware];
+const middleWares = [thunkMiddleWare, api];
 const initialState = {};
 
 const store = createStore(dashBoardReducers, initialState, composeWithDevTools(applyMiddleware(...middleWares)));

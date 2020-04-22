@@ -186,7 +186,8 @@ class Prediction(Document, MongoUtils):
     signal = fields.ReferenceField(Signal)
     datarun = fields.ReferenceField(Datarun)
     names = fields.ListField(fields.StringField())
-    data = fields.ListField(fields.ListField(fields.FloatField()))
+    # data: the internal element could be float or float[]
+    data = fields.ListField(fields.ListField())
     meta = {
         'indexes': [
             'datarun'

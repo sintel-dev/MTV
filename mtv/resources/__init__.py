@@ -1,4 +1,5 @@
-from . import user, comment, data, datarun, dataset, event, experiment, pipeline, signal, test
+from . import user, comment, data, datarun, dataset, event, \
+              experiment, pipeline, signal, test, computing
 
 __all__ = [
     'user',
@@ -10,5 +11,6 @@ __all__ = [
     'experiment',
     'pipeline',
     'signal',
-    'test'
+    'test',
+    'computing'
 ]
