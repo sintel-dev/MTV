@@ -20,6 +20,9 @@ import {
   getZoomCounter,
   getZoomOnClickDirection,
   getIsEditingEventRange,
+  getSimilarEvents,
+  isSimilarEventsLoading,
+  getLastSearchedDatarunID
 } from '../../../model/selectors/datarun';
 import './FocusChart.scss';
 
@@ -87,6 +90,32 @@ class FocusChart extends Component<Props, State> {
     }
   }
 
+  renderSimilarEvents(currentEvent) {
+    if (this.props.lastSearchedDatarunID !== this.props.dataRun.id) { return; }
+    const { dataRun, periodRange } = this.props;
+    const { height } = this.state;
+
+    const { xCoord } = this.getScale();
+    const xCoordCopy = xCoord.copy();
+    const commentHeight = height - 3.5 * CHART_MARGIN;
+
+    // if there's a zoom level
+    // @ts-ignore
+    if (periodRange.zoomValue !== 1) {
+      // @ts-ignore
+      xCoord.domain(periodRange.zoomValue.rescaleX(xCoordCopy).domain());
+    }
+
+    const commentWidth = Math.max(xCoord(currentEvent.end*1000) - xCoord(currentEvent.start*1000));
+    const translateComment = xCoord(currentEvent.start*1000);
+
+    return (
+      <g key={`sim${currentEvent.start}`}>
+        <rect className="event-similar" width={commentWidth} height={commentHeight} y={0} x={translateComment} fill={"#ca7f76"} />
+      </g>
+    );
+  }
+
   getScale() {
     const { width, height } = this.state;
     const { dataRun } = this.props;
@@ -130,7 +159,6 @@ class FocusChart extends Component<Props, State> {
   }
 
   drawPredLine(data) {
-    console.log(data);
     const { periodRange } = this.props;
     const { zoomValue } = periodRange;
     const { xCoord, yCoord } = this.getScale();
@@ -182,6 +210,7 @@ class FocusChart extends Component<Props, State> {
   }
 
   renderEvents(currentEvent) {
+
     const { dataRun, periodRange, setActiveEvent } = this.props;
     const { timeSeries } = dataRun;
     const { height } = this.state;
@@ -209,6 +238,8 @@ class FocusChart extends Component<Props, State> {
     const startDate = new Date(timeSeries[startIndex][0]);
     const stopDate = new Date(timeSeries[stopIndex][0]);
 
+    let displayArea = this.props.lastSearchedDatarunID !== this.props.dataRun.id ? true : false;
+
     return (
       <g
         className="line-highlight"
@@ -229,10 +260,11 @@ class FocusChart extends Component<Props, State> {
         onMouseLeave={() => this.setState({ isTooltipVisible: false })}
       >
         <path className="evt-highlight" d={this.drawLine(event)} />
+        {displayArea && 
         <g className="event-comment">
           <rect className="evt-area" width={commentWidth} height={commentHeight} y={0} x={translateComment} />
           <rect className="evt-comment" height="10" width={commentWidth} y="0" x={translateComment} fill={tagColor} />
-        </g>
+        </g>}
       </g>
     );
   }
@@ -252,7 +284,7 @@ class FocusChart extends Component<Props, State> {
     const yAxis = d3.axisLeft(yCoord);
 
     d3.select('.axis.axis--x').call(xAxis);
-    d3.select('.axis.axis--y').call(yAxis).call(yAxis.ticks(5, ',f'));
+    d3.select('.axis.axis--y').call(yAxis).call(yAxis.ticks(5, d3.format("~s")));
   }
 
   initZoom() {
@@ -345,10 +377,11 @@ class FocusChart extends Component<Props, State> {
 
   drawChartData() {
     const { width, height } = this.state;
-    const { dataRun, isPredictionVisible } = this.props;
+    const { dataRun, isPredictionVisible, similarEvents } = this.props;
     const { eventWindows, timeSeries, timeseriesPred } = dataRun;
     const focusChartWidth = width - TRANSLATE_LEFT - 2 * CHART_MARGIN;
 
+    let topSimilarEvents = similarEvents.slice(0, 8);
     return (
       width > 0 &&
       height > 0 && (
@@ -365,6 +398,7 @@ class FocusChart extends Component<Props, State> {
             </g>
             <rect className="zoom" width={focusChartWidth} height={height} />
             {eventWindows.map((currentEvent) => this.renderEvents(currentEvent))}
+            {topSimilarEvents.map((currentEvent) => this.renderSimilarEvents(currentEvent))}
           </g>
           <g className="chart-axis">
             <g className="axis axis--x" transform={`translate(0, ${height - 3.5 * CHART_MARGIN})`} />
@@ -404,6 +438,8 @@ const mapState = (state: RootState) => ({
   zoomCounter: getZoomCounter(state),
   zoomDirection: getZoomOnClickDirection(state),
   isEditingRange: getIsEditingEventRange(state),
+  similarEvents: getSimilarEvents(state),
+  lastSearchedDatarunID: getLastSearchedDatarunID(state)
 });
 
 const mapDispatch = (dispatch: Function) => ({

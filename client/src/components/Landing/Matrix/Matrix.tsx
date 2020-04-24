@@ -153,11 +153,11 @@ class Matrix extends Component<Props, LocalState> {
     );
   }
 
-  private drawCell(cellData, index, scale) {
+  private drawCell(cellData, index, maxEventNum) {
     const self = this;
     const width = self.option.matrixWidth;
     const rowNum = 6;
-    const color = d3.scaleLinear<any>().range(['#A3A4A5', '#43434E']).domain([0, scale.maxEventNum]);
+    const color = d3.scaleLinear<any>().range(['#A3A4A5', '#43434E']).domain([0, maxEventNum]);
 
     const fx = d3
       .scaleBand()
@@ -230,10 +230,16 @@ class Matrix extends Component<Props, LocalState> {
     };
 
     const cells: [string, number][] = _.chain(self.props.experiment.dataruns)
-
       .map((d) => [d.signal, d.events.length])
       .sortBy((d) => d[0])
       .value() as [string, number][];
+
+    let maxEventNum = -1;
+    _.each(cells, cell => {
+      if (cell[1] > maxEventNum) {
+        maxEventNum = cell[1];
+      }
+    })
 
     return (
       <g transform={`translate(${self.option.margin.left}, ${self.option.margin.top})`}>
@@ -260,7 +266,7 @@ class Matrix extends Component<Props, LocalState> {
           <line className="sep-line" x1={0} y1={0} x2={0} y2={cellHeight} />
         </g>
         <g transform={`translate(${cellWidth}, ${self.option.height - cellHeight})`}>
-          {cells && cells.map((cell, index) => this.drawCell(cell, index, scale))}
+          {cells && cells.map((cell, index) => this.drawCell(cell, index, maxEventNum))}
         </g>
         {this.drawAreaChart(scale)}
       </g>

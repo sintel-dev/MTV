@@ -9,6 +9,9 @@ const getActiveEventID = (state) => state.datarun.activeEventID;
 const getEventComments = (state) => state.datarun.eventComments;
 const isEventCommentsLoading = (state) => state.datarun.isEventCommentsLoading;
 
+export const getSimilarEvents = (state: RootState) => state.computing.similarEvents;
+export const isSimilarEventsLoading = (state: RootState) => state.computing.isSimilarEventsLoading;
+export const getLastSearchedDatarunID = (state: RootState) => state.computing.lastSearchedDatarunID;
 export const getUpdatedEventsDetails = (state) => state.datarun.eventDetails;
 export const getNewEventDetails = (state) => state.datarun.newEventDetails;
 export const isPredictionEnabled = (state) => state.datarun.isPredictionEnabled;

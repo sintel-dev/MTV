@@ -2,7 +2,7 @@
 @import './Experiment.scss';
 .overview-wrapper {
     position: relative;
-    max-height: 260.75px;
+    max-height: 320.75px;
     min-height: 260.75px;
     overflow-y: auto;
     background: $main-color;
@@ -27,6 +27,7 @@
         }
 
         li {
+            font-size: 16px;
             display: inline-block;
             height: 60px;
             padding: 5px 0;

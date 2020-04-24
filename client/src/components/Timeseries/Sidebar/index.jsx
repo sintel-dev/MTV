@@ -13,6 +13,7 @@ import {
 import { getWrapperSize, drawArc, getDataScale } from './SidebarUtils';
 import { setPeriodLevelAction, reviewPeriodAction } from '../../../model/actions/datarun';
 import './Sidebar.scss';
+import * as _ from 'lodash';
 
 class Sidebar extends Component {
   constructor(...props) {
@@ -23,6 +24,7 @@ class Sidebar extends Component {
       radius: 0,
       colSpacing: 0,
       rowSpacing: 30,
+      relativeScale: false
     };
   }
 
@@ -99,9 +101,9 @@ class Sidebar extends Component {
     return { horizontalShift, verticalShift };
   }
 
-  getPathData(periodRange) {
+  getPathData(periodRange, currentPeriodExtent) {
     const { radius } = this.state;
-    const { area } = getDataScale(radius * 0.1, radius, periodRange);
+    const { area } = getDataScale(radius * 0.1, radius, periodRange, this.state.relativeScale, currentPeriodExtent);
     return area(periodRange);
   }
 
@@ -135,6 +137,12 @@ class Sidebar extends Component {
     const { width, radius } = this.state;
     const { setPeriodRange, dataRun, isEditingEventRange, grouppedEvents } = this.props;
 
+    let currentPeriodExtent = [Number.MAX_SAFE_INTEGER, -Number.MAX_SAFE_INTEGER];
+    _.each(dataRun.period, currentPeriod => {
+      currentPeriodExtent[0] = Math.min(_.min(currentPeriod.bins), currentPeriodExtent[0]);
+      currentPeriodExtent[1] = Math.max(_.max(currentPeriod.bins), currentPeriodExtent[1]);
+    });
+
     return (
       width > 0 &&
       radius > 0 &&
@@ -150,7 +158,7 @@ class Sidebar extends Component {
             >
               <path
                 id={`path_${currentPeriod.name}`}
-                d={this.getPathData(currentPeriod.bins)}
+                d={this.getPathData(currentPeriod.bins, currentPeriodExtent)}
                 className="feature-area radial-cursor"
               />
               <clipPath id={`clip_${currentPeriod.name}`}>
@@ -217,6 +225,13 @@ class Sidebar extends Component {
     return wrapperHeight;
   };
 
+  changeScale = (relativeScale) => {
+    console.log('change scale', relativeScale);
+    this.setState({
+      relativeScale,
+    });
+  }
+
   render() {
     const { experimentData } = this.props;
     const { width, height } = this.state;
@@ -224,7 +239,7 @@ class Sidebar extends Component {
     return (
       <div className="right-sidebar">
         <Loader isLoading={experimentData.isExperimentDataLoading}>
-          <Header />
+          <Header relativeScale={false} changeScale={this.changeScale}/>
           <div id="dataWrapper" className="data-wrapper">
             {this.renderWeekDays()}
             <div className="wrapper-container scroll-style" style={{ height: `${this.getWrapperHeight()}px` }}>

@@ -1,11 +1,12 @@
 @import '../../../assets/sass/colors.scss';
+@import '../../../assets/sass/form.scss';
 @import '../../../assets/sass/main.scss';
 
 .right-sidebar {
     background: $main-color;
     float: right;
     min-width: 480px;
-    padding: 30px 10px 10px 10px;
+    padding: 0 10px 10px 10px;
     box-sizing: border-box;
     height: 89vh;
 
@@ -26,13 +27,17 @@
         }
         .radial-text{
             fill: #8A9097;
-            font-size: 13px;
+            font-size: 15px;
             text-anchor: middle;
         }
 
         .radial-cursor{
             fill: transparent;
         }
+    }
+
+    .sidechart-controls {
+        padding: 10px 0 0 10px;
     }
 
     .period-control{
@@ -80,8 +85,9 @@
         margin: 30px 0 25px 0;
     }
     .period-info{
-        display: inline-block;
-
+        // display: inline-block;
+        float: right;
+        margin-right: 15px;
         p{
             margin: 0;
             padding: 0;

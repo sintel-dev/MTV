@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { tagSeq, fromTagToClassName } from '../../../Landing/utils';
 import { fromMonthToIndex } from '../../../../model/utils/Utils';
+import * as _ from 'lodash';
 
 import './EventSummary.scss';
 
@@ -19,10 +20,27 @@ const renderTagIcon = () =>
 
 const countEventsPerTag = (tag, events) => {
   const currentEvents = Object.values(events);
-  return currentEvents.filter(currentEvent => currentEvent.tag === tag).length;
+  
+  return currentEvents.filter(currentEvent => { 
+    let ctag = currentEvent.tag === null ? 'Untagged' : currentEvent.tag;
+    return ctag === tag;
+  }).length;
 };
 
-const renderTagEvents = (isPeriodLevelSelected, grouppedEvents) => {
+const renderTagEventsAll = (grouppedEvents) => {
+  if (grouppedEvents === undefined) {
+    return tagSeq.map(currentTag => <td key={currentTag}>-</td>);
+  }
+  return tagSeq.map(currentTag => {
+    let eventSum = 0;
+    _.forIn(grouppedEvents, value => {
+      eventSum += countEventsPerTag(currentTag, value.events);
+    });
+    return <td key={currentTag}>{eventSum}</td>;
+  });
+};
+
+const renderTagEventsPerYear = (isPeriodLevelSelected, grouppedEvents) => {
   if (!isPeriodLevelSelected || grouppedEvents === undefined) {
     return tagSeq.map(currentTag => <td key={currentTag}>-</td>);
   }
@@ -76,15 +94,17 @@ class EventSummary extends Component {
   }
 
   render() {
-    const { selectedPeriodLevel, grouppedEvents } = this.props;
+    const { selectedPeriodLevel, grouppedEvents, signalName } = this.props;
     const isPeriodLevelSelected = Object.keys(selectedPeriodLevel).length !== 0;
     const activeSummary = this.state.isSummaryVisible ? 'active' : '';
     const buttonText = this.state.isSummaryVisible ? 'HIDE' : 'SHOW';
+    console.log(selectedPeriodLevel);
     return (
       <div className="event-summary">
         <div className="event-header">
           <div className="left-wrapper">
-            <span>Overview Events Table</span>
+            <span className="table-title">PID {signalName}</span>
+            {/* <span>Overview Events Table</span> */}
           </div>
           <div className="right-wrapper">
             <button type="button" onClick={() => this.toggleSummaryDetails()}>
@@ -103,11 +123,15 @@ class EventSummary extends Component {
                 {renderTagIcon()}
               </tr>
               <tr>
-                <th>Year</th>
-                {renderTagEvents(isPeriodLevelSelected, grouppedEvents[selectedPeriodLevel.year])}
+                <th>All</th>
+                {renderTagEventsAll(grouppedEvents)}
               </tr>
-              <tr className="row-light">
-                <th>Month</th>
+              <tr>
+                <th>Year {selectedPeriodLevel.year} </th>
+                {renderTagEventsPerYear(isPeriodLevelSelected, grouppedEvents[selectedPeriodLevel.year])}
+              </tr>
+              <tr>
+                <th>Month {selectedPeriodLevel.month}</th>
                 {renderTagEventsPerMonth(
                   isPeriodLevelSelected && isPeriodLevelSelected.month !== '',
                   selectedPeriodLevel.month,

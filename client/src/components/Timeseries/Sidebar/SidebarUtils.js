@@ -87,18 +87,24 @@ export const drawArc = (currentPeriod, periodEvents, radius, periodIndex) => {
   return arcData;
 };
 
-export const getDataScale = (innerRadius, outerRadius, periodRange) => {
+export const getDataScale = (innerRadius, outerRadius, periodRange, relativaScale,
+  currentPeriodExtent) => {
   const scaleAngle = d3
     .scaleLinear()
     .range([0, 2 * Math.PI])
     .domain([0, periodRange.length - 0.08]);
 
+  
   const scaleRadius = d3
     .scaleLinear()
     .range([innerRadius, outerRadius])
-    .clamp(true)
-    .domain([0, 1.2]);
-
+    .clamp(true);
+  if (relativaScale) {
+    scaleRadius.domain([0, currentPeriodExtent[1]]);
+  } else {
+    scaleRadius.domain([0, 1]);
+  }
+    
   const area = d3
     .areaRadial()
     .angle((d, i) => scaleAngle(i))

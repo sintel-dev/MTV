@@ -31,6 +31,9 @@ import {
   TOGGLE_ZOOM,
   SET_CURRENT_PERIOD_LEVEL,
   REVIEW_PERIOD_LEVEL,
+  SearchSimilarEventsAction,
+  SEARCH_SIMILAR_EVENTS,
+  CLEAN_MATCHED_EVENTS
 } from '../types';
 
 export function selectDatarun(datarunID: string) {
@@ -130,6 +133,24 @@ export function isEditingEventRangeAction(eventState) {
   };
 }
 
+export function searchSimilarEvents() {
+  return async function(dispatch, getState) {
+    const dataRun = getDatarunDetails(getState());
+    const currentEventDetails = getCurrentEventDetails(getState());
+    const action: SearchSimilarEventsAction = {
+      type: SEARCH_SIMILAR_EVENTS,
+      promise: API.computingsSimilarEvents.all({}, {
+        start: currentEventDetails.start_time / 1000,
+        end: currentEventDetails.stop_time / 1000,
+        datarun_id: dataRun.id
+      }),
+      datarunID: dataRun.id
+    };
+    dispatch(action);
+    return action.promise;
+  }
+}
+
 export function saveEventDetailsAction() {
   return async function (dispatch, getState) {
     const updatedEventDetails = getUpdatedEventsDetails(getState());
@@ -187,6 +208,13 @@ export function addNewEventAction(isAddingEvent) {
     dispatch({ type: UPDATE_EVENT_DETAILS, eventDetails: {} });
     dispatch({ type: ADDING_NEW_EVENTS, isAddingEvent });
   };
+}
+
+export function cleanMatchedEvents() {
+  return async function (dispatch) {
+    dispatch({ type: CLEAN_MATCHED_EVENTS});
+  }
+
 }
 
 export function updateNewEventDetailsAction(eventDetails) {

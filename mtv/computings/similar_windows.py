@@ -3,7 +3,6 @@ from sklearn.metrics.pairwise import euclidean_distances
 from dtw import dtw as dtwc
 from tqdm import tqdm
 import numpy as np
-import similaritymeasures as sm
 # note: this algorithm is O(n^4)! (since dtw is O(n^3))
 
 

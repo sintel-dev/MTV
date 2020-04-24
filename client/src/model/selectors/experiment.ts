@@ -77,18 +77,20 @@ const groupDataByPeriod = (data) => {
         month.children.push(day);
 
         let dayData = data[yearIterator].data[monthIterator][dayIterator];
-        const count = dayData.counts.reduce((currentCount, nextCount) => currentCount + nextCount, 0);
-        const mean = dayData.means.reduce((currentMean, nextMean) => currentMean + nextMean, 0) / dayData.means.length;
+        const count = _.sum(dayData.counts);
+        const mean = _.sum(dayData.means) / dayData.means.length;
+        // const count = dayData.counts.reduce((currentCount, nextCount) => currentCount + nextCount, 0);
+        // const mean = dayData.means.reduce((currentMean, nextMean) => currentMean + nextMean, 0) / dayData.means.length;
 
+        // one day one bin
         year.bins.push(mean);
         year.counts.push(count);
-
         month.bins.push(mean);
         month.counts.push(count);
       }
     }
 
-    // 7 days as one bin
+    // aggregate 7 days (bins) into one
     let i = 0;
     let nbins = [];
     let ncounts = [];
@@ -121,8 +123,8 @@ const groupDataByPeriod = (data) => {
       }
       ncounts.push(c);
     }
-    year.bins = nbins;
-    year.counts = ncounts;
+    // year.bins = nbins;
+    // year.counts = ncounts;
   }
 
   return result;
@@ -131,12 +133,24 @@ const groupDataByPeriod = (data) => {
 const normalizePeriodRange = (periodData) => {
   let minRange = Number.MAX_SAFE_INTEGER;
   let maxRange = Number.MIN_SAFE_INTEGER;
-  periodData.forEach((currentPeriod) => {
-    const { bins } = currentPeriod;
-    bins.forEach((bin) => {
-      minRange = Math.min(minRange, bin);
-      maxRange = Math.max(maxRange, bin);
-    });
+  // periodData.forEach((year) => {
+  //   const { bins } = year;
+  //   bins.forEach((bin) => {
+  //     minRange = Math.min(minRange, bin);
+  //     maxRange = Math.max(maxRange, bin);
+  //   });
+  // });
+  periodData.forEach((year) => {
+    for (let monthIterator = 0; monthIterator < year.children.length; monthIterator += 1) {
+      for (let dayIterator = 0; dayIterator < year.children[monthIterator].children.length; dayIterator += 1) {
+        const {counts, bins} = year.children[monthIterator].children[dayIterator];
+        for (let i = 0; i < bins.length; i += 1) {
+          if (counts[i] === 0) { continue; }
+          minRange = Math.min(minRange, bins[i]);
+          maxRange = Math.max(maxRange, bins[i]);
+        }
+      }
+    }
   });
   return { minRange, maxRange };
 };
@@ -144,9 +158,29 @@ const normalizePeriodRange = (periodData) => {
 const normalizePeriodData = (periodData) => {
   const { minRange, maxRange } = normalizePeriodRange(periodData);
   const normalizeScale = d3.scaleLinear().domain([minRange, maxRange]).range([0, 1]);
-
-  periodData.forEach((currentPeriod) => {
-    currentPeriod.bins = currentPeriod.bins.map((bin) => (bin !== 0 ? normalizeScale(bin) : 0));
+  // periodData.forEach((year) => {
+  //   year.bins = year.bins.map((bin) => (bin !== 0 ? normalizeScale(bin) : 0));
+  // });
+  periodData.forEach((year) => {
+    let {counts} = year;
+    year.bins = _.map(year.bins, (bin, i) => {
+      if (counts[i] === 0) { return bin; }
+      return normalizeScale(bin);
+    });
+    for (let monthIterator = 0; monthIterator < year.children.length; monthIterator += 1) {
+      let {counts} = year.children[monthIterator];
+      year.children[monthIterator].bins = _.map(year.children[monthIterator].bins, (bin, i) => {
+        if (counts[i] === 0) { return bin; }
+        return normalizeScale(bin);
+      });
+      for (let dayIterator = 0; dayIterator < year.children[monthIterator].children.length; dayIterator += 1) {
+        let {counts} = year.children[monthIterator].children[dayIterator];
+        year.children[monthIterator].children[dayIterator].bins = _.map(year.children[monthIterator].children[dayIterator].bins, (bin, i) => {
+          if (counts[i] === 0) { return bin; }
+          return normalizeScale(bin);
+        });
+      }
+    }
   });
 };
 
@@ -175,23 +209,27 @@ export const getProcessedDataRuns = createSelector(
 
       const filteredEvents =
         filterTags && filterTags.length
-          ? events.filter((currentEvent) => filterTags.includes(currentEvent.tag))
+          ? events.filter((currentEvent) => {
+            const ctag = !currentEvent.tag ? 'Untagged' : currentEvent.tag;
+            return filterTags.includes(ctag);
+          })
           : events;
       const eventWindows = groupByEventWindows(
         filteredEvents,
         timeSeries.map((series) => series[0]),
       );
 
-      const filteredEventWindows = filterTags.length
-        ? eventWindows.filter((currentWindow) => filterTags.includes(currentWindow[4]))
-        : eventWindows;
+      // const filteredEventWindows = filterTags.length
+      //   ? eventWindows.filter((currentWindow) => filterTags.includes(currentWindow[4]))
+      //   : eventWindows;
 
       return {
         ...datarun,
         timeSeries,
         timeseriesPred,
         timeseriesErr,
-        eventWindows: filteredEventWindows,
+        // eventWindows: filteredEventWindows,
+        eventWindows: eventWindows,
         events: filteredEvents,
         period,
         maxTimeSeries,

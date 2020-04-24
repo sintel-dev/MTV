@@ -12,6 +12,7 @@ import {
   getIsPopupOpen,
 } from '../../../model/selectors/datarun';
 import { setTimeseriesPeriod, selectDatarun } from '../../../model/actions/datarun';
+import { isUndefined } from 'util';
 
 const { TRANSLATE_LEFT, CHART_MARGIN } = FocusChartConstants;
 
@@ -251,6 +252,7 @@ class DrawChart extends Component<ChartProps, ChartState> {
   }
 
   updateTooltipCoords() {
+    if (d3.event === undefined) { return; }
     const { clientX, clientY } = d3.event;
     const tooltip = document.getElementById('brushTooltip');
     tooltip.setAttribute('style', `left: ${clientX + 10}px; top: ${clientY + 10}px`);

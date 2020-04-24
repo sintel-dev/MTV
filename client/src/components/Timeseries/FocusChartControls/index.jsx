@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import Select from 'react-select';
-import { togglePredictionsAction, addNewEventAction, filterEventsByTagAction } from '../../../model/actions/datarun';
+import { togglePredictionsAction, addNewEventAction, filterEventsByTagAction, cleanMatchedEvents } from '../../../model/actions/datarun';
 import { isPredictionEnabled, getIsAddingNewEvents } from '../../../model/selectors/datarun';
 import './FocusChartControls.scss';
 
@@ -35,6 +35,15 @@ const FocusChartControls = props => (
         >
           <span>+</span>
           Add Event
+        </button>
+      </div>
+      <div className="row">
+        <button
+          type="button"
+          className="btn btn-add-event"
+          onClick={() => props.cleanMatchedEvents()}
+        >
+          Clean Similar Events
         </button>
       </div>
       <div className="row">
@@ -80,5 +89,6 @@ export default connect(
     togglePredictions: event => dispatch(togglePredictionsAction(event)),
     addNewEvent: isAddingEvent => dispatch(addNewEventAction(isAddingEvent)),
     filterByTags: tags => dispatch(filterEventsByTagAction(tags)),
+    cleanMatchedEvents: tags => dispatch(cleanMatchedEvents()),
   }),
 )(FocusChartControls);

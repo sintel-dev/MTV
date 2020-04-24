@@ -10,6 +10,7 @@ import {
 } from '../../../model/selectors/datarun';
 import { reviewPeriodAction } from '../../../model/actions/datarun';
 
+
 const showPeriod = (selectedPeriodLevel) => {
   let periodString = 'YY/MM';
   if (selectedPeriodLevel.year) {
@@ -26,12 +27,25 @@ const showPeriod = (selectedPeriodLevel) => {
   );
 };
 
-const Header = ({ dataRun, setReviewRange, reviewRange, selectedPeriodLevel, isEditingEventRange, grouppedEvents }) => (
+const Header = ({ dataRun, setReviewRange, reviewRange, selectedPeriodLevel, isEditingEventRange, grouppedEvents,
+                  changeScale, relativeScale }) => (
   <div className="period-control">
-    <div className="sidebar-heading">{dataRun.signal}</div>
-    <EventSummary selectedPeriodLevel={selectedPeriodLevel} grouppedEvents={grouppedEvents} />
+    {/* <div className="sidebar-heading">{dataRun.signal}</div> */}
+    <EventSummary selectedPeriodLevel={selectedPeriodLevel} grouppedEvents={grouppedEvents} signalName={dataRun.signal}/>
     <div>
-      {showPeriod(selectedPeriodLevel)}
+      <div className="sidechart-controls switch-control">
+        <div className="row">
+          <label htmlFor="glyphScale">
+            <input
+              type="checkbox"
+              id="glyphScale"
+              onChange={ () => {relativeScale = !relativeScale; changeScale(relativeScale);}}
+            />
+            <span className="switch" />
+            Relative scale
+          </label>
+        </div>
+      </div>
       <ul className="period-filter">
         <li>
           <button
@@ -63,6 +77,7 @@ const Header = ({ dataRun, setReviewRange, reviewRange, selectedPeriodLevel, isE
           </button>
         </li>
       </ul>
+      {showPeriod(selectedPeriodLevel)}
     </div>
     <div className="clear" />
   </div>
