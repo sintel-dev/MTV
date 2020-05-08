@@ -1,3 +1,3 @@
-export const API_URL = 'http://127.0.0.1:3000/api/v1/';
+export const API_URL = 'http://ec2-3-23-54-135.us-east-2.compute.amazonaws.com:3000/api/v1/';
 export const GOOGLE_CLIEN_ID = '796048243680-341g672umjji4m4okfgppm2ogfkrh8mj.apps.googleusercontent.com';
 export const SESSION_TOKEN = 'AUTHORIZATION';

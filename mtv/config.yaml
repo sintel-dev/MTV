@@ -37,7 +37,7 @@ MAIL_USERNAME: 'ExampleMtv@gmail.com'
 
 # Google AUTH
 #===================================
-GOOGLE_CLIENT_ID: '536177420923-v4kofl71n9893tkq4atb38mt03b29c9a.apps.googleusercontent.com'
+GOOGLE_CLIENT_ID: '796048243680-341g672umjji4m4okfgppm2ogfkrh8mj.apps.googleusercontent.com'
 GOOGLE_DISCOVERY_URL: 'https://accounts.google.com/.well-known/openid-configuration'
 
 # Private Keys
