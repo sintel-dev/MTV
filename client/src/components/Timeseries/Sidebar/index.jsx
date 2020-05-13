@@ -7,10 +7,11 @@ import {
   getDatarunDetails,
   getSelectedPeriodLevel,
   getReviewPeriod,
-  getIsEditingEventRange,
+  // getIsEditingEventRange,
   getGrouppedDatarunEvents,
   getIsEventModeEnabled,
 } from '../../../model/selectors/datarun';
+import { getIsEditingEventRange } from '../../../model/selectors/event';
 import { getWrapperSize, drawArc, getDataScale } from './SidebarUtils';
 import { setPeriodLevelAction, reviewPeriodAction } from '../../../model/actions/datarun';
 import './Sidebar.scss';

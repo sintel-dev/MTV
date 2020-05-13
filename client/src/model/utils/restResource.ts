@@ -37,6 +37,7 @@ export default class Resource<T, R> {
   public find(id, data = {}, params = {}): Promise<T> {
     const newUrl = `${this.url}${id}`;
     const promise = this.server.get<T>(newUrl, { data, params });
+
     return promise
       .then((res) => {
         if (res.status !== 204) {

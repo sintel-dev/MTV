@@ -59,6 +59,7 @@ export function fetchProjects() {
       type: FETCH_PROJECTS,
       promise: Promise.all([dispatch(fetchExperiments()), dispatch(fetchPipelines()), dispatch(fetchDatasets())]),
     };
+
     dispatch(action);
     return action.promise;
   };

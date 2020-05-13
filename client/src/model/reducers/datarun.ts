@@ -13,9 +13,9 @@ const initialState: DatarunState = {
   eventComments: [],
   isPredictionEnabled: false,
   eventDetails: {},
-  isEditingEventRange: false,
+  // isEditingEventRange: false,
   isEditingEventRangeDone: false,
-  isPopupOpen: false,
+  // isPopupOpen: false,
   isAddingEvent: false,
   newEventDetails: {},
   filterTags: [],
@@ -28,6 +28,8 @@ const initialState: DatarunState = {
   isEventModeEnabled: true,
   uploadEventsStatus: null,
   eventUpdateStatus: null,
+  // initialEventDetails: {},
+  // isEventDetailsLoading: true,
 };
 
 /**
@@ -44,18 +46,18 @@ function SET_TIMESERIES_PERIOD(nextState: DatarunState, action: SetTimeseriesPer
   nextState.selectedPeriodRange = action.eventRange;
 }
 
-function SET_ACTIVE_EVENT_ID(nextState, { activeEventID }) {
-  nextState.activeEventID = activeEventID;
-}
+// function SET_ACTIVE_EVENT_ID(nextState, { activeEventID }) {
+//   nextState.activeEventID = activeEventID;
+// }
 
-function UPDATE_EVENT_DETAILS(nextState, { eventDetails }) {
-  nextState.eventDetails = eventDetails;
-}
+// function UPDATE_EVENT_DETAILS(nextState, { eventDetails }) {
+//   nextState.eventDetails = eventDetails;
+// }
 
-function GET_EVENT_COMMENTS_SUCCESS(nextState, { eventComments }) {
-  nextState.eventComments = eventComments;
-  nextState.isEventCommentsLoading = false;
-}
+// function GET_EVENT_COMMENTS_SUCCESS(nextState, { eventComments }) {
+//   nextState.eventComments = eventComments;
+//   nextState.isEventCommentsLoading = false;
+// }
 
 function TOGGLE_PREDICTION_MODE(nextState, { isPredictionEnabled }) {
   nextState.isPredictionEnabled = isPredictionEnabled;
@@ -65,13 +67,13 @@ function TOGGLE_EVENT_MODE(nextState, { isEventModeEnabled }) {
   nextState.isEventModeEnabled = isEventModeEnabled;
 }
 
-function IS_CHANGING_EVENT_RANGE(nextState, { isEditingEventRange }) {
-  nextState.isEditingEventRange = isEditingEventRange;
-}
+// function IS_CHANGING_EVENT_RANGE(nextState, { isEditingEventRange }) {
+//   nextState.isEditingEventRange = isEditingEventRange;
+// }
 
-function IS_UPDATE_POPUP_OPEN(nextState, { isPopupOpen }) {
-  nextState.isPopupOpen = isPopupOpen;
-}
+// function IS_UPDATE_POPUP_OPEN(nextState, { isPopupOpen }) {
+//   nextState.isPopupOpen = isPopupOpen;
+// }
 
 function ADDING_NEW_EVENTS(nextState, { isAddingEvent }) {
   nextState.isAddingEvent = isAddingEvent;
@@ -116,15 +118,30 @@ function EVENT_UPDATE_STATUS(nextState, { eventUpdateStatus }) {
   nextState.eventUpdateStatus = eventUpdateStatus;
 }
 
+// function SET_INITIAL_EVENT_DETAILS_REQUEST(nextState, { isEventDetailsLoading }) {
+//   nextState.isEventDetailsLoading = isEventDetailsLoading;
+// }
+
+// function SET_INITIAL_EVENT_DETAILS_SUCCESS(nextState, { eventDetails }) {
+//   nextState.isEventDetailsLoading = false;
+//   nextState.eventDetails = eventDetails;
+// }
+
+// function SET_INITIAL_EVENT_DETAILS_FAILURE(nextState, { err }) {
+//   nextState.err = err;
+//   nextState.eventDetails = {};
+//   nextState.isEventDetailsLoading = false;
+// }
+
 export default createReducer<DatarunState>(initialState, {
   SELECT_DATARUN,
   SET_TIMESERIES_PERIOD,
-  SET_ACTIVE_EVENT_ID,
-  UPDATE_EVENT_DETAILS,
+  // SET_ACTIVE_EVENT_ID,
+  // UPDATE_EVENT_DETAILS,
   TOGGLE_PREDICTION_MODE,
-  GET_EVENT_COMMENTS_SUCCESS,
-  IS_CHANGING_EVENT_RANGE,
-  IS_UPDATE_POPUP_OPEN,
+  // GET_EVENT_COMMENTS_SUCCESS,
+  // IS_CHANGING_EVENT_RANGE,
+  // IS_UPDATE_POPUP_OPEN,
   ADDING_NEW_EVENTS,
   NEW_EVENT_DETAILS,
   ADDING_NEW_EVENT_RESULT,
@@ -136,4 +153,7 @@ export default createReducer<DatarunState>(initialState, {
   TOGGLE_EVENT_MODE,
   UPLOAD_JSON_EVENTS,
   EVENT_UPDATE_STATUS,
+  // SET_INITIAL_EVENT_DETAILS_REQUEST,
+  // SET_INITIAL_EVENT_DETAILS_SUCCESS,
+  // SET_INITIAL_EVENT_DETAILS_FAILURE,
 });

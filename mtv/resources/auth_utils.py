@@ -58,14 +58,14 @@ def decode_auth_token(token):
 
 def verify_auth():
     # uid = request.args.get('uid', None)
-    token = request.headers.get('Authorization')
-
-    if (token is None):
-        return {'message': 'please login first'}, 401
-
-    verify_res = decode_auth_token(token.encode())
-    if verify_res is None:
-        return {'message': 'please login first'}, 401
+    # token = request.headers.get('Authorization')
+    #
+    # if (token is None):
+    #     return {'message': 'please login first'}, 401
+    #
+    # verify_res = decode_auth_token(token.encode())
+    # if verify_res is None:
+    #     return {'message': 'please login first'}, 401
     # elif uid != verify_res:
     #     return {'message': 'please login first'}, 401
 

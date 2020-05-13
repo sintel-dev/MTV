@@ -6,6 +6,7 @@ import projects from './projects';
 import selectedExperimentData from './experimentData';
 import datarun from './datarun';
 import users from './users';
+import event from './event';
 
 const dashBoardReducers = combineReducers({
   users,
@@ -15,6 +16,7 @@ const dashBoardReducers = combineReducers({
   experiments,
   selectedExperimentData,
   datarun,
+  event,
 });
 
 export default dashBoardReducers;

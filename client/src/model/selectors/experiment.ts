@@ -20,6 +20,7 @@ export const filteringTags = createSelector(
 
     if (tags.includes('Untagged')) {
       tags.push(null);
+      tags.push('None');
     }
 
     return tags;
@@ -183,6 +184,7 @@ export const getProcessedDataRuns = createSelector(
         filterTags && filterTags.length
           ? events.filter((currentEvent) => filterTags.includes(currentEvent.tag))
           : events;
+
       const eventWindows = groupByEventWindows(
         filteredEvents,
         timeSeries.map((series) => series[0]),

@@ -5,10 +5,11 @@ import {
   getDatarunDetails,
   getReviewPeriod,
   getSelectedPeriodLevel,
-  getIsEditingEventRange,
+  // getIsEditingEventRange,
   getGrouppedDatarunEvents,
   getIsEventModeEnabled,
 } from '../../../model/selectors/datarun';
+import { getIsEditingEventRange } from '../../../model/selectors/event';
 import { reviewPeriodAction, toggleEventModeAction } from '../../../model/actions/datarun';
 import './Header.scss';
 

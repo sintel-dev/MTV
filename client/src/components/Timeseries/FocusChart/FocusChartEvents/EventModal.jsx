@@ -3,24 +3,27 @@ import { connect } from 'react-redux';
 import * as d3 from 'd3';
 import {
   updateNewEventDetailsAction,
-  updateEventDetailsAction,
-  openEventDetailsPopupAction,
+  // updateEventDetailsAction,
+  // openEventModalAction,
 } from '../../../../model/actions/datarun';
 
 import {
   getIsAddingNewEvents,
   getDatarunDetails,
   getSelectedPeriodRange,
-  getIsEditingEventRange,
-  getCurrentEventDetails,
+  // getIsEditingEventRange,
+  // getCurrentEventDetails,
 } from '../../../../model/selectors/datarun';
+
+import { updateEventDetailsAction, openEventModalAction } from '../../../../model/actions/event';
+import { getCurrentEventDetails, getIsEditingEventRange } from '../../../../model/selectors/event';
 
 import { FocusChartConstants } from '../Constants';
 import { getWrapperSize, normalizeHanlers } from '../FocusChartUtils';
 
 const { CHART_MARGIN, TRANSLATE_LEFT, MIN_VALUE, MAX_VALUE } = FocusChartConstants;
 
-export class AddEvents extends Component {
+export class EventModal extends Component {
   componentDidMount() {
     const { width, height } = getWrapperSize();
     this.setState({
@@ -168,9 +171,10 @@ export class AddEvents extends Component {
   }
 
   render() {
-    const { openEventDetailsPopup, isAddingNewEvent, isEditingEventRange } = this.props;
+    const { openEventModal, isAddingNewEvent, isEditingEventRange } = this.props;
     return (
-      (isAddingNewEvent || isEditingEventRange) && <g className="brush-instance" onClick={openEventDetailsPopup} />
+      (isAddingNewEvent || isEditingEventRange) && <g className="brush-instance" onClick={openEventModal} />
+      // (isAddingNewEvent || isEditingEventRange) && <g className="brush-instance" />
     );
   }
 }
@@ -186,6 +190,6 @@ export default connect(
   (dispatch) => ({
     updateNewEventDetails: (eventDetails) => dispatch(updateNewEventDetailsAction(eventDetails)),
     updateEventDetails: (eventDetails) => dispatch(updateEventDetailsAction(eventDetails)),
-    openEventDetailsPopup: () => dispatch(openEventDetailsPopupAction()),
+    openEventModal: () => dispatch(openEventModalAction()),
   }),
-)(AddEvents);
+)(EventModal);

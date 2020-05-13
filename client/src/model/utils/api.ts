@@ -45,6 +45,8 @@ export class RestClient {
 
   public data: Resource<any, DataResponse>;
 
+  public testingevents: any;
+
   /**
    *
    * @param config AxiosRequestConfig

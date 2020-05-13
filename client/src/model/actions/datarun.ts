@@ -1,5 +1,5 @@
 import {
-  getCurrentEventDetails,
+  // getCurrentEventDetails,
   getUpdatedEventsDetails,
   getDatarunDetails,
   getZoomCounter,
@@ -9,20 +9,24 @@ import {
   getSelectedPeriodRange,
   isDatarunIDSelected,
 } from '../selectors/datarun';
+
+import { getCurrentEventDetails } from '../selectors/event';
+import { resetEventModalState } from './event';
+
 import { getSelectedExperimentData } from '../../model/selectors/experiment';
 import API from '../utils/api';
 import {
   SELECT_DATARUN,
   SET_TIMESERIES_PERIOD,
   UPDATE_EVENT_DETAILS,
-  IS_CHANGING_EVENT_RANGE,
+  // IS_CHANGING_EVENT_RANGE,
   SET_ACTIVE_EVENT_ID,
-  GET_EVENT_COMMENTS_SUCCESS,
+  // GET_EVENT_COMMENTS_SUCCESS,
   TOGGLE_PREDICTION_MODE,
   SelectDatarunAction,
   SetTimeseriesPeriodAction,
   IS_UPDATE_POPUP_OPEN,
-  ADDING_NEW_EVENTS,
+  // ADDING_NEW_EVENTS,
   NEW_EVENT_DETAILS,
   ADDING_NEW_EVENT_RESULT,
   UPDATE_DATARUN_EVENTS,
@@ -33,8 +37,11 @@ import {
   REVIEW_PERIOD_LEVEL,
   TOGGLE_EVENT_MODE,
   UPLOAD_JSON_EVENTS,
-  EVENT_UPDATE_STATUS,
+  // EVENT_UPDATE_STATUS,
 } from '../types';
+
+// TMP import
+// import { getEventDetailsAction } from './event';
 
 export function selectDatarun(datarunID: string) {
   return function (dispatch, getState) {
@@ -47,9 +54,10 @@ export function selectDatarun(datarunID: string) {
       datarunID,
     };
     dispatch(action);
-    dispatch({ type: SET_ACTIVE_EVENT_ID, activeEventID: null });
-    dispatch({ type: ADDING_NEW_EVENTS, isAddingEvent: false });
-    dispatch({ type: IS_UPDATE_POPUP_OPEN, isPopupOpen: false });
+    dispatch(resetEventModalState());
+    // dispatch({ type: SET_ACTIVE_EVENT_ID, activeEventID: null });
+    // dispatch({ type: ADDING_NEW_EVENTS, isAddingEvent: false });
+    // dispatch({ type: IS_UPDATE_POPUP_OPEN, isPopupOpen: false });
   };
 }
 
@@ -68,47 +76,74 @@ export function setTimeseriesPeriod(eventRange: { eventRange: any; zoomValue: an
   };
 }
 
-export function setActiveEventAction(eventID) {
-  return function (dispatch) {
-    dispatch({ type: SET_ACTIVE_EVENT_ID, activeEventID: eventID });
-    dispatch({ type: IS_UPDATE_POPUP_OPEN, isPopupOpen: true });
-    dispatch({ type: EVENT_UPDATE_STATUS, eventUpdateStatus: null });
-    dispatch(getEventComments());
-  };
-}
+// export function getInitialEventDetails(eventID) {
+//   return async function (dispatch) {
+//     const action = {
+//       type: UPDATE_EVENT_DETAILS,
+//       promise: API.events.find(`${eventID}/`),
+//     };
 
-export function closeEventModal() {
-  return async function (dispatch, getState) {
-    const dataRun = getDatarunDetails(getState());
-    const currentEventDetails = getCurrentEventDetails(getState());
-    await API.events.all('events').then((response) => {
-      const { events } = response;
-      const filteredEvents = events.filter((currentEvent) => currentEvent.datarun === dataRun.id);
-      const eventData = filteredEvents.find((currentEvent) => currentEvent.id === currentEventDetails.id);
-      let { start_time, stop_time } = eventData;
+//     dispatch(action);
+//     dispatch({ type: IS_UPDATE_POPUP_OPEN, isPopupOpen: true });
+//     // dispatch({
+//     //   type: 'SET_INITIAL_EVENT_DETAILS_REQUEST',
+//     //   isEventDetailsLoading: true,
+//     // });
+//     // await API.events.find(`${eventID}/`).then((response) => {
+//     //   const { start_time, stop_time } = response;
+//     //   dispatch({
+//     //     type: UPDATE_EVENT_DETAILS,
+//     //     eventDetails: { ...response, start_time: start_time * 1000, stop_time: stop_time * 1000 },
+//     //     // type: 'SET_INITIAL_EVENT_DETAILS_SUCCESS',
+//     //     // initialEventDetails: response,
+//     //     // isEventDetailsLoading: false,
+//     //   });
+//     //   dispatch({ type: IS_UPDATE_POPUP_OPEN, isPopupOpen: true });
+//     //   dispatch({ type: EVENT_UPDATE_STATUS, eventUpdateStatus: null });
+//     // });
+//   };
+// }
 
-      dispatch({
-        type: UPDATE_EVENT_DETAILS,
-        eventDetails: { ...eventData, start_time: start_time * 1000, stop_time: stop_time * 1000 },
-      });
-      dispatch({ type: IS_UPDATE_POPUP_OPEN, isPopupOpen: false });
-      dispatch({ type: ADDING_NEW_EVENTS, isAddingEvent: false });
-      dispatch({ type: IS_UPDATE_POPUP_OPEN, isPopupOpen: false });
-      dispatch({ type: IS_CHANGING_EVENT_RANGE, isEditingEventRange: false });
-      dispatch({ type: UPDATE_EVENT_DETAILS, eventDetails: {} });
-    });
-  };
-}
+// export function setActiveEventAction(eventID) {
+//   return function (dispatch) {
+//     dispatch({ type: SET_ACTIVE_EVENT_ID, activeEventID: eventID });
 
-export function getEventComments() {
-  return async function (dispatch, getState) {
-    const currentEventDetails = getCurrentEventDetails(getState());
-    if (currentEventDetails) {
-      const evtComments = await API.comments.find(`?event_id=${currentEventDetails.id}`);
-      dispatch({ type: GET_EVENT_COMMENTS_SUCCESS, eventComments: evtComments });
-    }
-  };
-}
+//     dispatch(getEventDetailsAction(eventID));
+//     dispatch({ type: IS_UPDATE_POPUP_OPEN, isPopupOpen: true });
+//     dispatch(getEventComments());
+//   };
+// }
+
+// export function closeEventModal() {
+//   return async function (dispatch, getState) {
+//     const currentEventDetails = getCurrentEventDetails(getState());
+//     debugger;
+//     await API.events.find(`${currentEventDetails.id}/`).then((response) => {
+//       const { start_time, stop_time } = response;
+//       dispatch({
+//         type: UPDATE_EVENT_DETAILS,
+//         eventDetails: { ...response, start_time: start_time * 1000, stop_time: stop_time * 1000 },
+//       });
+//       dispatch({ type: IS_UPDATE_POPUP_OPEN, isPopupOpen: false });
+//       dispatch({ type: ADDING_NEW_EVENTS, isAddingEvent: false });
+//       dispatch({ type: IS_UPDATE_POPUP_OPEN, isPopupOpen: false });
+//       dispatch({ type: IS_CHANGING_EVENT_RANGE, isEditingEventRange: false });
+//     });
+//   };
+// }
+
+// export function getEventComments() {
+//   return async function (dispatch, getState) {
+//     const currentEventDetails = getCurrentEventDetails(getState());
+//     if (currentEventDetails) {
+//       await API.comments.find('', {}, { event_id: currentEventDetails.id }).then((response) => {
+//         dispatch({ type: GET_EVENT_COMMENTS_SUCCESS, eventComments: response });
+//       });
+//       // const evtComments = await API.comments.find('', {}, { event_id: currentEventDetails.id });
+//       // dispatch({ type: GET_EVENT_COMMENTS_SUCCESS, eventComments: evtComments });
+//     }
+//   };
+// }
 
 export function togglePredictionsAction(event) {
   return function (dispatch) {
@@ -122,97 +157,97 @@ export function toggleEventModeAction(mode) {
   };
 }
 
-export function updateEventDetailsAction(updatedEventDetails) {
-  return function (dispatch, getState) {
-    const isAddingNewEvent = getIsAddingNewEvents(getState());
-    let currentEventDetails = getCurrentEventDetails(getState());
-    if (isAddingNewEvent) {
-      currentEventDetails = getNewEventDetails(getState());
-    }
+// export function updateEventDetailsAction(updatedEventDetails) {
+//   return function (dispatch, getState) {
+//     const isAddingNewEvent = getIsAddingNewEvents(getState());
+//     let currentEventDetails = getCurrentEventDetails(getState());
+//     if (isAddingNewEvent) {
+//       currentEventDetails = getNewEventDetails(getState());
+//     }
 
-    dispatch({ type: UPDATE_EVENT_DETAILS, eventDetails: { ...currentEventDetails, ...updatedEventDetails } });
-  };
-}
+//     console.log(updatedEventDetails);
 
-export function isEditingEventRangeAction(eventState) {
-  return function (dispatch) {
-    dispatch({ type: IS_CHANGING_EVENT_RANGE, isEditingEventRange: eventState });
-  };
-}
+//     dispatch({ type: UPDATE_EVENT_DETAILS, eventDetails: { ...currentEventDetails, ...updatedEventDetails } });
+//   };
+// }
 
-export function saveEventDetailsAction() {
-  return async function (dispatch, getState) {
-    const updatedEventDetails = getUpdatedEventsDetails(getState());
-    const { comments } = updatedEventDetails;
-    const { start_time, stop_time, score, tag } = updatedEventDetails;
+// export function isEditingEventRangeAction(eventState) {
+//   return function (dispatch) {
+//     dispatch({ type: IS_CHANGING_EVENT_RANGE, isEditingEventRange: eventState });
+//   };
+// }
 
-    const start = start_time / 1000;
-    const stop = stop_time / 1000;
+// export function saveEventDetailsAction() {
+//   return async function (dispatch, getState) {
+//     const updatedEventDetails = getUpdatedEventsDetails(getState());
+//     const { comments } = updatedEventDetails;
+//     const { start_time, stop_time, score, tag } = updatedEventDetails;
 
-    const payload = {
-      start_time: start,
-      stop_time: stop,
-      score,
-      tag,
-      event_id: updatedEventDetails.id,
-    };
+//     const start = start_time / 1000;
+//     const stop = stop_time / 1000;
 
-    if (comments) {
-      const commentData = {
-        event_id: updatedEventDetails.id,
-        text: comments,
-        created_by: null, // no logged in user yet
-      };
+//     const payload = {
+//       start_time: start,
+//       stop_time: stop,
+//       score,
+//       tag,
+//       event_id: updatedEventDetails.id,
+//     };
 
-      // posting comments
-      await API.comments.create(commentData);
-      dispatch(getEventComments());
-      dispatch({ type: UPDATE_EVENT_DETAILS, eventDetails: { ...updatedEventDetails, comments: '' } });
-    }
+//     if (comments) {
+//       const commentData = {
+//         event_id: updatedEventDetails.id,
+//         text: comments,
+//         created_by: null, // no logged in user yet
+//       };
 
-    if (updatedEventDetails.id) {
-      await API.events
-        .update(updatedEventDetails.id, payload)
-        .then(async () => {
-          dispatch({
-            type: EVENT_UPDATE_STATUS,
-            eventUpdateStatus: 'success',
-          });
+//       // posting comments
+//       await API.comments.create(commentData);
+//       // dispatch(getEventComments());
+//       dispatch({ type: UPDATE_EVENT_DETAILS, eventDetails: { ...updatedEventDetails, comments: '' } });
+//     }
 
-          await API.events.all('events').then((response) => {
-            const { events } = response;
-            const datarun = getDatarunDetails(getState());
-            const filteredEvents = events.filter((event) => event.datarun === datarun.id);
+//     // if (updatedEventDetails.id) {
+//     //   await API.events
+//     //     .update(updatedEventDetails.id, payload)
+//     //     .then(async () => {
+//     //       dispatch({
+//     //         type: EVENT_UPDATE_STATUS,
+//     //         eventUpdateStatus: 'success',
+//     //       });
 
-            const selectedExperimentData = getSelectedExperimentData(getState());
-            const datarunIndex = selectedExperimentData.data.dataruns.findIndex(
-              (dataItem) => dataItem.id === datarun.id,
-            );
-            dispatch({
-              type: UPDATE_DATARUN_EVENTS,
-              newDatarunEvents: filteredEvents,
-              datarunIndex,
-            });
+//     //       await API.events.find(`?datarun_id=${updatedEventDetails.datarun}`).then((response: any) => {
+//     //         const { events } = response;
+//     //         const selectedExperimentData = getSelectedExperimentData(getState());
+//     //         const datarunIndex = selectedExperimentData.data.dataruns.findIndex(
+//     //           (datarunItem) => datarunItem.id === updatedEventDetails.datarun,
+//     //         );
 
-            setTimeout(function () {
-              dispatch({
-                type: EVENT_UPDATE_STATUS,
-                eventUpdateStatus: null,
-              });
-            }, 3000);
-          });
-        })
-        .catch(() => dispatch({ type: EVENT_UPDATE_STATUS, eventUpdateStatus: 'error' }));
-    } else {
-      dispatch(saveNewEventAction());
-    }
-  };
-}
+//     //         dispatch({
+//     //           type: UPDATE_DATARUN_EVENTS,
+//     //           newDatarunEvents: events,
+//     //           datarunIndex,
+//     //         });
+
+//     //         setTimeout(function () {
+//     //           dispatch({
+//     //             type: EVENT_UPDATE_STATUS,
+//     //             eventUpdateStatus: null,
+//     //           });
+//     //         }, 3000);
+//     //       });
+//     //     })
+//     //     .catch(() => dispatch({ type: EVENT_UPDATE_STATUS, eventUpdateStatus: 'error' }));
+//     // } else {
+//     //   dispatch(saveNewEventAction());
+//     // }
+//   };
+// }
 
 export function addNewEventAction(isAddingEvent) {
   return async function (dispatch) {
     dispatch({ type: UPDATE_EVENT_DETAILS, eventDetails: {} });
-    dispatch({ type: ADDING_NEW_EVENTS, isAddingEvent });
+    // dispatch({ type: ADDING_NEW_EVENTS, isAddingEvent });
   };
 }
 
@@ -238,12 +273,12 @@ export function openNewDetailsPopupAction() {
   };
 }
 
-export function openEventDetailsPopupAction() {
-  return function (dispatch) {
-    dispatch({ type: IS_CHANGING_EVENT_RANGE, isEditingEventRange: false });
-    dispatch({ type: IS_UPDATE_POPUP_OPEN, isPopupOpen: true });
-  };
-}
+// export function openEventDetailsPopupAction() {
+//   return function (dispatch) {
+//     dispatch({ type: IS_CHANGING_EVENT_RANGE, isEditingEventRange: false });
+//     dispatch({ type: IS_UPDATE_POPUP_OPEN, isPopupOpen: true });
+//   };
+// }
 
 export function saveNewEventAction() {
   return async function (dispatch, getState) {
@@ -274,7 +309,7 @@ export function saveNewEventAction() {
           });
           dispatch({ type: ADDING_NEW_EVENT_RESULT, result: 'success' });
           dispatch({ type: IS_UPDATE_POPUP_OPEN, isPopupOpen: false });
-          dispatch({ type: ADDING_NEW_EVENTS, isAddingEvent: false });
+          // dispatch({ type: ADDING_NEW_EVENTS, isAddingEvent: false });
           dispatch({ type: NEW_EVENT_DETAILS, newEventDetails: {} });
           dispatch({ type: SET_ACTIVE_EVENT_ID, activeEventID: null });
         });

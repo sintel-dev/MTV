@@ -6,23 +6,38 @@ import { faCheck, faExclamation } from '@fortawesome/free-solid-svg-icons';
 import PropTypes from 'prop-types';
 
 import {
-  updateEventDetailsAction,
-  saveEventDetailsAction,
-  isEditingEventRangeAction,
-  closeEventModal,
-  deleteEventAction,
+  // updateEventDetailsAction,
+  // saveEventDetailsAction,
+  // isEditingEventRangeAction,
+  // closeEventModal,
+  // deleteEventAction,
   updateNewEventDetailsAction,
 } from '../../../../model/actions/datarun';
 
 import {
-  getCurrentEventDetails,
+  // getCurrentEventDetails,
   getUpdatedEventsDetails,
-  getIsEditingEventRange,
-  getIsPopupOpen,
+  // getIsEditingEventRange,
+  // getIsPopupOpen,
   getNewEventDetails,
   getIsAddingNewEvents,
-  getUpdateEventStatus,
+  // getUpdateEventStatus,
 } from '../../../../model/selectors/datarun';
+
+import {
+  closeEventModal,
+  isEditingEventRangeAction,
+  updateEventDetailsAction,
+  saveEventAction,
+  deleteEventAction,
+} from '../../../../model/actions/event';
+import {
+  getIsPopupOpen,
+  getCurrentEventDetails,
+  getIsEditingEventRange,
+  getIsEventLoading,
+  getUpdatedEventStatus,
+} from '../../../../model/selectors/event';
 
 import Loader from '../../../Common/Loader';
 import { formatOptionLabel, grouppedOptions, RenderComments, selectedOption } from './eventUtils';
@@ -84,112 +99,115 @@ export class EventDetails extends Component {
     return (
       <div className={`events-wrapper ${isActive}`}>
         {currentEventDetails && (
-          <div>
-            <button type="button" className="close" onClick={closeEventDetails}>
-              x
-            </button>
-            <div className="event-row">
-              <label>Signal: </label>
-              <span>{currentEventDetails.signal}</span>
-            </div>
-            <div className="event-row">
-              <label>Severity Score:</label>
-              <span>{currentEventDetails.score}</span>
-            </div>
-            <div className="event-row">
-              <label>From:</label>
-              <span>{new Date(currentEventDetails.start_time).toUTCString()}</span>
-            </div>
-            <div className="event-row">
-              <label>To:</label>
-              <span>{new Date(currentEventDetails.stop_time).toUTCString()}</span>
-              <button type="button" className="edit danger" onClick={() => editEventRange(true)}>
-                Modify
+          <Loader isLoading={currentEventDetails.isEventLoading}>
+            <div>
+              <button type="button" className="close" onClick={closeEventDetails}>
+                x
               </button>
-            </div>
-            <div className="event-row">
-              {this.state.isTooltipVisible && renderInfoTooltip()}
-              <label htmlFor="sevScore">Severity Score: </label>
-              <input
-                type="text"
-                name="severity-score"
-                id="sevScore"
-                maxLength="2"
-                value={currentEventDetails.score}
-                onChange={(event) => updateEventScore(event)}
-                placeholder="-"
-              />
-              {/* eslint-disable-next-line jsx-a11y/mouse-events-have-key-events */}
-              <i
-                className="score-info"
-                onMouseOver={() => this.setState({ isTooltipVisible: true })}
-                onMouseLeave={() => this.setState({ isTooltipVisible: false })}
-              >
-                i
-              </i>
-            </div>
-            <div className="event-row select-holder">
-              <Select
-                onChange={(tag) => changeEventTag(tag)}
-                formatOptionLabel={formatOptionLabel}
-                options={grouppedOptions}
-                className="tag-select"
-                classNamePrefix="tag-options"
-                placeholder="Select a tag"
-                value={selectedOption(currentEventDetails.tag)}
-              />
-            </div>
-            <div className="event-row form-group">
-              <label htmlFor="comment">Comment</label>
-              <div className="comment-area">
-                <div className="comment-wrapper scroll-style">
-                  {(!isAddingNewEvent && (
-                    <Loader isLoading={currentEventDetails.isCommentsLoading}>
-                      <RenderComments comments={currentEventDetails.eventComments.comments} />
-                    </Loader>
-                  )) || <p>Comments can be added after saving event</p>}
-                </div>
-                <textarea
-                  id="comment"
-                  placeholder="Enter your comment..."
-                  value={updatedEventDetails.comments}
-                  onChange={(event) => updateEventDetails({ comments: event.target.value })}
-                  readOnly={isAddingNewEvent}
+              <div className="event-row">
+                <label>Signal: </label>
+                <span>{currentEventDetails.signal}</span>
+              </div>
+              <div className="event-row">
+                <label>Severity Score:</label>
+                <span>{currentEventDetails.score}</span>
+              </div>
+              <div className="event-row">
+                <label>From:</label>
+                <span>{new Date(currentEventDetails.start_time).toUTCString()}</span>
+              </div>
+              <div className="event-row">
+                <label>To:</label>
+                <span>{new Date(currentEventDetails.stop_time).toUTCString()}</span>
+                <button type="button" className="edit danger" onClick={() => editEventRange(true)}>
+                  Modify
+                </button>
+              </div>
+              <div className="event-row">
+                {this.state.isTooltipVisible && renderInfoTooltip()}
+                <label htmlFor="sevScore">Severity Score: </label>
+                <input
+                  type="text"
+                  name="severity-score"
+                  id="sevScore"
+                  maxLength="2"
+                  value={currentEventDetails.score}
+                  onChange={(event) => updateEventScore(event)}
+                  placeholder="-"
+                />
+                {/* eslint-disable-next-line jsx-a11y/mouse-events-have-key-events */}
+                <i
+                  className="score-info"
+                  onMouseOver={() => this.setState({ isTooltipVisible: true })}
+                  onMouseLeave={() => this.setState({ isTooltipVisible: false })}
+                >
+                  i
+                </i>
+              </div>
+              <div className="event-row select-holder">
+                <Select
+                  onChange={(tag) => changeEventTag(tag)}
+                  formatOptionLabel={formatOptionLabel}
+                  options={grouppedOptions}
+                  className="tag-select"
+                  classNamePrefix="tag-options"
+                  placeholder="Select a tag"
+                  value={selectedOption(currentEventDetails.tag)}
                 />
               </div>
-            </div>
-            <div className="event-row">
-              <ul className="btn-wrapper">
-                {!isAddingNewEvent && (
+              <div className="event-row form-group">
+                <label htmlFor="comment">Comment</label>
+                <div className="comment-area">
+                  <div className="comment-wrapper scroll-style">
+                    {(!isAddingNewEvent && (
+                      // <Loader isLoading={currentEventDetails.isCommentsLoading}>
+                      <RenderComments eventComments={currentEventDetails.comments} />
+                      // </Loader>
+                    )) || <p>Comments can be added after saving event</p>}
+                  </div>
+                  <textarea
+                    id="comment"
+                    placeholder="Enter your comment..."
+                    // @TODO - handle comments with eventDetails not updatedEventDetails
+                    value={updatedEventDetails.commentsDraft}
+                    onChange={(event) => updateEventDetails({ commentsDraft: event.target.value })}
+                    readOnly={isAddingNewEvent}
+                  />
+                </div>
+              </div>
+              <div className="event-row">
+                <ul className="btn-wrapper">
+                  {!isAddingNewEvent && (
+                    <li>
+                      <button type="button" className="danger" onClick={deleteEvent}>
+                        Delete
+                      </button>
+                    </li>
+                  )}
                   <li>
-                    <button type="button" className="danger" onClick={deleteEvent}>
-                      Delete
+                    <button type="button" onClick={saveEventDetails}>
+                      Save
                     </button>
                   </li>
-                )}
-                <li>
-                  <button type="button" onClick={saveEventDetails}>
-                    Save
-                  </button>
-                </li>
-                {eventUpdateStatus !== null && (
-                  <li>
-                    {eventUpdateStatus === 'success' ? (
-                      <p className="success">
-                        <FontAwesomeIcon icon={faCheck} />
-                        Event successfuly saved
-                      </p>
-                    ) : (
-                      <p className="error">
-                        <FontAwesomeIcon icon={faExclamation} />
-                        Event update error
-                      </p>
-                    )}
-                  </li>
-                )}
-              </ul>
+                  {eventUpdateStatus !== null && (
+                    <li>
+                      {eventUpdateStatus === 'success' ? (
+                        <p className="success">
+                          <FontAwesomeIcon icon={faCheck} />
+                          Event successfuly saved
+                        </p>
+                      ) : (
+                        <p className="error">
+                          <FontAwesomeIcon icon={faExclamation} />
+                          Event update error
+                        </p>
+                      )}
+                    </li>
+                  )}
+                </ul>
+              </div>
             </div>
-          </div>
+          </Loader>
         )}
       </div>
     );
@@ -211,12 +229,13 @@ export default connect(
     isPopupOpen: getIsPopupOpen(state),
     newEventDetails: getNewEventDetails(state),
     isAddingNewEvent: getIsAddingNewEvents(state),
-    eventUpdateStatus: getUpdateEventStatus(state),
+    eventUpdateStatus: getUpdatedEventStatus(state),
+    isEventLoading: getIsEventLoading(state),
   }),
   (dispatch) => ({
     closeEventDetails: () => dispatch(closeEventModal()),
     updateEventDetails: (details) => dispatch(updateEventDetailsAction(details)),
-    saveEventDetails: () => dispatch(saveEventDetailsAction()),
+    saveEventDetails: () => dispatch(saveEventAction()),
     editEventRange: (eventState) => dispatch(isEditingEventRangeAction(eventState)),
     deleteEvent: () => dispatch(deleteEventAction()),
     updateNewEventDetails: (details) => dispatch(updateNewEventDetailsAction(details)),

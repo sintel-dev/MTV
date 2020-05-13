@@ -4,9 +4,13 @@ import * as d3 from 'd3';
 import { RootState } from '../../../model/types';
 import { FocusChartConstants, colorSchemes } from './Constants';
 import EventDetails from './EventDetails';
-import AddEvent from './FocusChartEvents/AddEvent';
+import EventModal from './FocusChartEvents/EventModal';
 import ShowErrors from './ShowErrors';
-import { setTimeseriesPeriod, setActiveEventAction } from '../../../model/actions/datarun';
+import {
+  setTimeseriesPeriod,
+  // getEventDetailsAction
+} from '../../../model/actions/datarun';
+import { getEventDetailsAction } from '../../../model/actions/event';
 import { formatDate } from '../../../model/utils/Utils';
 import { getWrapperSize, getSelectedRange } from './FocusChartUtils';
 import ZoomControls from './ZoomControls';
@@ -19,8 +23,10 @@ import {
   getReviewPeriod,
   getZoomCounter,
   getZoomOnClickDirection,
-  getIsEditingEventRange,
+  // getIsEditingEventRange,
 } from '../../../model/selectors/datarun';
+
+import { getIsEditingEventRange } from '../../../model/selectors/event';
 import './FocusChart.scss';
 
 const { TRANSLATE_LEFT, CHART_MARGIN, MIN_VALUE, MAX_VALUE } = FocusChartConstants;
@@ -161,7 +167,7 @@ export class FocusChart extends Component<Props, State> {
   }
 
   renderEvents(currentEvent) {
-    const { dataRun, periodRange, setActiveEvent } = this.props;
+    const { dataRun, periodRange, getEventDetails } = this.props;
     const { timeSeries } = dataRun;
     const { height } = this.state;
 
@@ -182,6 +188,7 @@ export class FocusChart extends Component<Props, State> {
     }
 
     const commentWidth = Math.max(xCoord(timeSeries[stopIndex][0]) - xCoord(timeSeries[startIndex][0]));
+
     const translateComment = xCoord(timeSeries[startIndex][0]);
     const tagColor = colorSchemes[currentEvent[4]] || colorSchemes.Untagged;
 
@@ -193,7 +200,7 @@ export class FocusChart extends Component<Props, State> {
         className="line-highlight"
         key={currentEvent[3]}
         id={`_${currentEvent[3]}`}
-        onClick={() => setActiveEvent(currentEvent[3])}
+        onClick={() => getEventDetails(currentEvent[3])}
         onMouseMove={(evt) => {
           this.setState({
             isTooltipVisible: true,
@@ -349,7 +356,7 @@ export class FocusChart extends Component<Props, State> {
             <g className="axis axis--x" transform={`translate(0, ${height - 3.5 * CHART_MARGIN})`} />
             <g className="axis axis--y" />
           </g>
-          <AddEvent />
+          <EventModal />
         </g>
       )
     );
@@ -387,7 +394,7 @@ const mapState = (state: RootState) => ({
 
 const mapDispatch = (dispatch: Function) => ({
   setPeriodRange: (period) => dispatch(setTimeseriesPeriod(period)),
-  setActiveEvent: (eventID) => dispatch(setActiveEventAction(eventID)),
+  getEventDetails: (eventID) => dispatch(getEventDetailsAction(eventID)),
 });
 
 export default connect<StateProps, DispatchProps, {}, RootState>(mapState, mapDispatch)(FocusChart);

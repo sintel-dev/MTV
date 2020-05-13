@@ -2,16 +2,15 @@ import { EventDataType } from './event';
 
 export const SELECT_DATARUN = 'SELECT_DATARUN';
 export const SET_TIMESERIES_PERIOD = 'SET_TIMESERIES_PERIOD';
-export const UPDATE_EVENT_DETAILS = 'UPDATE_EVENT_DETAILS';
-export const IS_CHANGING_EVENT_RANGE = 'IS_CHANGING_EVENT_RANGE';
+// export const UPDATE_EVENT_DETAILS = 'UPDATE_EVENT_DETAILS';
+// export const IS_CHANGING_EVENT_RANGE = 'IS_CHANGING_EVENT_RANGE';
 export const SET_ACTIVE_EVENT_ID = 'SET_ACTIVE_EVENT_ID';
 export const TOGGLE_PREDICTION_MODE = 'TOGGLE_PREDICTION_MODE';
 export const SAVE_EVENT_DETAILS = 'SAVE_EVENT_DETAILS';
-export const IS_UPDATE_POPUP_OPEN = 'IS_UPDATE_POPUP_OPEN';
-export const ADDING_NEW_EVENTS = 'ADDING_NEW_EVENTS';
+// export const ADDING_NEW_EVENTS = 'ADDING_NEW_EVENTS';
 export const NEW_EVENT_DETAILS = 'NEW_EVENT_DETAILS';
 export const ADDING_NEW_EVENT_RESULT = 'ADDING_NEW_EVENT_RESULT';
-export const UPDATE_DATARUN_EVENTS = 'UPDATE_DATARUN_EVENTS';
+// export const UPDATE_DATARUN_EVENTS = 'UPDATE_DATARUN_EVENTS';
 export const SET_FILTER_TAGS = 'SET_FILTER_TAGS';
 export const ZOOM_ON_CLICK = 'ZOOM_ON_CLICK';
 export const TOGGLE_ZOOM = 'TOGGLE_ZOOM';
@@ -19,7 +18,7 @@ export const SET_CURRENT_PERIOD_LEVEL = 'SET_CURRENT_PERIOD_LEVEL';
 export const REVIEW_PERIOD_LEVEL = 'REVIEW_PERIOD_LEVEL';
 export const TOGGLE_EVENT_MODE = 'TOGGLE_EVENT_MODE';
 export const UPLOAD_JSON_EVENTS = 'UPLOAD_JSON_EVENTS';
-export const EVENT_UPDATE_STATUS = 'EVENT_UPDATE_STATUS';
+// export const EVENT_UPDATE_STATUS = 'EVENT_UPDATE_STATUS';
 
 export type SelectDatarunAction = {
   type: typeof SELECT_DATARUN;
@@ -48,7 +47,7 @@ export type DatarunState = {
   eventComments: Array<any>;
   isPredictionEnabled: boolean;
   eventDetails: object;
-  isEditingEventRange: boolean;
+  // isEditingEventRange: boolean;
   isEditingEventRangeDone: boolean;
   isPopupOpen: boolean;
   isAddingEvent: boolean;

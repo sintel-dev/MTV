@@ -30,9 +30,9 @@ export const formatOptionLabel = ({ label, icon }) => (
   </div>
 );
 
-export const RenderComments = (eventComments) =>
-  eventComments.comments && eventComments.comments.length ? (
-    eventComments.comments.map((comment) => (
+export const RenderComments = ({ eventComments }) =>
+  eventComments && eventComments.length ? (
+    eventComments.map((comment) => (
       <div key={comment.id} className="comment">
         <p>
           <span>{(comment.created_by && comment.created_by) || 'Anonymous'}: </span> {comment.text}
