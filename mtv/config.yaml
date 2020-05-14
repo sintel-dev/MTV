@@ -43,5 +43,5 @@ GOOGLE_DISCOVERY_URL: 'https://accounts.google.com/.well-known/openid-configurat
 # Private Keys
 USE_SYS_ENV_KEYS: False
 MAIL_PASSWORD: '8vn1las1lsh;]q1vn'
-GOOGLE_CLIENT_SECRET: 'BfGdYei31fvroh_mpUQzxdM_'
-AUTH_KEY: “YT#XA&00ALKlkjG)JAN<[XC”
+GOOGLE_CLIENT_SECRET: '6Y3tUZbPCZHM9okPLbWB_OXK'
+AUTH_KEY: 'YT#XA&00ALKlkjG)JAN<[XC'
