@@ -20,6 +20,28 @@ export const dataRun = {
     [50, 500, 0.34263584276549913, '5da802e1abc5668935743a08', null],
     [150, 200, 0.4277890585414085, '5da802e1abc5668935743a09', null],
   ],
+  period: [
+    {
+      bins: [0, 0, 0, 0, 0],
+      counts: [0, 0, 0, 0, 0],
+      level: 'year',
+      name: 2008,
+      children: [
+        {
+          level: 'month',
+          name: 'Jan',
+          bins: [0, 0, 0, 0, 0],
+          counts: [0, 0, 0, 0, 0],
+          children: {
+            level: 'day',
+            name: 1,
+            bins: [0, 0, 0, 0, 0],
+            counts: [0, 0, 0, 0, 0],
+          },
+        },
+      ],
+    },
+  ],
   maxTimeSeries,
   timeseriesPred: timeseriesPredictions,
 };

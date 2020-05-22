@@ -1,0 +1,46 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Sidebar Unit tests ->  Should Render without crashing 1`] = `
+<div
+  className="right-sidebar"
+>
+  <Loader
+    isLoading={false}
+  >
+    <Component />
+    <div
+      className="data-wrapper"
+      id="dataWrapper"
+    >
+      <div
+        className="wrapper-container scroll-style"
+        style={
+          Object {
+            "height": "200px",
+          }
+        }
+      >
+        <svg
+          height={NaN}
+          id="multiPeriodChart"
+        >
+          <defs>
+            <radialGradient
+              id="blueGradient"
+            >
+              <stop
+                offset="0"
+                stopColor="#B2C1FF"
+              />
+              <stop
+                offset="100"
+                stopColor="rgba(216,216,216,0)"
+              />
+            </radialGradient>
+          </defs>
+        </svg>
+      </div>
+    </div>
+  </Loader>
+</div>
+`;

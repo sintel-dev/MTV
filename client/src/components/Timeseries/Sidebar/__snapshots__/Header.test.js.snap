@@ -1,0 +1,57 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Testing Sidebar header component Should render without crashing 1`] = `
+<div
+  className="period-control"
+>
+  <SidebarHeading
+    signalName="S-1"
+  />
+  <Component
+    selectedPeriodLevel={Object {}}
+  />
+  <div>
+    <div
+      className="period-info"
+    >
+      <p>
+        YY/MM
+      </p>
+    </div>
+    <ul
+      className="period-filter"
+    >
+      <li>
+        <button
+          className=""
+          onClick={[Function]}
+          type="button"
+        >
+          Year
+        </button>
+      </li>
+      <li>
+        <button
+          className=""
+          onClick={[Function]}
+          type="button"
+        >
+          Month
+        </button>
+      </li>
+      <li>
+        <button
+          className=""
+          onClick={[Function]}
+          type="button"
+        >
+          Day
+        </button>
+      </li>
+    </ul>
+  </div>
+  <div
+    className="clear"
+  />
+</div>
+`;

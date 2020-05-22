@@ -11,6 +11,8 @@ describe('Testing experiments reducer', () => {
       selectedExperimentID: null,
       isExperimentsLoading: true,
       experimentsList: [],
+      experimentDetails: [],
+      isExperimentDataLoading: true,
     });
   });
 
@@ -24,6 +26,8 @@ describe('Testing experiments reducer', () => {
       selectedExperimentID: null,
       isExperimentsLoading: false,
       experimentsList: experiments,
+      experimentDetails: [],
+      isExperimentDataLoading: true,
     });
   });
 
@@ -37,6 +41,8 @@ describe('Testing experiments reducer', () => {
       selectedExperimentID: null,
       isExperimentsLoading: false,
       experimentsList: [],
+      experimentDetails: [],
+      isExperimentDataLoading: true,
     });
   });
 });
