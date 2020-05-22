@@ -69,7 +69,7 @@ const SidebarHeading = ({ signalName, toggleEvent, isEventModeEnabled, toggleTim
   </div>
 );
 
-const Header = ({
+export const Header = ({
   dataRun,
   setReviewRange,
   reviewRange,

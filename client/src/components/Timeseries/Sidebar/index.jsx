@@ -15,7 +15,7 @@ import { getWrapperSize, drawArc, getDataScale } from './SidebarUtils';
 import { setPeriodLevelAction, reviewPeriodAction } from '../../../model/actions/datarun';
 import './Sidebar.scss';
 
-class Sidebar extends Component {
+export class Sidebar extends Component {
   constructor(...props) {
     super(...props);
     this.state = {
