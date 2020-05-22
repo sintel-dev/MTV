@@ -108,8 +108,6 @@ export function selectExperiment(history: any, experimentID: string) {
       selectedExperimentID: experimentID,
     };
 
-    dispatch(action);
-
     const fetchExpAction = {
       type: FETCH_EXPERIMENT_DATA,
       promise: API.experiments.find(`${experimentID}/`),
