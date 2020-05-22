@@ -35,7 +35,7 @@ type StateProps = ReturnType<typeof mapState>;
 type DispatchProps = ReturnType<typeof mapDispatch>;
 type ChartProps = StateProps & DispatchProps & Props;
 
-class DrawChart extends Component<ChartProps, ChartState> {
+export class DrawChart extends Component<ChartProps, ChartState> {
   private brush: any;
 
   constructor(props) {
@@ -171,12 +171,17 @@ class DrawChart extends Component<ChartProps, ChartState> {
 
     const zoomValue = d3.zoomIdentity.scale(focusWidth / (eventRange[1] - eventRange[0])).translate(-eventRange[0], 0);
 
+    const { xCoord } = this.getScale();
+    const xCoordCopy = xCoord.copy();
+    const timeStamp = zoomValue.rescaleX(xCoordCopy).domain();
+
     const selectedRange = {
       eventRange,
       zoomValue,
+      timeStamp: [new Date(timeStamp[0]).getTime(), new Date(timeStamp[1]).getTime()],
     };
 
-    if(d3.event && d3.event.sourceEvent.type !== 'zoom') {
+    if (d3.event && d3.event.sourceEvent.type !== 'zoom') {
       this.initTooltip();
       this.updateTooltipCoords();
     }
@@ -236,7 +241,7 @@ class DrawChart extends Component<ChartProps, ChartState> {
     );
   }
 
-  initTooltip(){
+  initTooltip() {
     const { eventRange } = this.props.selectedPeriod;
     const rootTooltip = document.getElementById('brushTooltip');
     const { xCoord } = this.getScale();
@@ -269,11 +274,11 @@ class DrawChart extends Component<ChartProps, ChartState> {
   }
 
   updateTooltipCoords() {
-    const {clientX, clientY } = d3.event.sourceEvent ? d3.event.sourceEvent : d3.event;
+    const { clientX, clientY } = d3.event.sourceEvent ? d3.event.sourceEvent : d3.event;
 
     const tooltip = document.getElementById('brushTooltip');
 
-    if(clientX !== undefined && clientY !== undefined) {
+    if (clientX !== undefined && clientY !== undefined) {
       tooltip.setAttribute('style', `left: ${clientX + 10}px; top: ${clientY + 10}px`);
     }
   }
@@ -282,7 +287,6 @@ class DrawChart extends Component<ChartProps, ChartState> {
     document.getElementById('brushTooltip').classList.remove('active');
     document.getElementById('brushTooltip').innerHTML = '';
   }
-
 
   render() {
     const { width, height } = this.state;
@@ -316,7 +320,8 @@ const mapState = (state: RootState) => ({
 
 const mapDispatch = (dispatch: Function) => ({
   onSelectDatarun: (datarunID: string) => dispatch(selectDatarun(datarunID)),
-  onChangePeriod: (period: { eventRange: Array<number>; zoomValue: object }) => dispatch(setTimeseriesPeriod(period)),
+  onChangePeriod: (period: { eventRange: Array<number>; zoomValue: object; timeStamp: Array<number> }) =>
+    dispatch(setTimeseriesPeriod(period)),
 });
 
 export default connect<StateProps, DispatchProps, {}, RootState>(mapState, mapDispatch)(DrawChart);
