@@ -27,7 +27,7 @@ const getSignalNum = (projectName: string) => {
   }
 };
 
-export const getProjectsList = createSelector([getExperimentsData], (experimentsData) => {
+export const getProjectsList = createSelector([getExperimentsData, getPipelinesData], (experimentsData, pipelinesData) => {
   const groupedExperiments = experimentsData.experimentsList.reduce((result, experiment) => {
     if (!result[experiment.project]) {
       result[experiment.project] = [];
@@ -36,6 +36,10 @@ export const getProjectsList = createSelector([getExperimentsData], (experiments
     return result;
   }, {});
 
+  const countPipelines = (projectName, pipelinesData) => {
+    return pipelinesData.pipelineList.length;
+  }
+
   return Object.keys(groupedExperiments).reduce(
     (projects, projectName) =>
       projects.concat({
@@ -43,7 +47,7 @@ export const getProjectsList = createSelector([getExperimentsData], (experiments
         experiments: groupedExperiments[projectName],
         name: projectName,
         // @TODO - investigate if it's really needed
-        // uniquePipelineNum: countPipelines(projectName),
+        uniquePipelineNum: countPipelines(projectName, pipelinesData),
         signalNum: getSignalNum(projectName),
       }),
     [],

@@ -1,6 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUpload, faDownload } from '@fortawesome/free-solid-svg-icons';
 import Select from 'react-select';
 import { togglePredictionsAction, addNewEventAction, filterEventsByTagAction, cleanMatchedEvents } from '../../../model/actions/datarun';
 import { isPredictionEnabled, getIsAddingNewEvents } from '../../../model/selectors/datarun';
@@ -72,6 +74,15 @@ const FocusChartControls = props => (
         onChange={props.filterByTags}
       />
     </div>
+    <div className="json-btn-group">
+      <button type="button" onClick={() => document.getElementById('myJSONFile').click() } title="Load json file">
+        <span><FontAwesomeIcon icon={faUpload}/></span>
+      </button>
+      <input type="file" id="myJSONFile" name="filename"></input>
+      <button type="button" onClick={() => console.log('2') } title="Download json file">
+        <span><FontAwesomeIcon icon={faDownload}/></span>
+      </button>
+    </div> 
   </div>
 );
 

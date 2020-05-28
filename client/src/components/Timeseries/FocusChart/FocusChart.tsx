@@ -247,6 +247,8 @@ class FocusChart extends Component<Props, State> {
         id={`_${currentEvent[3]}`}
         onClick={() => setActiveEvent(currentEvent[3])}
         onMouseMove={(evt) => {
+          evt.stopPropagation();
+          evt.preventDefault();
           this.setState({
             isTooltipVisible: true,
             eventData: {
@@ -256,8 +258,13 @@ class FocusChart extends Component<Props, State> {
               stopDate,
             },
           });
+          
         }}
-        onMouseLeave={() => this.setState({ isTooltipVisible: false })}
+        onMouseLeave={(evt) => {
+          evt.stopPropagation();
+          evt.preventDefault();
+          this.setState({ isTooltipVisible: false });
+        }}
       >
         <path className="evt-highlight" d={this.drawLine(event)} />
         {displayArea && 
@@ -332,6 +339,7 @@ class FocusChart extends Component<Props, State> {
     };
 
     this.props.setPeriodRange(periodRange);
+    // d3.event.stopPropagation();
   }
 
   toggleZoom() {
@@ -381,7 +389,7 @@ class FocusChart extends Component<Props, State> {
     const { eventWindows, timeSeries, timeseriesPred } = dataRun;
     const focusChartWidth = width - TRANSLATE_LEFT - 2 * CHART_MARGIN;
 
-    let topSimilarEvents = similarEvents.slice(0, 8);
+    let topSimilarEvents = similarEvents.slice(0, 6);
     return (
       width > 0 &&
       height > 0 && (

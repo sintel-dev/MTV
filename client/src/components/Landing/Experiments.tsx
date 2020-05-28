@@ -117,15 +117,16 @@ const Experiment: React.FC<renderExperimentProps> = ({
   const eventCounts = countDatarunEvents(experiment);
   return (
     <div className={`cell ${activeClass}`} key={index} onClick={() => history.push(`/experiment/${experiment.id}`)}>
-      <h3>
-        #{index + 1} {experiment.dataset}_{experiment.pipeline}
-      </h3>
+      <label>
+        #{index + 1}
+        {/* #{index + 1} {experiment.dataset}_{experiment.pipeline} */}
+      </label>
       <div className="item-data">
         <ul>
-          <li>Signals: {experiment.dataruns.length}</li>
-          <li>Events: {eventCounts}</li>
-          <li>DC: {experiment.date_creation.substring(0, 10)}</li>
-          <li>By: {`${experiment.created_by}`}</li>
+          <li>{experiment.dataruns.length} signals</li>
+          <li>{eventCounts} events found</li>
+          <li>created on {experiment.date_creation.substring(0, 10)}</li>
+          <li>by {`${experiment.created_by}`}</li>
         </ul>
         <Matrix experiment={experiment} tagStats={tagStats} scale={matrixScale} />
       </div>

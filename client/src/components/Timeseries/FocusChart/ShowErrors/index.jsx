@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import { getWrapperSize, getScale } from '../FocusChartUtils';
 import './ShowErrors.scss';
 import { getSelectedPeriodRange, getDatarunDetails } from '../../../../model/selectors/datarun';
+import {FocusChartConstants} from '../Constants';
 
 class ShowErrors extends Component {
   componentDidMount() {
@@ -43,7 +44,9 @@ class ShowErrors extends Component {
   drawPeriod() {
     const { chart, width, height } = this.state;
     const { area } = this.getArea();
-    const errWrapper = chart.append('g').attr('class', 'err-group');
+    const errWrapper = chart.append('g')
+      .attr('class', 'err-group')
+      .attr('transform', `translate(${FocusChartConstants.TRANSLATE_LEFT} ,0)`);
     chart.attr('width', width).attr('height', height);
 
     errWrapper
@@ -59,9 +62,9 @@ class ShowErrors extends Component {
       .append('linearGradient')
       .attr('id', 'waweGradient')
       .attr('x1', '0%')
-      .attr('x2', '100%')
-      .attr('y1', '0%')
-      .attr('y2', '0');
+      .attr('x2', '0%')
+      .attr('y1', '100%')
+      .attr('y2', '0%');
 
     gradient
       .append('stop')

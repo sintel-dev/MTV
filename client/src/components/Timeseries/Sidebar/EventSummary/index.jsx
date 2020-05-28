@@ -52,15 +52,16 @@ const renderTagEventsPerMonth = (isPeriodLevelSelected, month, monthEvents) => {
     return tagSeq.map(currentTag => <td key={currentTag}>-</td>);
   }
   const currentMonthEvents = monthEvents.months[fromMonthToIndex(month)];
-  return (
-    currentMonthEvents &&
-    tagSeq.map(currentTag => <td key={currentTag}>{countEventsPerTag(currentTag, currentMonthEvents.events)}</td>)
-  );
+  if (currentMonthEvents) {
+    return tagSeq.map(currentTag => <td key={currentTag}>{countEventsPerTag(currentTag, currentMonthEvents.events)}</td>);
+  } else {
+    return tagSeq.map(currentTag => <td key={currentTag}>0</td>);
+  }
+  
 };
 
 const handleColHover = () => {
   const td = document.querySelectorAll('.summary-details td');
-
   td.forEach(currentTd => {
     currentTd.addEventListener('mouseover', function() {
       const index = this.cellIndex + 1;
@@ -93,12 +94,15 @@ class EventSummary extends Component {
     });
   }
 
+  componentDidMount() {
+    handleColHover();
+  }
+
   render() {
     const { selectedPeriodLevel, grouppedEvents, signalName } = this.props;
     const isPeriodLevelSelected = Object.keys(selectedPeriodLevel).length !== 0;
     const activeSummary = this.state.isSummaryVisible ? 'active' : '';
     const buttonText = this.state.isSummaryVisible ? 'HIDE' : 'SHOW';
-    console.log(selectedPeriodLevel);
     return (
       <div className="event-summary">
         <div className="event-header">
@@ -115,7 +119,6 @@ class EventSummary extends Component {
           <div className="clear" />
         </div>
         <div className={`summary-details ${activeSummary}`}>
-          {handleColHover()}
           <table>
             <tbody>
               <tr className="row-light">

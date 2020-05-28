@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import Loader from '../Common/Loader';
-import { getPipelinesData, getSelectedPipeline } from '../../model/selectors/projects';
+import { getPipelinesData, getSelectedPipeline, getExperimentsData } from '../../model/selectors/projects';
 import { selectPipeline } from '../../model/actions/landing';
 import { RootState, PipelineDataType } from '../../model/types';
 
@@ -10,7 +10,7 @@ type DispatchProps = ReturnType<typeof mapDispatch>;
 type Props = StateProps & DispatchProps;
 
 const Pipelines: React.FC<Props> = props => {
-  const { onSelectPipeline, selectedPipeline, pipelinesData } = props;
+  const { onSelectPipeline, selectedPipeline, pipelinesData, experimentsData } = props;
   const { pipelineList, isPipelinesLoading } = pipelinesData;
 
   return (
@@ -20,7 +20,7 @@ const Pipelines: React.FC<Props> = props => {
         <Loader isLoading={isPipelinesLoading}>
           {pipelineList.length ? (
             pipelineList.map((pipeline, index) =>
-              renderPipeline({ pipeline, index, onSelectPipeline, selectedPipeline }),
+              renderPipeline({ pipeline, index, onSelectPipeline, selectedPipeline, experimentsData }),
             )
           ) : (
             <p>No pipelines have been found</p>
@@ -37,18 +37,24 @@ type renderPipelineProps = {
   index: number;
   onSelectPipeline: typeof props.onSelectPipeline;
   selectedPipeline: typeof props.selectedPipeline;
+  experimentsData: typeof props.experimentsData
 };
 
-const renderPipeline: React.FC<renderPipelineProps> = ({ pipeline, index, onSelectPipeline, selectedPipeline }) => {
+const renderPipeline: React.FC<renderPipelineProps> = ({ pipeline, index, onSelectPipeline, selectedPipeline, experimentsData }) => {
   const activeClass = selectedPipeline === pipeline.name ? 'active' : '';
 
+  const eNum = experimentsData.experimentsList.filter((exp) => exp.pipeline === pipeline.name).length;
   return (
     <div className={`cell ${activeClass}`} key={index} onClick={() => onSelectPipeline(pipeline.name)}>
       <h3>{pipeline.name}</h3>
       <div className="item-data">
         <ul>
-          <li>DC: {pipeline.insert_time.substring(0, 10)}</li>
-          <li>By: {pipeline.created_by || 'null'}</li>
+          <li>{pipeline.mlpipeline.primitives.length} primitives</li>
+          <li>created on {pipeline.insert_time.substring(0, 10)}</li>
+          <li>by {pipeline.created_by || 'null'}</li>
+        </ul>
+        <ul className="last">
+          <li> {eNum} experiments</li>
         </ul>
       </div>
     </div>
@@ -58,6 +64,7 @@ const renderPipeline: React.FC<renderPipelineProps> = ({ pipeline, index, onSele
 const mapState = (state: RootState) => ({
   pipelinesData: getPipelinesData(state),
   selectedPipeline: getSelectedPipeline(state),
+  experimentsData: getExperimentsData(state)
 });
 
 const mapDispatch = (dispatch: Function) => ({

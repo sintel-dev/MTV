@@ -1,9 +1,17 @@
 
 from sklearn.metrics.pairwise import euclidean_distances
+from sklearn.preprocessing import MinMaxScaler
 from dtw import dtw as dtwc
 from tqdm import tqdm
 import numpy as np
 # note: this algorithm is O(n^4)! (since dtw is O(n^3))
+
+def minmax(a):
+    max_a = a.max()
+    min_a = a.min()
+    for i in range(a.shape[0]):
+        a[i] = (a[i] - min_a) * (max_a - min_a)
+    return a
 
 
 def euclidean(df, start_ts, end_ts):
@@ -23,11 +31,15 @@ def euclidean(df, start_ts, end_ts):
     def euclidean_dist(v1, v2):
         return sum((p-q)**2 for p, q in zip(v1, v2)) ** .5
 
+    scaler = MinMaxScaler()
     x = np.array(segment['value'].values)
+    x_ = minmax(x)
     for i in tqdm(range(0, len(df) - window)):
     # for i in range(0, len(df) - window):
         y = np.array(df.iloc[i:i + window]['value'].values)
-        dist = euclidean_dist(x, y)
+        y_ = minmax(y)
+        dist = euclidean_dist(x_, y_)
+        # dist = euclidean_dist(x, y)
 
         found.append({"id": i, "cost": dist})
 

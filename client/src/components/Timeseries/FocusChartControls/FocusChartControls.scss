@@ -13,6 +13,28 @@
     .tag-wrapper{
         float: right
     }
+
+    .json-btn-group {
+        float: right;
+        margin-right: 10px;
+        input {
+            display: none;
+        }
+        button {
+            margin-right: 5px;
+            background-color: #2C3034;
+            border-color: rgba(151, 151, 151, 0.7);
+            z-index: 102;
+            cursor: pointer;
+            width: 40px;
+            height: 33px;
+            font-size: 16px;
+            color: white;
+            &:hover {
+                background-color: #50575D;
+            }
+        }
+    }
 }
 .switch-control{
     float: left;

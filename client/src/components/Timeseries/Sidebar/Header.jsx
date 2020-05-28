@@ -42,7 +42,7 @@ const Header = ({ dataRun, setReviewRange, reviewRange, selectedPeriodLevel, isE
               onChange={ () => {relativeScale = !relativeScale; changeScale(relativeScale);}}
             />
             <span className="switch" />
-            Relative scale
+            Relative Scale
           </label>
         </div>
       </div>

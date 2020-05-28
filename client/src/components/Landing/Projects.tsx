@@ -37,10 +37,13 @@ const renderProject: React.FC<renderProjectProps> = ({ project, index, onSelectP
   return (
     <div className={`cell ${activeClass}`} key={index} onClick={() => onSelectProject(project.name)}>
       <h3>{project.name}</h3>
+      {/* <h3>S64</h3> */}
       <div className="item-data">
         <ul>
-          <li>{project.signalNum} Signals</li>
-          <li>{project.uniquePipelineNum} unique pipelines</li>
+          <li> {project.name==='S64' ? 156 : 168} signals</li>
+          {/* <li>{project.signalNum} signals</li> */}
+          <li> {project.name==='S64' ? project.uniquePipelineNum : 1} unique pipelines</li>
+          <li>from SES</li>
         </ul>
         <ul className="last">
           <li>{project.experimentNum} experiments</li>

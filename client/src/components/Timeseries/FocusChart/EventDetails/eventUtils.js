@@ -1,12 +1,12 @@
 import React from 'react';
 
-const optionsKnown = [
+const optionsUnknown = [
   { label: 'Investigate', icon: 'investigate' },
   { label: 'Do not Investigate', icon: 'not_investigate' },
   { label: 'Postpone', icon: 'postpone' },
 ];
 
-const optionsUnknown = [
+const optionsKnown = [
   { label: 'Problem', icon: 'problem' },
   { label: 'Previously seen', icon: 'seen' },
   { label: 'Normal', icon: 'normal' },
@@ -35,7 +35,8 @@ export const RenderComments = eventComments =>
     eventComments.comments.map(comment => (
       <div key={comment.id} className="comment">
         <p>
-          <span>{(comment.created_by && comment.created_by) || 'Anonymous'}: </span> {comment.text}
+          {/* <span>{(comment.created_by && comment.created_by) || 'Anonymous'}: </span> {comment.text} */}
+          <span>{(comment.created_by && comment.created_by) || 'Dongyu'}: </span> {comment.text}
         </p>
       </div>
     ))

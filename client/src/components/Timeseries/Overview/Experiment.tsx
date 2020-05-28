@@ -29,7 +29,9 @@ class Experiment extends Component<Props> {
   }
 
   render() {
-    const { experimentData, processedDataruns } = this.props;
+    let { experimentData, processedDataruns } = this.props;
+    // processedDataruns = processedDataruns.filter(datarun => ['10224', '6643'].includes(datarun.signal));
+    // processedDataruns = processedDataruns.filter(datarun => ['10224', '5571', '6718', '6643'].includes(datarun.signal));
     return (
       <div className="experiment">
         <Loader isLoading={experimentData.isExperimentDataLoading}>
