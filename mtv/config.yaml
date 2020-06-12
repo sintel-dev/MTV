@@ -2,11 +2,11 @@
 #===================================
 
 # mtv
-host: 'localhost' # mongodb server address
+host: 'mtv.lids.mit.edu' # mongodb server address
 port: 27017 # mongodb server port
 db: 'mtv' # database name
-username: # for auth
-password: # for auth
+username: 'admin' # for auth
+password: 'daiLabmtv' # for auth
 
 # orion
 or_host: 'localhost' # mongodb server address
