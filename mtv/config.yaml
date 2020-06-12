@@ -2,7 +2,7 @@
 #===================================
 
 # mtv
-host: 'mtv.lids.mit.edu' # mongodb server address
+host: 'localhost' # mongodb server address
 port: 27017 # mongodb server port
 db: 'mtv' # database name
 username: 'admin' # for auth
