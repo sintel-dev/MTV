@@ -95,5 +95,5 @@ export class RestClient {
 }
 
 export default new RestClient({
-  baseURL: 'http://ec2-3-20-132-133.us-east-2.compute.amazonaws.com:3000/api/v1/',
+  baseURL: 'http://mtv.lids.mit.edu:3000/api/v1/',
 });
