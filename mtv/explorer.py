@@ -26,11 +26,7 @@ class MTVExplorer:
     def __init__(self, cf, docker):
         self._cf = cf.copy()
 
-        if not docker:
-            self._db = connect(db=cf['db'], host=cf['host'], port=cf['port'],
-                               username=cf['username'], password=cf['password'])
-        else:
-            self._db = connect(db=cf['dk_db'], host=cf['dk_host'], port=cf['dk_port'],
+        self._db = connect(db=cf['dk_db'], host=cf['dk_host'], port=cf['dk_port'],
                                username=cf['dk_username'], password=cf['dk_password'])
 
     def _init_flask_app(self, env):
@@ -69,7 +65,7 @@ class MTVExplorer:
             fromhost=self._cf['or_host'],
             fromport=self._cf['or_port'],
             tohost=self._cf['host'],
-            toport=self._cf['port']
+            toport=self._cf['port'],
         )
 
         # update col "prediction" and "raw"

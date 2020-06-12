@@ -16,11 +16,11 @@ or_username: # for auth
 or_password: # for auth
 
 # docker
-dk_host: 'db' # mongodb server address
+dk_host: 'localhost' # mongodb server address
 dk_port: 27017 # mongodb server port
 dk_db: 'mtv' # database name
-dk_username: # for auth
-dk_password: # for auth
+dk_username: 'admin' # for auth
+dk_password: 'daiLabmtv' # for auth
 
 # FLASK ENV
 #===================================
