@@ -16,7 +16,7 @@ or_username: # for auth
 or_password: # for auth
 
 # docker
-dk_host: 'mtv_db' # mongodb server address
+dk_host: 'mongodb' # mongodb server address
 dk_port: 27017 # mongodb server port
 dk_db: 'mtv' # database name
 dk_username: 'admin' # for auth
