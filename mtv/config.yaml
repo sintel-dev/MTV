@@ -5,8 +5,8 @@
 host: 'localhost' # mongodb server address
 port: 27017 # mongodb server port
 db: 'mtv' # database name
-username: 'admin' # for auth
-password: 'daiLabmtv' # for auth
+username: # for auth
+password: # for auth
 
 # orion
 or_host: 'localhost' # mongodb server address
@@ -16,7 +16,7 @@ or_username: # for auth
 or_password: # for auth
 
 # docker
-dk_host: 'mongodb' # mongodb server address
+dk_host: 'mtv.lids.mit.edu' # mongodb server address
 dk_port: 27017 # mongodb server port
 dk_db: 'mtv' # database name
 dk_username: 'admin' # for auth
