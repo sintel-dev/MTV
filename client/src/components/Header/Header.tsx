@@ -105,41 +105,6 @@ export const Header: React.FC<Props> = (props) => {
                 </li>
               </ul>
             </div>
-            <ul className={`data-opts ${isOptsOpen ? 'active' : ''}`}>
-              <li>
-                <button
-                  type="button"
-                  className="toggle-data-ops"
-                  onClick={() => toggleOptsState(!isOptsOpen)}
-                  disabled={isExperimentDataLoading}
-                >
-                  <VerticalDots />
-                </button>
-                <ul>
-                  <li onClick={() => toggleUploadModalState(true)}>
-                    <UploadIcon />
-                    Import .JSON File
-                  </li>
-                  <li onClick={() => downloadAsJSON(datarunDetails)}>
-                    <DownloadIcon />
-                    Save Events as .JSON File
-                  </li>
-                  <li className="view-options">
-                    <span>Chart Style</span>
-                    <div className="switch-control-wrapper">
-                      <button type="button" className="active">
-                        <LineIcon />
-                        Line
-                      </button>
-                      <button type="button">
-                        <StepIcon />
-                        Step
-                      </button>
-                    </div>
-                  </li>
-                </ul>
-              </li>
-            </ul>
             <div className="tag-wrapper">
               <Dropdown {...dropDownProps} />
             </div>
