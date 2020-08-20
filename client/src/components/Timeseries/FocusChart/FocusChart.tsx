@@ -100,6 +100,7 @@ export class FocusChart extends Component<Props, State> {
 
     const { maxTimeSeries, timeSeries } = dataRun;
     const [minDtTX, maxDtTX] = d3.extent(timeSeries, (time: Array<number>) => time[0]);
+    const [minDtTY, maxDtTY] = d3.extent(timeSeries, (time: Array<number>) => time[1]);
     const [minTX, maxTX] = d3.extent(maxTimeSeries, (time: Array<number>) => time[0]);
     const [minTY, maxTY] = d3.extent(maxTimeSeries, (time: Array<number>) => time[1]);
     const drawableWidth = width - 2 * CHART_MARGIN - TRANSLATE_LEFT;
@@ -107,9 +108,14 @@ export class FocusChart extends Component<Props, State> {
 
     const xCoord = d3.scaleTime().range([0, drawableWidth]);
     const yCoord = d3.scaleLinear().range([drawableHeight, 0]);
+    const xDtCoord = d3.scaleTime().range([0, drawableWidth]);
+    const yDtCoord = d3.scaleLinear().range([drawableHeight, 0]);
 
     const minDtX = Math.min(MIN_VALUE, minDtTX);
     const maxDtX = Math.max(MAX_VALUE, maxDtTX);
+
+    const minDtY = Math.min(MIN_VALUE, minDtTY);
+    const maxDtY = Math.max(MAX_VALUE, maxDtTY);
 
     const minX = Math.min(MIN_VALUE, minTX);
     const maxX = Math.max(MAX_VALUE, maxTX);
@@ -117,11 +123,18 @@ export class FocusChart extends Component<Props, State> {
     const minY = Math.min(MIN_VALUE, minTY);
     const maxY = Math.max(MAX_VALUE, maxTY);
 
-    const maxDtXCood = xCoord.domain([minDtX, maxDtX]);
+    const maxDtXCoord = xDtCoord.domain([minDtX, maxDtX]);
+    const maxDtYCoord = yDtCoord.domain([minDtY, maxDtY]);
+
     xCoord.domain([minX, maxX]);
     yCoord.domain([minY, maxY]);
 
-    return { xCoord, yCoord, maxDtXCood };
+    return {
+      xCoord: maxDtXCoord, // TODO: should be always using maxDtXCoord
+      yCoord: maxDtYCoord, // TODO: should be always using maxDtYCoord
+      maxDtXCoord,
+      maxDtYCoord,
+    };
   }
 
   drawLine(data) {
@@ -326,8 +339,8 @@ export class FocusChart extends Component<Props, State> {
 
   rangeToTimestamp(periodRange) {
     const { zoomValue } = periodRange;
-    const { maxDtXCood } = this.getScale();
-    const xCoordCopy = maxDtXCood.copy();
+    const { maxDtXCoord } = this.getScale();
+    const xCoordCopy = maxDtXCoord.copy();
     const timeStamp = zoomValue.rescaleX(xCoordCopy.copy()).domain();
     const timestampStart = new Date(timeStamp[0]).getTime();
     const timestampStop = new Date(timeStamp[1]).getTime();
