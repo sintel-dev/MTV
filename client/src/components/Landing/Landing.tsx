@@ -22,9 +22,13 @@ class Landing extends React.Component<Props> {
   render() {
     return (
       <div className="page-landing">
-        <Projects />
+        <p style={{ fontSize: '20px' }}>
+          You have logged in successfully! Please close this web tab, go back to the userstudy page, and follow the
+          instructions to proceed.
+        </p>
+        {/* <Projects />
         <Pipelines />
-        <Experiments />
+        <Experiments /> */}
       </div>
     );
   }

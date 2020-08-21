@@ -122,7 +122,7 @@ class Signup(Resource):
 
             schema.User.insert(**user)
             auth_utils.send_mail('MTV: your password', password, user['email'])
-            return {'message': 'password has been sent to your email'}, 200
+            return {'message': 'password has been sent to your email - {}'.format(password)}, 200
         except Exception as e:
             LOGGER.exception(e)
             return {'message': str(e)}, 400
