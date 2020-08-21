@@ -177,12 +177,12 @@ class Login extends Component<LoginProps, LoginState> {
             Don’t have an account? <Link to="/register">Register</Link>.
           </p>
         </FooterWrapper>
-        <FooterWrapper>
+        {/* <FooterWrapper>
           <p>- or -</p>
         </FooterWrapper>
         <FooterWrapper>
           <GoogleButton onUserSelect={this.props.googleLogin} text="Sign In with Google" />
-        </FooterWrapper>
+        </FooterWrapper> */}
       </Wrapper>
     );
   }
