@@ -224,6 +224,7 @@ class Sidebar extends Component {
   render() {
     const { experimentData, isSimilarShapesOpen } = this.props;
     const { width, height } = this.state;
+    console.log(height, this.getWrapperHeight());
     return (
       <div className="right-sidebar">
         {isSimilarShapesOpen && <SimilarShapes />}
@@ -232,7 +233,7 @@ class Sidebar extends Component {
           <div id="dataWrapper" className="data-wrapper">
             {this.renderWeekDays()}
             <div className="wrapper-container scroll-style" style={{ height: `${this.getWrapperHeight()}px` }}>
-              <svg id="multiPeriodChart" width={width} height={height}>
+              <svg id="multiPeriodChart" width={width} height={this.getWrapperHeight()}>
                 {this.drawData()}
                 <defs>
                   <radialGradient id="blueGradient">
