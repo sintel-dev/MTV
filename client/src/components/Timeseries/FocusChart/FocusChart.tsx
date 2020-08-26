@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import * as d3 from 'd3';
+import { getIsSimilarShapesActive, getSimilarShapesCoords, getActiveShape } from 'src/model/selectors/similarShapes';
+import { setActiveShapeAction } from 'src/model/actions/similarShapes';
 import { RootState } from '../../../model/types';
 import { FocusChartConstants, colorSchemes } from './Constants';
 import EventDetails from './EventDetails';
@@ -22,6 +24,7 @@ import {
   getZoomMode,
   getIsTimeSyncModeEnabled,
   getScrollHistory,
+  getCurrentEventDetails,
 } from '../../../model/selectors/datarun';
 import './FocusChart.scss';
 
@@ -45,8 +48,6 @@ type State = {
 };
 
 export class FocusChart extends Component<Props, State> {
-  private zoom: any;
-
   constructor(props) {
     super(props);
     this.state = {
@@ -89,6 +90,8 @@ export class FocusChart extends Component<Props, State> {
     }
   }
 
+  private zoom: any;
+
   getScale() {
     const { width, height } = this.state;
     const { dataRun } = this.props;
@@ -125,14 +128,16 @@ export class FocusChart extends Component<Props, State> {
     const { xCoord, yCoord } = this.getScale();
     const xCoordCopy = xCoord.copy();
     if (zoomValue !== 1) {
-      // @ts-ignore
-      xCoord.domain(zoomValue.rescaleX(xCoordCopy).domain());
+      xCoord.domain((zoomValue as any).rescaleX(xCoordCopy).domain());
     }
 
     const line = d3
       .line()
       .x((d) => xCoord(d[0]))
       .y((d) => yCoord(d[1]));
+
+    // TODO: depends on the current chart style
+    line.curve(d3.curveStepAfter);
     return line(data);
   }
 
@@ -167,7 +172,34 @@ export class FocusChart extends Component<Props, State> {
     );
   }
 
-  renderEvents(currentEvent) {
+  renderSimilarShapes(shape) {
+    const { dataRun, periodRange, activeShape, setActiveShape } = this.props;
+    const { timeSeries } = dataRun;
+    const { height } = this.state;
+    const { xCoord } = this.getScale();
+    const xCoordCopy = xCoord.copy();
+    const { start, end } = shape;
+
+    if (periodRange.zoomValue !== 1) {
+      xCoord.domain(periodRange.zoomValue.rescaleX(xCoordCopy).domain());
+    }
+
+    const shapeWidth = Math.max(xCoord(timeSeries[end][0]) - xCoord(timeSeries[start][0]));
+    const shapeHeight = height - 3.5 * CHART_MARGIN;
+    const translateShape = xCoord(timeSeries[start][0]);
+    const tagColor = colorSchemes[shape.tag] || colorSchemes.Untagged;
+    const isShapeActive =
+      activeShape && activeShape.start === shape.start && activeShape.end === shape.end ? 'active' : '';
+
+    return (
+      <g className={`similar-shape ${isShapeActive}`} key={start} onClick={() => setActiveShape(shape)}>
+        <rect className="evt-area" width={shapeWidth} height={shapeHeight} y={0} x={translateShape} />
+        <rect className="evt-comment" width={shapeWidth} height="10" y={1} x={translateShape} fill={tagColor} />
+      </g>
+    );
+  }
+
+  renderEventArea(currentEvent) {
     const { dataRun, periodRange, setActiveEvent } = this.props;
     const { timeSeries } = dataRun;
     const { height } = this.state;
@@ -176,15 +208,14 @@ export class FocusChart extends Component<Props, State> {
     const xCoordCopy = xCoord.copy();
     const commentHeight = height - 3.5 * CHART_MARGIN;
 
-    let startIndex = currentEvent[0];
-    let stopIndex = currentEvent[1];
+    let startIndex = Math.max(currentEvent[0], 0);
+    let stopIndex = Math.max(currentEvent[1], 0);
 
     const event = timeSeries.slice(startIndex, stopIndex + 1);
 
     // if there's a zoom level
     if (periodRange.zoomValue !== 1) {
-      // @ts-ignore
-      xCoord.domain(periodRange.zoomValue.rescaleX(xCoordCopy).domain());
+      xCoord.domain((periodRange.zoomValue as any).rescaleX(xCoordCopy).domain());
     }
 
     const commentWidth = Math.max(xCoord(timeSeries[stopIndex][0]) - xCoord(timeSeries[startIndex][0]));
@@ -193,6 +224,7 @@ export class FocusChart extends Component<Props, State> {
 
     const startDate = new Date(timeSeries[startIndex][0]);
     const stopDate = new Date(timeSeries[stopIndex][0]);
+    const pathClassName = currentEvent[4].replace(/\s/g, '_').toLowerCase() || 'untagged';
 
     return (
       <g
@@ -213,13 +245,26 @@ export class FocusChart extends Component<Props, State> {
         }}
         onMouseLeave={() => this.setState({ isTooltipVisible: false })}
       >
-        <path className="evt-highlight" d={this.drawLine(event)} />
+        <path className={`evt-highlight ${pathClassName}`} d={this.drawLine(event)} />
         <g className="event-comment">
           <rect className="evt-area" width={commentWidth} height={commentHeight} y={0} x={translateComment} />
           <rect className="evt-comment" height="10" width={commentWidth} y="0" x={translateComment} fill={tagColor} />
         </g>
       </g>
     );
+  }
+
+  renderEvents() {
+    const { dataRun, selectedEventDetails, isSimilarShapesActive } = this.props;
+
+    const { eventWindows } = dataRun;
+
+    if (isSimilarShapesActive) {
+      const eventIndex = eventWindows.findIndex((currentWindow) => currentWindow[3] === selectedEventDetails.id);
+      return this.renderEventArea(eventWindows[eventIndex]);
+    }
+
+    return eventWindows.map((currentWindow) => this.renderEventArea(currentWindow));
   }
 
   renderChartAxis() {
@@ -229,8 +274,7 @@ export class FocusChart extends Component<Props, State> {
 
     // if there's a zoom level
     if (periodRange.zoomValue !== 1) {
-      // @ts-ignore
-      xCoord.domain(periodRange.zoomValue.rescaleX(xCoordCopy).domain());
+      xCoord.domain((periodRange.zoomValue as any).rescaleX(xCoordCopy).domain());
     }
     const xAxis = d3.axisBottom(xCoord);
     const yAxis = d3.axisLeft(yCoord);
@@ -345,8 +389,8 @@ export class FocusChart extends Component<Props, State> {
 
   drawChartData() {
     const { width, height } = this.state;
-    const { dataRun, isPredictionVisible, isZoomEnabled } = this.props;
-    const { eventWindows, timeSeries, timeseriesPred } = dataRun;
+    const { dataRun, isPredictionVisible, isZoomEnabled, isSimilarShapesActive, similarShapesCoords } = this.props;
+    const { timeSeries, timeseriesPred } = dataRun;
     const focusChartWidth = width - TRANSLATE_LEFT - 2 * CHART_MARGIN;
 
     const zoomProps = {
@@ -369,7 +413,10 @@ export class FocusChart extends Component<Props, State> {
               {isPredictionVisible && <path className="predictions" d={this.drawLine(timeseriesPred)} />}
             </g>
             <rect className="zoom" {...zoomProps} />
-            {eventWindows.map((currentEvent) => this.renderEvents(currentEvent))}
+            {this.renderEvents()}
+            {isSimilarShapesActive &&
+              similarShapesCoords !== null &&
+              similarShapesCoords.map((currentShapeCoords) => this.renderSimilarShapes(currentShapeCoords))}
           </g>
           <g className="chart-axis">
             <g className="axis axis--x" transform={`translate(0, ${height - 3.5 * CHART_MARGIN})`} />
@@ -387,7 +434,7 @@ export class FocusChart extends Component<Props, State> {
       <div className="focus-chart" id="focusChartWrapper">
         {isTooltipVisible && this.renderEventTooltip()}
         <ShowErrors isOpen={this.props.isPredictionVisible} />
-        <EventDetails />
+        {/* <EventDetails /> */}
         <svg width={width} height={height} id="focusChart">
           {this.drawChartData()}
         </svg>
@@ -411,11 +458,16 @@ const mapState = (state: RootState) => ({
   isZoomEnabled: getZoomMode(state),
   isTimeSyncEnbled: getIsTimeSyncModeEnabled(state),
   scrollHistory: getScrollHistory(state),
+  isSimilarShapesActive: getIsSimilarShapesActive(state),
+  similarShapesCoords: getSimilarShapesCoords(state),
+  selectedEventDetails: getCurrentEventDetails(state),
+  activeShape: getActiveShape(state),
 });
 
 const mapDispatch = (dispatch: Function) => ({
   setPeriodRange: (period) => dispatch(setTimeseriesPeriod(period)),
   setActiveEvent: (eventID) => dispatch(setActiveEventAction(eventID)),
+  setActiveShape: (shape) => dispatch(setActiveShapeAction(shape)),
 });
 
 export default connect<StateProps, DispatchProps, {}, RootState>(mapState, mapDispatch)(FocusChart);

@@ -1,16 +1,15 @@
-import requests
+import os
+import random
 import smtplib
 import ssl
 import string
-import random
-import os
 
-from itsdangerous import (TimedJSONWebSignatureSerializer
-                          as Serializer, BadSignature, SignatureExpired)
+import requests
 from flask import request
-from mtv import g
-from werkzeug.security import generate_password_hash, check_password_hash
+from itsdangerous import BadSignature, SignatureExpired
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
+from mtv import g
 
 
 def get_google_provider_cfg():
@@ -32,7 +31,21 @@ def generate_password(size=8, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
 
 
-def generate_auth_token(id, expiration=600):
+def generate_digits(size=3, chars=string.digits):
+    """Randomly generate a number with length `size`.
+
+    Args:
+        size (int): Length of the number.
+        chars (str): The char appeared in this string will be considered as
+        one of the choice.
+
+    Returns:
+        A number (str).
+    """
+    return ''.join(random.choice(chars) for _ in range(size))
+
+
+def generate_auth_token(id, expiration=3600):
     if g['config']['USE_SYS_ENV_KEYS']:
         AUTH_KEY = os.environ['AUTH_KEY']
     else:
@@ -57,6 +70,8 @@ def decode_auth_token(token):
 
 
 def verify_auth():
+    return {'message:' 'login successfully'}, 204
+
     # uid = request.args.get('uid', None)
     token = request.headers.get('Authorization')
 
@@ -73,7 +88,7 @@ def verify_auth():
 
 
 def send_mail(subject, body, receiver):
-    if g['config']['USE_SYS_ENV_KEYS']:
+    if g['config']['USE_SYS_ENV_KEYS'] is None:
         MAIL_PASSWORD = os.environ['MAIL_PASSWORD']
     else:
         MAIL_PASSWORD = g['config']['MAIL_PASSWORD']

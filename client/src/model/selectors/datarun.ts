@@ -1,15 +1,15 @@
 import { createSelector } from 'reselect';
-import { RootState, DatarunDataType } from '../types';
+import { RootState } from '../types';
 
 import { getSelectedExperimentData, getProcessedDataRuns } from './experiment';
 import { groupEventsByTimestamp, fromMonthToIndex } from '../utils/Utils';
 
 // @TODO - set state: RootState
-const getActiveEventID = (state) => state.datarun.activeEventID;
 const getEventComments = (state) => state.datarun.eventComments;
 const isEventCommentsLoading = (state) => state.datarun.isEventCommentsLoading;
 
-export const getUpdatedEventsDetails = (state) => state.datarun.eventDetails;
+export const getActiveEventID = (state) => state.datarun.activeEventID;
+export const getUpdatedEventDetails = (state) => state.datarun.eventDetails;
 export const getNewEventDetails = (state) => state.datarun.newEventDetails;
 export const isPredictionEnabled = (state) => state.datarun.isPredictionEnabled;
 export const isDatarunIDSelected = (state: RootState) => state.datarun.selectedDatarunID;
@@ -33,27 +33,36 @@ export const getScrollHistory = (state) => state.datarun.scrollHistory;
 
 export const getSelectedDatarunID = createSelector(
   [getSelectedExperimentData, isDatarunIDSelected],
-  (selectedExperimentData, selectedDatarunID): string =>
-    selectedDatarunID || selectedExperimentData.data.dataruns[0].id,
+  (selectedExperimentData, selectedDatarunID): string => {
+    const { isExperimentDataLoading } = selectedExperimentData;
+    if (isExperimentDataLoading) {
+      return null;
+    }
+    return selectedDatarunID || selectedExperimentData.data.dataruns[0].id;
+  },
 );
+
+type ProcessedDatarun = ReturnType<typeof getProcessedDataRuns>[0];
 
 export const getSelectedDatarun = createSelector(
   [getProcessedDataRuns, getSelectedDatarunID],
   (processedDataruns, selectedDatarunID) => {
-    // @ts-ignore
-    const dataRun = processedDataruns.find((datarun: DatarunDataType) => datarun.id === selectedDatarunID);
+    if (selectedDatarunID === null) {
+      return null;
+    }
+    const dataRun = processedDataruns.find((datarun: ProcessedDatarun) => datarun.id === selectedDatarunID);
     return dataRun;
   },
 );
 
 const updateEventDetails = (updatedEventDetails, timeSeries, eventIndex, eventWindows) => {
-  let { start_time, stop_time, tag } = updatedEventDetails;
+  let { start_time, stop_time, tag, score } = updatedEventDetails;
 
   const startIndex = timeSeries.findIndex((element) => start_time - element[0] < 0) - 1;
   const stopIndex = timeSeries.findIndex((element) => stop_time - element[0] < 0) - 1;
   eventWindows[eventIndex][0] = startIndex;
   eventWindows[eventIndex][1] = stopIndex;
-  eventWindows[eventIndex][2] = updatedEventDetails.score;
+  eventWindows[eventIndex][2] = score;
   eventWindows[eventIndex][4] = tag;
 };
 
@@ -94,6 +103,10 @@ const filterByTimeRange = (range, stack) => {
 export const getFilterDatarunPeriod = createSelector(
   [getSelectedDatarun, getSelectedPeriodLevel],
   (dataRun, periodLevel) => {
+    if (dataRun === null) {
+      return null;
+    }
+
     const { level, year, month } = periodLevel;
     const { period } = dataRun;
 
@@ -114,21 +127,28 @@ export const getFilterDatarunPeriod = createSelector(
 export const getFilteredPeriodRange = createSelector(
   [getSelectedDatarun, getSelectedPeriodRange],
   (dataRun, periodRange) => {
+    if (dataRun === null) {
+      return null;
+    }
     const { period } = dataRun;
     let filteredRange = filterByTimeRange(periodRange.timeStamp, period);
-    return filteredRange;
+
+    return filteredRange.length ? filteredRange : period;
   },
 );
 
 export const getDatarunDetails = createSelector(
   [
     getSelectedDatarun,
-    getUpdatedEventsDetails,
+    getUpdatedEventDetails,
     getFilteredPeriodRange,
     getIsTimeSyncModeEnabled,
     getFilterDatarunPeriod,
   ],
   (dataRun, updatedEventDetails, filteredRange, isTimeSyncEnabled, filteredDatarunPeriod) => {
+    if (dataRun === null) {
+      return null;
+    }
     let { events, eventWindows, timeSeries } = dataRun;
     let currentEventIndex = events.findIndex((windowEvent) => windowEvent.id === updatedEventDetails.id);
 
@@ -137,13 +157,13 @@ export const getDatarunDetails = createSelector(
     }
     const selectedPeriod = isTimeSyncEnabled ? filteredRange : filteredDatarunPeriod;
 
-    const completeDataRun = { ...dataRun, period: selectedPeriod };
-    return completeDataRun;
+    const datarunDetails = { ...dataRun, period: selectedPeriod };
+    return datarunDetails;
   },
 );
 
 export const getGrouppedDatarunEvents = createSelector(
-  [getSelectedDatarun, getUpdatedEventsDetails],
+  [getSelectedDatarun, getUpdatedEventDetails],
   (dataRun, updatedEventDetails) => {
     const currentEventIndex = dataRun.events.findIndex((datarunEvent) => datarunEvent.id === updatedEventDetails.id);
     let { events } = dataRun;
@@ -169,12 +189,18 @@ export const getCurrentEventDetails = createSelector(
       return null;
     }
     const { timeSeries } = datarun;
+    const eventInfo = datarun.events.find((event) => event.id === activeEventID);
     const eventIndex = datarun.eventWindows.find((windowEvent) => windowEvent[3] === activeEventID);
+
+    if (eventInfo === undefined) {
+      return null;
+    }
 
     const start_time = datarun.timeSeries[eventIndex[0]][0];
     const stop_time = datarun.timeSeries[eventIndex[1]][0];
     const score = eventIndex[2];
     const eventTag = eventIndex[4];
+    const { source } = eventInfo;
 
     const startIndex = timeSeries.findIndex((element) => start_time - element[0] < 0) - 1;
     const stopIndex = timeSeries.findIndex((element) => stop_time - element[0] < 0);
@@ -194,6 +220,7 @@ export const getCurrentEventDetails = createSelector(
       eventComments,
       isCommentsLoading,
       score,
+      source,
     };
     return eventDetails;
   },

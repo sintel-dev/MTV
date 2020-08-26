@@ -1,6 +1,7 @@
+import Cookies from 'js-cookie';
 import {
   getCurrentEventDetails,
-  getUpdatedEventsDetails,
+  getUpdatedEventDetails,
   getDatarunDetails,
   getZoomCounter,
   getNewEventDetails,
@@ -38,6 +39,10 @@ import {
   TOGGLE_TIME_SYNC_RANGE,
   SET_SCROLL_HISTORY,
 } from '../types';
+import { toggleSimilarShapesAction } from './similarShapes';
+import { AUTHENTICATED_USER_ID, AUTH_USER_DATA } from '../utils/constants';
+import { setActivePanelAction } from './sidebar';
+import { getCurrentActivePanel } from '../selectors/sidebar';
 
 export function selectDatarun(datarunID: string) {
   return function (dispatch, getState) {
@@ -53,6 +58,7 @@ export function selectDatarun(datarunID: string) {
     dispatch({ type: SET_ACTIVE_EVENT_ID, activeEventID: null });
     dispatch({ type: ADDING_NEW_EVENTS, isAddingEvent: false });
     dispatch({ type: IS_UPDATE_POPUP_OPEN, isPopupOpen: false });
+    dispatch(toggleSimilarShapesAction(false));
   };
 }
 
@@ -76,7 +82,8 @@ export function setTimeseriesPeriod(eventRange: {
 }
 
 export function setActiveEventAction(eventID) {
-  return function (dispatch) {
+  return function (dispatch, getState) {
+    const currentPanel = getCurrentActivePanel(getState());
     dispatch({ type: SET_ACTIVE_EVENT_ID, activeEventID: eventID });
     dispatch({ type: IS_UPDATE_POPUP_OPEN, isPopupOpen: true });
     dispatch({ type: EVENT_UPDATE_STATUS, eventUpdateStatus: null });
@@ -88,6 +95,7 @@ export function setActiveEventAction(eventID) {
     }
 
     dispatch(getEventComments());
+    (currentPanel === 'periodicalView' || currentPanel === null) && dispatch(setActivePanelAction('signalView'));
   };
 }
 
@@ -107,6 +115,7 @@ export function closeEventModal() {
       dispatch({ type: IS_UPDATE_POPUP_OPEN, isPopupOpen: false });
       dispatch({ type: IS_CHANGING_EVENT_RANGE, isEditingEventRange: false });
       dispatch({ type: UPDATE_EVENT_DETAILS, eventDetails: {} });
+      dispatch(toggleSimilarShapesAction(false));
     });
   };
 }
@@ -228,7 +237,15 @@ export function isEditingEventRangeAction(eventState) {
 
 export function saveEventDetailsAction() {
   return async function (dispatch, getState) {
-    const updatedEventDetails = getUpdatedEventsDetails(getState());
+    const updatedEventDetails = getUpdatedEventDetails(getState());
+    const userID = Cookies.get(AUTHENTICATED_USER_ID);
+
+    // @TODO - getting the user data without Google authentication is yet to be handled
+    const userData = JSON.parse(Cookies.get(AUTH_USER_DATA));
+    if (!userID) {
+      return;
+    }
+
     const { commentsDraft } = updatedEventDetails;
     const { start_time, stop_time, score, tag } = updatedEventDetails;
 
@@ -241,13 +258,14 @@ export function saveEventDetailsAction() {
       score,
       tag,
       event_id: updatedEventDetails.id,
+      created_by: userData.name,
     };
 
     if (commentsDraft && commentsDraft.length) {
       const commentData = {
         event_id: updatedEventDetails.id,
         text: commentsDraft,
-        created_by: null, // no particular details about the logged in user
+        created_by: userData.name,
       };
 
       // posting comments
@@ -287,6 +305,7 @@ export function saveEventDetailsAction() {
                 eventUpdateStatus: null,
               });
             }, 3000);
+            dispatch({ type: IS_CHANGING_EVENT_RANGE, isEditingEventRange: false });
           });
         })
         .catch(() => dispatch({ type: EVENT_UPDATE_STATUS, eventUpdateStatus: 'error' }));
@@ -338,12 +357,14 @@ export function saveNewEventAction() {
     let { start_time, stop_time } = newEventDetails;
     start_time /= 1000;
     stop_time /= 1000;
+    const userData = JSON.parse(Cookies.get(AUTH_USER_DATA));
     const eventDetails = {
       start_time,
       stop_time,
       score: '0.00',
       tag: newEventDetails.tag || 'Untagged',
       datarun_id: newEventDetails.datarun_id || newEventDetails.datarun,
+      create_by: userData.name,
     };
     await API.events
       .create(eventDetails)
@@ -370,12 +391,14 @@ export function saveNewEventAction() {
   };
 }
 
+/* eslint-disable  @typescript-eslint/no-unused-vars, no-unused-vars */
 export function loadEventsFromJsonAction(jsonFiles) {
   return async function (dispatch) {
     // @TODO - implement it when backend is ready
     return dispatch({ type: UPLOAD_JSON_EVENTS, uploadEventsStatus: 'success' });
   };
 }
+/* eslint-enable  @typescript-eslint/no-unused-vars, no-unused-vars */
 
 export function deleteEventAction() {
   return async function (dispatch, getState) {
@@ -391,7 +414,9 @@ export function deleteEventAction() {
     // Investigate why server response is 405 when deleting comment
     // dispatch(deleteEventComments());
 
-    await API.events.delete(currentEventDetails.id).then(() => {
+    const userData = JSON.parse(Cookies.get(AUTH_USER_DATA));
+
+    await API.events.delete(currentEventDetails.id, { created_by: userData.name }).then(() => {
       dispatch({ type: SET_ACTIVE_EVENT_ID, activeEventID: null });
       dispatch({
         type: UPDATE_DATARUN_EVENTS,
@@ -487,14 +512,13 @@ export function setScrollHistoryAction(period) {
   };
 }
 
-export function recordCommentAction() {
+export function recordCommentAction(recordState) {
   return function (dispatch, getState) {
-    const updatedEventDetails = getUpdatedEventsDetails(getState());
+    const updatedEventDetails = getUpdatedEventDetails(getState());
     const { commentsDraft } = updatedEventDetails;
-    dispatch({ type: 'SPEECH_STATUS', isSpeechInProgress: true });
+    dispatch({ type: 'SPEECH_STATUS', isSpeechInProgress: recordState });
 
-    // @ts-ignore
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
 
     const recognition = new SpeechRecognition();
     recognition.interimResults = true;

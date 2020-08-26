@@ -43,7 +43,7 @@ export type DatarunState = {
   selectedDatarunID: string;
   selectedPeriodRange: {
     eventRange: Array<number>;
-    zoomValue: object | number;
+    zoomValue: any;
     timeStamp: Array<number>;
   };
   activeEventID: string | null;
@@ -101,7 +101,7 @@ export type DatarunDataType = {
     data: { means: number[]; counts: number[] }[][];
   }[];
   eventWindows?: any;
-  timeSeries?: Array<number>;
+  timeSeries?: Array<[number, number]>;
   maxTimeSeries?: Array<number>;
 };
 

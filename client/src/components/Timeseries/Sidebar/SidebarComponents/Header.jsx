@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import EventSummary from './EventSummary';
 import {
   getDatarunDetails,
@@ -10,17 +12,26 @@ import {
   getIsTimeSyncModeEnabled,
   getFilteredPeriodRange,
   getScrollHistory,
-} from '../../../model/selectors/datarun';
+} from '../../../../model/selectors/datarun';
 import {
   toggleEventModeAction,
-  toggleTimeSyncModeAction,
   setPeriodRangeAction,
   setScrollHistoryAction,
   setReviewPeriodAction,
-} from '../../../model/actions/datarun';
-import './Header.scss';
+} from '../../../../model/actions/datarun';
+import { toggleRelativeScale } from 'src/model/actions/sidebar';
+import { getIsRelativeScaleEnabled } from 'src/model/selectors/sidebar';
 
 class Header extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      isSummaryVisible: true,
+      // isRelativeScaleEnabled: false,
+    };
+    this.toggleSummaryDetails = this.toggleSummaryDetails.bind(this);
+  }
+
   componentDidUpdate(prevProps) {
     const { isTimeSyncEnabled, filteredPeriodRange, setScrollHistory, scrollHistory } = this.props;
 
@@ -64,44 +75,24 @@ class Header extends Component {
     }
   }
 
+  toggleSummaryDetails() {
+    const { isSummaryVisible } = this.state;
+    this.setState({
+      isSummaryVisible: !isSummaryVisible,
+    });
+  }
+
   renderHeadingControls() {
-    const { dataRun, isEventModeEnabled, toggleEventsMode, toggleTimeSync, isTimeSyncEnabled } = this.props;
-    const { signal } = dataRun;
+    const buttonText = this.state.isSummaryVisible ? 'HIDE' : 'SHOW';
     return (
       <div className="sidebar-heading">
         <ul>
-          <li className="signal-title">{signal}</li>
+          <li className="signal-title">Periodical View</li>
           <li>
-            <div className="switch-control">
-              <div className="row">
-                <label htmlFor="toggleEvents">
-                  <input
-                    type="checkbox"
-                    id="toggleEvents"
-                    onChange={(event) => toggleEventsMode(event.target.checked)}
-                    checked={isEventModeEnabled}
-                  />
-                  <span className="switch" />
-                  Show Events
-                </label>
-              </div>
-            </div>
-          </li>
-          <li>
-            <div className="switch-control">
-              <div className="row">
-                <label htmlFor="toggleTimeSync">
-                  <input
-                    type="checkbox"
-                    id="toggleTimeSync"
-                    onChange={(event) => toggleTimeSync(event.target.checked)}
-                    checked={isTimeSyncEnabled}
-                  />
-                  <span className="switch" />
-                  Sync Time Ranges
-                </label>
-              </div>
-            </div>
+            <button type="button" onClick={this.toggleSummaryDetails} id="toggleSummary">
+              <span>{buttonText}</span>
+              <FontAwesomeIcon icon={faChevronRight} />
+            </button>
           </li>
         </ul>
       </div>
@@ -138,7 +129,15 @@ class Header extends Component {
     );
   }
 
+  // changeScale() {
+  //   const { isRelativeScaleEnabled } = this.state;
+  //   this.setState({
+  //     isRelativeScaleEnabled: !isRelativeScaleEnabled,
+  //   });
+  // }
+
   render() {
+    const { isSummaryVisible } = this.state;
     const {
       setReviewPeriod,
       selectedPeriodLevel,
@@ -148,6 +147,11 @@ class Header extends Component {
       currentPeriod,
       scrollHistory,
       isTimeSyncEnabled,
+      isEventModeEnabled,
+      toggleEventsMode,
+      isRelativeScaleEnabled,
+      toggleRelativeScale,
+      dataRun,
     } = this.props;
 
     const getBtnProps = (button) => {
@@ -178,14 +182,31 @@ class Header extends Component {
 
     return (
       <div className="period-control">
-        {this.renderHeadingControls()}
+        {/* @TODO - under discussion if this should be removed or not */}
+        {/* {this.renderHeadingControls()} */}
         <EventSummary
           selectedPeriodLevel={selectedPeriodLevel}
           grouppedEvents={grouppedEvents}
           filteredPeriodRange={filteredPeriodRange}
+          signalName={dataRun.signal}
+          isOpen={isSummaryVisible}
+          isTimeSyncEnabled={isTimeSyncEnabled}
         />
-        <div>
-          {this.showPeriod()}
+        <div className="period-wrapper">
+          <div className="sidechart-controls switch-control">
+            <div className="row">
+              <label htmlFor="glyphScale">
+                <input
+                  type="checkbox"
+                  id="glyphScale"
+                  onChange={() => toggleRelativeScale()}
+                  checked={isRelativeScaleEnabled}
+                />
+                <span className="switch" />
+                Relative scale
+              </label>
+            </div>
+          </div>
           <ul className="period-filter">
             <li>
               <button type="button" {...getBtnProps('year')}>
@@ -203,6 +224,26 @@ class Header extends Component {
               </button>
             </li>
           </ul>
+          {/* @TODO - new toggle switch appear(changeScale), check to see where to place this one */}
+          {/* <ul>
+            <li>
+              <div className="switch-control reversed">
+                <div className="row">
+                  <label htmlFor="toggleEvents">
+                    Show Events
+                    <input
+                      type="checkbox"
+                      id="toggleEvents"
+                      onChange={(event) => toggleEventsMode(event.target.checked)}
+                      checked={isEventModeEnabled}
+                    />
+                    <span className="switch" />
+                  </label>
+                </div>
+              </div>
+            </li>
+          </ul> */}
+          {/* {this.showPeriod(selectedPeriodLevel)} */}
         </div>
         <div className="clear" />
       </div>
@@ -221,12 +262,13 @@ export default connect(
     filteredPeriodRange: getFilteredPeriodRange(state),
     currentPeriod: getSelectedPeriodLevel(state),
     scrollHistory: getScrollHistory(state),
+    isRelativeScaleEnabled: getIsRelativeScaleEnabled(state),
   }),
   (dispatch) => ({
     setPeriodRange: (periodRange) => dispatch(setPeriodRangeAction(periodRange)),
     toggleEventsMode: (mode) => dispatch(toggleEventModeAction(mode)),
-    toggleTimeSync: (mode) => dispatch(toggleTimeSyncModeAction(mode)),
     setScrollHistory: (period) => dispatch(setScrollHistoryAction(period)),
     setReviewPeriod: (period) => dispatch(setReviewPeriodAction(period)),
+    toggleRelativeScale: () => dispatch(toggleRelativeScale()),
   }),
 )(Header);

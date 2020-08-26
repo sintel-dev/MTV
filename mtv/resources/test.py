@@ -1,13 +1,14 @@
 import logging
 
 from flask_restful import Resource
-from flask import Flask, request, redirect, url_for
+
 from mtv.resources.auth_utils import verify_auth
 
 LOGGER = logging.getLogger(__name__)
 
 
 class Test(Resource):
+
     def get(self):
         """
         @api {get} /test/ Test get

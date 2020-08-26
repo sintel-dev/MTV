@@ -1,8 +1,6 @@
 import axios, { AxiosRequestConfig, AxiosInstance } from 'axios';
 import Cookies from 'js-cookie';
 import { API_URL, SESSION_TOKEN } from './constants';
-// import { SESSION_TOKEN } from '@nx-react/session';
-
 import Resource from './restResource';
 import {
   DatasetDataType,
@@ -15,6 +13,7 @@ import {
   EventsResponse,
   CommentsResponse,
   DataResponse,
+  UsersResponse,
 } from '../types/index';
 import { PipelineDataType } from '../types/pipeline';
 import { EventDataType } from '../types/event';
@@ -45,6 +44,10 @@ export class RestClient {
 
   public data: Resource<any, DataResponse>;
 
+  public similar_windows: Resource<any, DataResponse>;
+
+  public users: Resource<any, UsersResponse>;
+
   /**
    *
    * @param config AxiosRequestConfig
@@ -62,6 +65,8 @@ export class RestClient {
     this.events = new Resource(this.server, 'events/');
     this.comments = new Resource(this.server, 'comments/');
     this.data = new Resource(this.server, 'data/');
+    this.similar_windows = new Resource(this.server, 'computings/similar_windows/');
+    this.users = new Resource(this.server, 'users/');
     this.server.interceptors.request.use(this.requestInterceptor);
     this.server.interceptors.response.use(this.responseSuccessInterceptor, this.responseFailInterceptor);
   }
@@ -95,5 +100,5 @@ export class RestClient {
 }
 
 export default new RestClient({
-  baseURL: 'http://ec2-3-23-54-135.us-east-2.compute.amazonaws.com:3000/api/v1/',
+  baseURL: API_URL,
 });
