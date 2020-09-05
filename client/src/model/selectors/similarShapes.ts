@@ -6,6 +6,9 @@ export const getIsSimilarShapesActive = (state) => state.similarShapes.isShapesM
 export const getIsSimilarShapesLoading = (state) => state.similarShapes.isSimilarShapesLoading;
 export const similarShapesResults = (state) => state.similarShapes.similarShapes;
 export const getActiveShape = (state) => state.similarShapes.activeShape;
+export const getCurrentShapeMetrics = (state) => state.similarShapes.shapeMetrics;
+export const getCurrentShapesTag = (state) => state.similarShapes.shapesTag;
+export const getPercentageInterval = (state) => state.similarShapes.currentPercentage;
 
 export const getSimilarShapesFound = createSelector(
   [getIsSimilarShapesLoading, similarShapesResults, getCurrentEventDetails],
@@ -27,8 +30,8 @@ export const getSimilarShapesFound = createSelector(
 );
 
 export const getSimilarShapesCoords = createSelector(
-  [getIsSimilarShapesLoading, similarShapesResults, getDatarunDetails],
-  (isShapesLoading, similarShapes, dataRun) => {
+  [getIsSimilarShapesLoading, similarShapesResults, getDatarunDetails, getPercentageInterval],
+  (isShapesLoading, similarShapes, dataRun, percentageInterval) => {
     if (isShapesLoading) {
       return [];
     }
@@ -43,12 +46,26 @@ export const getSimilarShapesCoords = createSelector(
       currentEvents.push(current.stop_time);
     });
 
-    const filteredShapes = similarShapes.filter((shape) => currentEvents.indexOf(shape.start) === -1);
+    const filteredShapes = similarShapes.filter(
+      (shape) => currentEvents.indexOf(shape.start) === -1 && shape.similarity * 100 >= percentageInterval[0],
+    );
     return filteredShapes.map((currentShape) => {
       const { start, end } = currentShape;
       const startIndex = timeSeries.findIndex((element) => start * 1000 - element[0] < 0) - 1;
       const stopIndex = timeSeries.findIndex((element) => end * 1000 - element[0] < 0);
-      return { ...currentShape, start: startIndex, end: stopIndex };
+      return { ...currentShape, start: startIndex, end: stopIndex, source: 'SHAPE_MATCHING' };
     });
+  },
+);
+
+export const getIsResetSimilarDisabled = createSelector(
+  [getSimilarShapesCoords, getCurrentShapesTag],
+  (similarShapes, shapesTag) => {
+    const isShapeTagSelected =
+      similarShapes.length !== 0 &&
+      similarShapes.find((shape) => (shape.tag ? shape.tag !== null : false)) !== undefined;
+    const isMasterTagSelected = shapesTag !== null;
+
+    return !(isShapeTagSelected || isMasterTagSelected);
   },
 );

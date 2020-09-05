@@ -9,6 +9,10 @@ import {
   resetSimilarShapesAction,
   shapesTagsOverrideAction,
   setActiveShapeAction,
+  changeActiveShapeTagAction,
+  changeMetricsAction,
+  deleteShapeAction,
+  resetShapesTagsAction,
 } from 'src/model/actions/similarShapes';
 import { getCurrentEventDetails, getDatarunDetails, getIsEditingEventRange } from 'src/model/selectors/datarun';
 import {
@@ -16,14 +20,22 @@ import {
   getSimilarShapesCoords,
   getIsSimilarShapesActive,
   getActiveShape,
+  getCurrentShapeMetrics,
+  getCurrentShapesTag,
+  getIsResetSimilarDisabled,
+  similarShapesResults,
 } from 'src/model/selectors/similarShapes';
 import { timestampToDate } from 'src/components/Timeseries/AggregationLevels/AggregationChart/Utils';
 import { setActiveEventAction } from 'src/model/actions/datarun';
 import Dropdown from 'src/components/Common/Dropdown';
+import { selectedOption } from 'src/components/Timeseries/FocusChart/EventDetails/eventUtils';
+import FilterShapes from './FilterShapes';
 
 const shapesLanding = () => (
   <div className="shapes-landing">
-    <p>Select an Event in order to see Similar Segments</p>
+    <p>
+      Select an Event in <br /> order to see Similar Segments
+    </p>
   </div>
 );
 
@@ -33,7 +45,17 @@ const shapesLoader = () => (
   </div>
 );
 
+const noShapesFound = () => (
+  <div className="shapes-landing">
+    <p>No shapes have been found for the selected interval</p>
+  </div>
+);
+
 class SimilarShapes extends Component {
+  componentDidMount() {
+    this.props.resetSimilarShapes();
+  }
+
   componentDidUpdate(prevProps) {
     const currentEventID =
       (this.props.currentEvent && this.props.currentEvent.id) ||
@@ -42,6 +64,8 @@ class SimilarShapes extends Component {
     if (prevProps.currentEvent && prevProps.currentEvent.id !== currentEventID) {
       this.props.resetSimilarShapes();
     }
+    const activeShape = document.querySelector('.shape-details.active');
+    activeShape && activeShape.scrollIntoView();
   }
 
   getScale(data) {
@@ -105,7 +129,15 @@ class SimilarShapes extends Component {
   }
 
   renderShapeFooter() {
-    const { deleteEvent, saveShapes, similarShapes, currentEvent } = this.props;
+    const {
+      deleteShape,
+      saveShapes,
+      similarShapes,
+      currentEvent,
+      activeShape,
+      resetShapesTags,
+      isRsetBtnDisabled,
+    } = this.props;
     if (!similarShapes.length || currentEvent === null) {
       return null;
     }
@@ -114,8 +146,18 @@ class SimilarShapes extends Component {
       <div className="shape-footer">
         <ul>
           <li>
-            <button type="button" className="clean delete" onClick={deleteEvent}>
+            <button type="button" className="clean delete" onClick={deleteShape} disabled={!activeShape}>
               Delete
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              className="clean delete"
+              onClick={() => resetShapesTags()}
+              disabled={isRsetBtnDisabled}
+            >
+              Reset
             </button>
           </li>
         </ul>
@@ -143,11 +185,10 @@ class SimilarShapes extends Component {
     }
 
     return similarShapes.map((currentShape) => {
-      const { activeShape, setActiveShape } = this.props;
+      const { activeShape, setActiveShape, changeShapeTag } = this.props;
       const { startTime, stopTime, similarity, eventInterval } = this.getShapeDetails(currentShape);
       const shapeClassName =
         activeShape && activeShape.start === currentShape.start && activeShape.end === currentShape.end ? 'active' : '';
-
       return (
         <div
           className={`shape-details ${shapeClassName}`}
@@ -171,7 +212,7 @@ class SimilarShapes extends Component {
               <tr>
                 <th>Tag</th>
                 <td>
-                  <Dropdown />
+                  <Dropdown onChange={(tag) => changeShapeTag(tag.value)} value={selectedOption(currentShape.tag)} />
                 </td>
               </tr>
             </tbody>
@@ -188,11 +229,11 @@ class SimilarShapes extends Component {
   }
 
   renderEventData() {
-    const { currentEvent, similarShapes } = this.props;
+    const { currentEvent } = this.props;
     const { start_time, stop_time } = currentEvent || { start_time: null, stop_time: null };
-    const activeClass = similarShapes.length ? 'active' : '';
+
     return (
-      <div className={`form-row ${activeClass}`}>
+      <div className="form-row">
         <div className="form-wrapper">
           <label htmlFor="from">From</label>
           {(start_time !== null && timestampToDate(start_time)) || <p>-</p>}
@@ -206,10 +247,11 @@ class SimilarShapes extends Component {
   }
 
   renderShapeOptions() {
-    const { currentEvent, similarShapes } = this.props;
+    const { currentEvent, similarShapes, activeMetric, changeShapeMetric } = this.props;
     if (similarShapes.length) {
       return null;
     }
+
     return (
       <div className="form-row">
         <div className="form-wrapper">
@@ -218,14 +260,28 @@ class SimilarShapes extends Component {
         <div className="form-wrapper">
           <ul className="algorithms">
             <li>
-              <input type="radio" name="algotitm" id="euclidian" disabled={currentEvent === null} />
+              <input
+                type="radio"
+                name="algotitm"
+                id="euclidian"
+                checked={activeMetric === 'euclidean'}
+                disabled={currentEvent === null}
+                onChange={() => changeShapeMetric('euclidean')}
+              />
               <label htmlFor="euclidian">
                 <span />
                 Euclidean
               </label>
             </li>
             <li>
-              <input type="radio" name="algotitm" id="dtw" disabled={currentEvent === null} />
+              <input
+                type="radio"
+                name="algotitm"
+                id="dtw"
+                checked={activeMetric === 'dtw'}
+                disabled={currentEvent === null}
+                onChange={() => changeShapeMetric('dtw')}
+              />
               <label htmlFor="dtw">
                 <span />
                 DTW
@@ -245,17 +301,18 @@ class SimilarShapes extends Component {
   }
 
   shapeTagOverride() {
-    const { overrideAllTags } = this.props;
+    const { overrideAllTags, currentShapesTag, similarShapes } = this.props;
+
     return (
       <div className="shape-form overwrite">
         <div className="form-row">
           <div className="form-wrapper ">
             <p>Override all segments tags</p>
-            <p className="recent">5 most similar segments</p>
+            <p className="recent">{similarShapes.length} similar segments</p>
           </div>
           <div className="form-wrapper">
             <div className="shape-options">
-              <Dropdown onChange={(tag) => overrideAllTags(tag.value)} />
+              <Dropdown value={selectedOption(currentShapesTag)} onChange={(tag) => overrideAllTags(tag.value)} />
             </div>
           </div>
         </div>
@@ -264,18 +321,18 @@ class SimilarShapes extends Component {
   }
 
   renderSearchControls() {
-    const { currentEvent, getSimilarShapes, similarShapes, isSimilarShapesLoading, isEditingEventRange } = this.props;
+    const {
+      currentEvent,
+      getSimilarShapes,
+      similarShapes,
+      isSimilarShapesLoading,
+      isEditingEventRange,
+      isSimilarShapesActive,
+    } = this.props;
     const isSearchDisabled =
       currentEvent === null || (!similarShapes.length && isSimilarShapesLoading) || isEditingEventRange;
-    if (currentEvent === null) {
-      return shapesLanding();
-    }
 
-    if (similarShapes.length) {
-      return this.shapeTagOverride();
-    }
-
-    return (
+    const searchControls = (
       <>
         <div className="submit">
           <ul>
@@ -299,10 +356,24 @@ class SimilarShapes extends Component {
         <div className="clear" />
       </>
     );
+
+    if (currentEvent === null) {
+      return shapesLanding();
+    }
+
+    if (similarShapes.length) {
+      return this.shapeTagOverride();
+    }
+
+    if (!isSimilarShapesLoading && isSimilarShapesActive && !similarShapes.length) {
+      return noShapesFound();
+    }
+
+    return searchControls;
   }
 
   renderShapeFormular() {
-    const { currentEvent, isEditingEventRange, isSimilarShapesLoading } = this.props;
+    const { currentEvent, isEditingEventRange, isSimilarShapesLoading, rawShapes } = this.props;
     const shapesDisabled = currentEvent === null || isEditingEventRange ? 'disabled' : '';
 
     return (
@@ -310,24 +381,26 @@ class SimilarShapes extends Component {
         <div className="shape-container">
           <div className="shape-form">
             {this.renderEventData()}
+            {rawShapes.length !== 0 && <FilterShapes />}
             {this.renderShapeOptions()}
           </div>
           {this.renderSearchControls()}
-          <div className="scroll-style">
-            {isSimilarShapesLoading ? (
-              shapesLoader()
-            ) : (
-              <div className="shapes-results scroll-style">{this.renderShapes()}</div>
-            )}
-          </div>
-          {this.renderShapeFooter()}
+          {isSimilarShapesLoading ? (
+            shapesLoader()
+          ) : (
+            <div className="shapes-results scroll-style">{this.renderShapes()}</div>
+          )}
         </div>
       </div>
     );
   }
 
   render() {
-    return <div className="similar-shapes-wrapper">{this.renderShapeFormular()}</div>;
+    return (
+      <div className="similar-shapes-wrapper">
+        {this.renderShapeFormular()} {this.renderShapeFooter()}
+      </div>
+    );
   }
 }
 
@@ -340,6 +413,10 @@ export default connect(
     isSimilarShapesActive: getIsSimilarShapesActive(state),
     isEditingEventRange: getIsEditingEventRange(state),
     activeShape: getActiveShape(state),
+    activeMetric: getCurrentShapeMetrics(state),
+    currentShapesTag: getCurrentShapesTag(state),
+    isRsetBtnDisabled: getIsResetSimilarDisabled(state),
+    rawShapes: similarShapesResults(state),
   }),
   (dispatch) => ({
     toggleSimilarShapes: (state) => dispatch(toggleSimilarShapesAction(state)),
@@ -349,5 +426,9 @@ export default connect(
     resetSimilarShapes: () => dispatch(resetSimilarShapesAction()),
     overrideAllTags: (tag) => dispatch(shapesTagsOverrideAction(tag)),
     setActiveShape: (shape) => dispatch(setActiveShapeAction(shape)),
+    changeShapeTag: (tag) => dispatch(changeActiveShapeTagAction(tag)),
+    changeShapeMetric: (metric) => dispatch(changeMetricsAction(metric)),
+    deleteShape: () => dispatch(deleteShapeAction()),
+    resetShapesTags: () => dispatch(resetShapesTagsAction()),
   }),
 )(SimilarShapes);

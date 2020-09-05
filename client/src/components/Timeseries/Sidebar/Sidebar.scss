@@ -3,21 +3,23 @@
 @import './Collapsible.scss';
 
 .right-sidebar {
+    display: flex;
+    flex-flow: column;
     background: $main-color;
-    float: right;
-    min-width: 480px;
-    padding-bottom: 10px;
+    width: 480px;
     box-sizing: border-box;
-    height: 89vh;
-    position: relative;
-    overflow: hidden;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    padding-top: 50px;
+    right: 0px;
 
     .feature-cell {
         cursor: pointer;
         .target {
             circle,
             line {
-                stroke: rgba(218, 227, 245, 0.3);
+                stroke: rgba(#d9e3f5, 0.5);
                 fill: transparent;
             }
             .target-info {
@@ -34,7 +36,8 @@
         }
 
         .radial-cursor {
-            fill: rgba(104, 123, 163, 0.7);
+            stroke: rgba(#a7bff4, 0.5);
+            fill: transparent;
         }
 
         &.level-day {
@@ -82,6 +85,7 @@
                 line-height: 1.42px;
                 padding: 17px 15px;
                 outline: none;
+                font-size: 12px;
                 &.active {
                     background: $btn-blue;
                     color: #fff;
@@ -115,7 +119,14 @@
             margin: 0;
             padding: 0;
             line-height: 34px;
-            font-size: 16px;
+            font-size: 15px;
+        }
+        span {
+            color: #555e66;
+            text-transform: uppercase;
+            &.active {
+                color: #fff;
+            }
         }
     }
 
@@ -142,12 +153,5 @@
     .right-sidebar {
         margin-top: 20px;
         width: 100%;
-    }
-}
-
-@media screen and (min-width: 1201px) {
-    .right-sidebar {
-        float: right;
-        max-width: 480px;
     }
 }
