@@ -3,7 +3,7 @@
 
 # mtv
 host: 'localhost' # mongodb server address
-port: 27717 # mongodb server port
+port: 27017 # mongodb server port
 db: 'mtv' # database name
 username: # for auth
 password: # for auth
