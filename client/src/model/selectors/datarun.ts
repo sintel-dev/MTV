@@ -241,8 +241,12 @@ export const getEventSortedHistory = createSelector(
 
     const eventData = [];
     const { comments } = eventDetails.eventComments || null;
-    eventData?.push(...comments);
-    eventData?.push(...eventHistory);
+    if (comments !== undefined && comments !== null) {
+      eventData?.push(...comments);
+    }
+    if (eventHistory !== undefined && eventHistory !== null) {
+      eventData?.push(...eventHistory);
+    }
 
     const stringToTimestamp = (string) => new Date(string).getTime();
 
