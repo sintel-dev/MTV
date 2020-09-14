@@ -333,7 +333,7 @@ export class FocusChart extends Component<Props, State> {
   updateZoom() {
     const { periodRange } = this.props;
     d3.select('.zoom').call(this.zoom.transform, periodRange.zoomValue);
-    const kk = Math.min(Math.floor(periodRange.zoomValue.k), 3);
+    const kk = Math.min(Math.floor(periodRange.zoomValue.k), 2);
     d3.select('.focus-chart path.chart-wawes').style('stroke-width', kk);
     d3.select('.focus-chart path.predictions').style('stroke-width', kk);
   }

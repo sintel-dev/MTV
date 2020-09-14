@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const timeIntervals = ['30 days', '21 days', '14 days', '7 days', '5 days', '3 days', '2 days', '1 day'];
+export const timeIntervals = ['24 hours', '12 hours', '6 hours', '2 hour', '1 hour', '30 mins', '15 mins', '6 mins'];
 
 export const getAggregationChartCoords = () => {
   const ref = document.querySelector('.aggregation-levels-modal .modal-body');

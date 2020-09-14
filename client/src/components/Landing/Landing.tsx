@@ -28,9 +28,9 @@ class Landing extends React.Component<Props> {
           Please close this web tab (<u>DO NOT</u> log out), go back to the userstudy page, and follow the instructions
           to proceed.
         </p>
-        {/* <Projects />
+        <Projects />
         <Pipelines />
-        <Experiments /> */}
+        <Experiments />
         {/* <Projects />
         <Pipelines />
         <Experiments /> */}

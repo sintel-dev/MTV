@@ -60,6 +60,12 @@ load-db-mtv: init-db
 	mongo mtv --eval "db.dropDatabase()"
 	mongorestore --db mtv ./db-instance/data/mtv/
 
+.PHONY: load-db-dai
+load-db-dai: init-db
+	mongodump --db mtv-ses --port 27018 -o db-instance
+	mongo mtv-ses --eval "db.dropDatabase()"
+	mongorestore --db mtv-ses ./db-instance/mtv-ses
+
 # ------------------ session: docker installation ------------------- #
 .PHONY: docker-db-up
 docker-db-up: init-db			## download data and load them into mongodb  
