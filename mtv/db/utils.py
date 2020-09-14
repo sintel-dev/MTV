@@ -238,8 +238,6 @@ def _update_prediction(signalrun, v, stock=True):
             except Exception:
                 print(idx, type(idx))
 
-        data_ = copy.deepcopy(data)
-
         # convert format
         for i in range(len(data)):
             data[i][1] = float(data[i][1])
@@ -256,36 +254,12 @@ def _update_prediction(signalrun, v, stock=True):
                 data[i][2] = float(data[i][2])
                 data[i][5] = float(data[i][5])
 
-            if signalrun.signal.name[0] != '%':
-                continue
-            if (i == 0):
-                for j in range(1, 7):
-                    data_[i][j] = 0
-            else:
-                data_[i][3] = float(data[i][3])
-                data_[i][6] = float(data[i][6])
-
-                if (data[i - 1][1] == 0):
-                    data_[i][1] = 0
-                    data_[i][2] = 0
-                else:
-                    data_[i][1] = (data[i][1] - data[i - 1][1]) / data[i - 1][1] * 100
-                    data_[i][2] = (data[i][2] - data[i - 1][1]) / data[i - 1][1] * 100
-
-                if (data[i - 1][4] == 0):
-                    data_[i][4] = 0
-                    data_[i][5] = 0
-                else:
-                    data_[i][4] = (data[i][4] - data[i - 1][4]) / data[i - 1][4] * 100
-                    data_[i][5] = (data[i][5] - data[i - 1][4]) / data[i - 1][4] * 100
-        if signalrun.signal.name[0] != '%':
-            data_ = data
         doc = {
             'signalrun': signalrun.id,
             'attrs': ['timestamp',
                       'y_raw', 'y_raw_hat', 'es_raw',
                       'y', 'y_hat', 'es'],
-            'data': data_
+            'data': data
         }
 
         _split_large_prediction_data(doc, signalrun.signal)
@@ -382,10 +356,12 @@ def _update_raw(signal, interval=360, method=['mean'], stock=True):
             index.append(start_ts)
             start_ts = end_ts
 
-        imp_mean = SimpleImputer(missing_values=np.nan, strategy='mean')
-        V = np.asarray(values).reshape((-1, 1))
-        V = imp_mean.fit_transform(V)
-        values = V.flatten().tolist()
+        for i in range(values.shape[1]):
+            x = pd.Series(np.asarray(values[:, i]))
+            x = x.interpolate(method='ffill')
+            x = x.interpolate(method='bfill')
+            values[:, i] = x
+        values.flatten().tolist()
 
     current_year = -1
     current_month = -1
@@ -422,7 +398,7 @@ def _update_raw(signal, interval=360, method=['mean'], stock=True):
         schema.SignalRaw.insert(**raw_doc)
 
 
-def update_db(fs, exp_filter=None, stock=True):
+def update_db(fs, exp_filter=None, stock=False):
 
     # get signalrun list
 
