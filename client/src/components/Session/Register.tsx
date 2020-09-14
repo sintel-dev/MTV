@@ -168,12 +168,12 @@ class Register extends Component<RegisterProps, RegisterState> {
             Already have an account? <Link to="/">Log in</Link>.
           </p>
         </FooterWrapper>
-        <FooterWrapper>
+        {/* <FooterWrapper>
           <p>- or -</p>
-        </FooterWrapper>
-        <FooterWrapper>
+        </FooterWrapper> */}
+        {/* <FooterWrapper>
           <GoogleButton onUserSelect={this.props.googleRegister} text="Sign Up with Google" />
-        </FooterWrapper>
+        </FooterWrapper> */}
       </Wrapper>
     );
   }
