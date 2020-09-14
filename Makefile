@@ -62,9 +62,9 @@ load-db-mtv: init-db
 
 .PHONY: load-db-dai
 load-db-dai: init-db
-	mongodump --db mtv-ses --port 27018 -o db-instance
-	mongo mtv-ses --eval "db.dropDatabase()"
-	mongorestore --db mtv-ses ./db-instance/mtv-ses
+	mongodump --db mtv-ses-exp2 --port 27018 -o db-instance
+	mongo mtv-ses-exp2 --eval "db.dropDatabase()"
+	mongorestore --db mtv-ses-exp2 ./db-instance/mtv-ses-exp2
 
 # ------------------ session: docker installation ------------------- #
 .PHONY: docker-db-up
