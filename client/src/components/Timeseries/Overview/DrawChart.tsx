@@ -16,6 +16,7 @@ import {
   getIsAddingNewEvents,
   getIsPopupOpen,
   getSelectedDatarunID,
+  getCurrentChartStyle,
 } from '../../../model/selectors/datarun';
 import { setTimeseriesPeriod, selectDatarun } from '../../../model/actions/datarun';
 
@@ -109,6 +110,7 @@ export class DrawChart extends Component<ChartProps, ChartState> {
 
   drawLine(data) {
     const { drawableWidth, drawableHeight } = this.state;
+    const { currentChartStyle } = this.props;
     const { xCoord, yCoord } = this.getScale(drawableWidth, drawableHeight);
 
     const line = d3
@@ -116,8 +118,7 @@ export class DrawChart extends Component<ChartProps, ChartState> {
       .x((d) => xCoord(d[0]))
       .y((d) => yCoord(d[1]));
 
-    // TODO: depends on the current chart style
-    line.curve(d3.curveStepAfter);
+    line.curve(currentChartStyle === 'linear' ? d3.curveLinear : d3.curveStepBefore);
     return line(data);
   }
 
@@ -279,8 +280,16 @@ export class DrawChart extends Component<ChartProps, ChartState> {
 
     const tooltipDOM = `
       <ul>
-        <li><span>starts:</span> <span>${startDate.day}/${startDate.month}/${startDate.year}</span> <span>${startDate.time}</span> </li>
-        <li><span>ends:</span> <span>${endDate.day}/${endDate.month}/${endDate.year}</span> <span>${endDate.time}</span></li>
+        <li>
+          <span>starts:</span>
+          <span>${startDate.day}/${startDate.month}/${startDate.year}</span>
+          <span>${startDate.time}</span>
+        </li>
+        <li>
+          <span>ends:</span>
+          <span>${endDate.day}/${endDate.month}/${endDate.year}</span>
+          <span>${endDate.time}</span>
+        </li>
       </ul>`;
 
     rootTooltip.classList.add('active');
@@ -351,6 +360,7 @@ const mapState = (state: RootState) => ({
   isSimilarShapesActive: getIsSimilarShapesActive(state),
   similarShapesCoords: getSimilarShapesCoords(state),
   selectedDatarunID: getSelectedDatarunID(state),
+  currentChartStyle: getCurrentChartStyle(state),
 });
 
 const mapDispatch = (dispatch: Function) => ({

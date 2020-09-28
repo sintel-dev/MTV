@@ -2,32 +2,93 @@ import React, { Component } from 'react';
 import * as d3 from 'd3';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { getWrapperSize, getScale } from '../FocusChartUtils';
+import {
+  getAggregationZoomValue,
+  getEventInterval,
+  getIsSigRawLoading,
+  getSignalRawData,
+} from 'src/model/selectors/aggregationLevels';
+import { getWrapperSize } from '../FocusChartUtils';
+import {
+  getSelectedPeriodRange,
+  getDatarunDetails,
+  isPredictionEnabled,
+  getIsAggregationActive,
+} from '../../../../model/selectors/datarun';
+import { FocusChartConstants } from '../Constants';
 import './ShowErrors.scss';
-import { getSelectedPeriodRange, getDatarunDetails } from '../../../../model/selectors/datarun';
+
+const { TRANSLATE_TOP, TRANSLATE_LEFT, CHART_MARGIN, MIN_VALUE, MAX_VALUE } = FocusChartConstants;
 
 class ShowErrors extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      width: 0,
+      height: TRANSLATE_TOP,
+    };
+  }
+
   componentDidMount() {
     const { width } = getWrapperSize();
-    const chart = d3.select('#showErrors');
 
-    this.setState({ chart, width, height: 90 }, () => this.initErrorChart());
+    this.setState({ width });
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.periodRange !== this.props.periodRange) {
-      this.updateZoom();
+    if (this.props.isAggregationActive) {
+      const { aggZoomValue, isSignalRawLoading } = this.props;
+      if (aggZoomValue !== prevProps.aggZoomValue && !isSignalRawLoading) {
+        this.updateZoom();
+      }
     }
-
-    if (prevProps.datarun.timeseriesErr !== this.props.datarun.timeseriesErr) {
-      this.resetChart();
+    if (prevProps.periodRange.zoomValue !== this.props.periodRange.zoomValue) {
+      if (typeof this.props.periodRange.zoomValue !== 'number') {
+        this.updateZoom();
+      }
     }
   }
 
-  getArea() {
+  getTimeSeriesinterval() {
+    const { isAggregationActive, dataRun, signalRawData } = this.props;
+    const { maxTimeSeries } = dataRun;
+
+    if (isAggregationActive && signalRawData) {
+      return signalRawData;
+    }
+    return maxTimeSeries;
+  }
+
+  getScale() {
+    const { dataRun } = this.props;
+    const { maxTimeSeries } = dataRun;
     const { width, height } = this.state;
-    const { timeseriesErr } = this.props.datarun;
-    const { xCoord } = getScale(width, height, timeseriesErr);
+
+    const [minTX, maxTX] = d3.extent(this.getTimeSeriesinterval(), (time) => time[0]);
+    const [minTY, maxTY] = d3.extent(maxTimeSeries, (time) => time[1]);
+    const drawableWidth = width - 2 * CHART_MARGIN - TRANSLATE_LEFT;
+    const drawableHeight = height - 3.5 * CHART_MARGIN;
+
+    const xCoord = d3.scaleTime().range([0, drawableWidth]);
+    const yCoord = d3.scaleLinear().range([drawableHeight, 0]);
+
+    const minX = Math.min(MIN_VALUE, minTX);
+    const maxX = Math.max(MAX_VALUE, maxTX);
+
+    const minY = Math.min(MIN_VALUE, minTY);
+    const maxY = Math.max(MAX_VALUE, maxTY);
+
+    xCoord.domain([minX, maxX]);
+    yCoord.domain([minY, maxY]);
+
+    return { xCoord, yCoord };
+  }
+
+  getArea() {
+    const { height } = this.state;
+    const { dataRun, isSignalRawLoading, isAggregationActive, signalRawData } = this.props;
+    const { timeseriesErr } = dataRun;
+    const { xCoord } = this.getScale();
     const yRange = d3.scaleLinear().range([0, height - 10]);
     yRange.domain(d3.extent(timeseriesErr, (tmsData) => tmsData[1]));
 
@@ -37,80 +98,28 @@ class ShowErrors extends Component {
       .y0((d) => -yRange(d[1]) / 2)
       .y1((d) => yRange(d[1]) / 2);
 
-    return { area };
-  }
+    if (isAggregationActive) {
+      if (isSignalRawLoading) {
+        return null;
+      }
 
-  drawPeriod() {
-    const { chart, width, height } = this.state;
-    const { area } = this.getArea();
-    const errWrapper = chart.append('g').attr('class', 'err-group');
-    chart.attr('width', width).attr('height', height);
+      const startIndex = timeseriesErr.findIndex((current) => signalRawData[0][0] - current[0] < 0) - 1;
+      const stopIndex = timeseriesErr.findIndex((current) => signalRawData[0] - current[0][0] < 0);
 
-    errWrapper.append('path').datum(this.props.datarun.timeseriesErr).attr('class', 'err-data').attr('d', area);
-  }
-
-  drawBackground() {
-    const errGroup = d3.select('.err-group');
-    const gradient = errGroup
-      .append('linearGradient')
-      .attr('id', 'waweGradient')
-      .attr('x1', '0%')
-      .attr('x2', '100%')
-      .attr('y1', '0%')
-      .attr('y2', '0');
-
-    gradient.append('stop').attr('offset', '0%').attr('stop-color', '#1A1B20').attr('stop-opacity', 1);
-
-    gradient.append('stop').attr('offset', '50%').attr('stop-color', '#1A1B20').attr('stop-opacity', 0);
-
-    gradient.append('stop').attr('offset', '100%').attr('stop-color', '#1A1B20').attr('stop-opacity', 1);
-
-    errGroup
-      .append('rect')
-      .attr('class', 'waweBg')
-      .attr('width', '100%')
-      .attr('height', '90')
-      .attr('fill', 'url(#waweGradient)');
-  }
-
-  addZoom() {
-    const isZoomReady = document.querySelector('.err-zoom');
-
-    const { width, height } = this.state;
-    const errGroup = d3.select('#showErrors');
-
-    const zoom = d3
-      .zoom()
-      .scaleExtent([1, Infinity])
-      .translateExtent([
-        [0, 0],
-        [width, height],
-      ])
-      .extent([
-        [0, 0],
-        [width, height],
-      ]);
-
-    if (isZoomReady) {
-      return { zoom };
+      return area(timeseriesErr.slice(startIndex, stopIndex));
     }
 
-    errGroup.append('rect').attr('class', 'err-zoom').attr('width', '100%').attr('height', height);
-    d3.select('.err-zoom').call(zoom);
-    return { zoom };
+    return area(timeseriesErr);
   }
 
   updateZoom() {
     const { width, height } = this.state;
-    const { datarun, periodRange } = this.props;
-    const { zoomValue } = periodRange;
-    const { timeseriesErr } = datarun;
-    const { zoom } = this.addZoom();
-    const { xCoord } = getScale(width, height, timeseriesErr);
+    const { dataRun, periodRange, isAggregationActive, aggZoomValue } = this.props;
+    const zoomValue = isAggregationActive ? aggZoomValue : periodRange.zoomValue;
+    const { timeseriesErr, maxTimeSeries } = dataRun;
+    const { xCoord } = this.getScale(width, height, maxTimeSeries);
     const xCoordCopy = xCoord.copy();
     const yRange = d3.scaleLinear().range([0, height - 10]);
-
-    // getArea() cannot be used here
     const area = d3
       .area()
       .x((data) => xCoord(data[0]))
@@ -121,40 +130,47 @@ class ShowErrors extends Component {
     yRange.domain(d3.extent(timeseriesErr, (tmsData) => tmsData[1]));
 
     d3.select('.err-data').datum(timeseriesErr).attr('d', area);
-    d3.select('.err-zoom').call(zoom.transform, zoomValue);
-  }
-
-  resetChart() {
-    const { chart } = this.state;
-    chart.select('.err-group').remove();
-    chart.select('.err-zoom').remove();
-    this.initErrorChart();
-  }
-
-  initErrorChart() {
-    this.addZoom();
-    this.drawPeriod();
-    this.drawBackground();
   }
 
   render() {
-    const { isOpen } = this.props;
+    const { width, height } = this.state;
+    const { isOpen, isPredictionVisible } = this.props;
     const active = isOpen ? 'active' : '';
+    const focusChartWidth = width;
     return (
-      <div className="show-errors">
-        <svg id="showErrors" className={active} />
-      </div>
+      isPredictionVisible && (
+        <div className="show-errors">
+          <svg id="showErrors" className={active} width={width} height={height}>
+            <rect className="err-bg" width={width} />
+            <clipPath id="prectionClip">
+              <rect width={focusChartWidth} height={height} />
+            </clipPath>
+            <g clipPath="url(#prectionClip)">
+              <path
+                d={this.getArea()}
+                className="err-data"
+                style={{ transform: `translate(${TRANSLATE_LEFT}px, ${TRANSLATE_TOP / 2}px)` }}
+              />
+            </g>
+          </svg>
+        </div>
+      )
     );
   }
 }
 
 ShowErrors.propTypes = {
-  datarun: PropTypes.object,
-  isOpen: PropTypes.bool,
+  dataRun: PropTypes.object,
   periodRange: PropTypes.object,
 };
 
 export default connect((state) => ({
   periodRange: getSelectedPeriodRange(state),
-  datarun: getDatarunDetails(state),
+  dataRun: getDatarunDetails(state),
+  isAggregationActive: getIsAggregationActive(state),
+  eventInterval: getEventInterval(state),
+  isPredictionVisible: isPredictionEnabled(state),
+  isSignalRawLoading: getIsSigRawLoading(state),
+  signalRawData: getSignalRawData(state),
+  aggZoomValue: getAggregationZoomValue(state),
 }))(ShowErrors);

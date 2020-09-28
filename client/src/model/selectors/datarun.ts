@@ -4,6 +4,7 @@ import { RootState } from '../types';
 import { getSelectedExperimentData, getProcessedDataRuns } from './experiment';
 import { groupEventsByTimestamp, fromMonthToIndex } from '../utils/Utils';
 import { getCurrentEventHistory } from './events';
+import { getCurrentActivePanel } from './sidebar';
 
 // @TODO - set state: RootState
 const getEventComments = (state) => state.datarun.eventComments;
@@ -31,6 +32,7 @@ export const getIsTranscriptSupported = (state) => state.datarun.isTranscriptSup
 export const getIsSpeechInProgress = (state) => state.datarun.isSpeechInProgress;
 export const getIsTimeSyncModeEnabled = (state) => state.datarun.isTimeSyncModeEnabled;
 export const getScrollHistory = (state) => state.datarun.scrollHistory;
+export const getCurrentChartStyle = (state) => state.datarun.chartStyle;
 
 export const getSelectedDatarunID = createSelector(
   [getSelectedExperimentData, isDatarunIDSelected],
@@ -203,6 +205,7 @@ export const getCurrentEventDetails = createSelector(
     const score = eventIndex[2];
     const eventTag = eventIndex[4];
     const { source } = eventInfo;
+    const signalrunID = datarun.signal_id;
 
     const startIndex = timeSeries.findIndex((element) => start_time - element[0] < 0) - 1;
     const stopIndex = timeSeries.findIndex((element) => stop_time - element[0] < 0);
@@ -223,6 +226,7 @@ export const getCurrentEventDetails = createSelector(
       isCommentsLoading,
       score,
       source,
+      signalrunID,
     };
     return eventDetails;
   },
@@ -237,8 +241,9 @@ export const getEventSortedHistory = createSelector(
 
     const eventData = [];
     const { comments } = eventDetails.eventComments || null;
-    eventData?.push(...comments);
-    eventData?.push(...eventHistory);
+
+    comments && eventData.push(...comments);
+    eventData.push(...eventHistory);
 
     const stringToTimestamp = (string) => new Date(string).getTime();
 
@@ -248,4 +253,10 @@ export const getEventSortedHistory = createSelector(
 
     return sortedHistory;
   },
+);
+
+export const getIsAggregationActive = createSelector(
+  [getActiveEventID, getCurrentActivePanel, getIsEditingEventRange],
+  (eventID, activePanel, isEditingEventRange) =>
+    eventID !== null && activePanel === 'eventView' && !isEditingEventRange,
 );

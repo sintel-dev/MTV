@@ -6,22 +6,32 @@ from flask_restful import Resource
 
 from mtv.db import DBExplorer, schema
 from mtv.resources.auth_utils import verify_auth
+from mtv.resources.computing.utils.layout import tsne
 from mtv.resources.experiment import validate_experiment_id
 
 LOGGER = logging.getLogger(__name__)
 
 
 def get_signalrun(signalrun_doc):
+
+    primitive_name = 'orion.primitives.timeseries_preprocessing.time_segments_aggregate#1'
+    pipeline = signalrun_doc.datarun.pipeline
+    interval = int(pipeline.json['hyperparameters']
+                   [primitive_name].get('interval', None))
+
     signalrun = {
         'id': str(signalrun_doc.id),
+        'signalrun_id': str(signalrun_doc.id),
+        'interval': interval,
         'experiment': str(signalrun_doc.datarun.experiment.id),
         'signal': signalrun_doc.signal.name,
+        'signal_id': str(signalrun_doc.signal.id),
         'start_time': signalrun_doc.start_time.isoformat(),
         'end_time': signalrun_doc.end_time.isoformat(),
         'status': signalrun_doc.status,
         'events': [],
         'prediction': None,
-        'raw': []
+        'raw': [],
     }
 
     # get events of this signalrun
@@ -36,7 +46,7 @@ def get_signalrun(signalrun_doc):
                 'stop_time': event_doc.stop_time,
                 'score': event_doc.severity,
                 'tag': event_doc.tag,
-                'source': event_doc.source
+                'source': event_doc.source,
             })
             # signalrun['events'][-1]['tag'] = \
             #     None if annotation_doc is None else annotation_doc.tag
@@ -50,12 +60,12 @@ def get_signalrun(signalrun_doc):
     }
 
     # get raw
-    raw_docs = schema.Period.find(signalrun=signalrun_doc.id).order_by('+year')
-    for raw_doc in raw_docs:
+    period_docs = schema.Period.find(signalrun=signalrun_doc.id).order_by('+year')
+    for period_doc in period_docs:
         signalrun['raw'].append({
-            'timestamp': raw_doc.timestamp,
-            'year': raw_doc.year,
-            'data': raw_doc.data
+            'timestamp': period_doc.timestamp,
+            'year': period_doc.year,
+            'data': period_doc.data
         })
 
     return signalrun
@@ -68,6 +78,9 @@ def get_datarun(datarun_doc):
         signalrun = get_signalrun(signalrun_doc)
         signalruns.append(signalrun)
 
+    # TODO: add option
+    if len(signalruns) > 1:
+        signalruns = tsne(signalruns)
     return signalruns
 
 
@@ -192,7 +205,7 @@ class Dataruns(Resource):
                 dataruns.extend(get_datarun(datarun_doc))
             # dataruns = [get_datarun(datarun_doc) for datarun_doc in datarun_docs]
             # sort by signal name
-            dataruns.sort(key=lambda x: x['signal'], reverse=False)
+            # dataruns.sort(key=lambda x: x['signal'], reverse=False)
         except Exception as e:
             LOGGER.exception(e)
             return {'message': str(e)}, 500

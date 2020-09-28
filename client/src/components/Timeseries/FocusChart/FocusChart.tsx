@@ -5,7 +5,7 @@ import { getIsSimilarShapesActive, getSimilarShapesCoords, getActiveShape } from
 import { setActiveShapeAction } from 'src/model/actions/similarShapes';
 import { RootState } from '../../../model/types';
 import { FocusChartConstants, colorSchemes } from './Constants';
-import EventDetails from './EventDetails';
+// import EventDetails from './EventDetails';
 import AddEvent from './FocusChartEvents/AddEvent';
 import ShowErrors from './ShowErrors';
 import { setTimeseriesPeriod, setActiveEventAction } from '../../../model/actions/datarun';
@@ -26,10 +26,13 @@ import {
   getScrollHistory,
   getCurrentEventDetails,
   getActiveEventID,
+  getCurrentChartStyle,
+  getIsAggregationActive,
 } from '../../../model/selectors/datarun';
+import AggregationLevels from '../AggregationLevels/AggregationLevels';
 import './FocusChart.scss';
 
-const { TRANSLATE_LEFT, CHART_MARGIN, MIN_VALUE, MAX_VALUE } = FocusChartConstants;
+const { TRANSLATE_LEFT, CHART_MARGIN, MIN_VALUE, MAX_VALUE, TRANSLATE_TOP } = FocusChartConstants;
 
 type StateProps = ReturnType<typeof mapState>;
 type DispatchProps = ReturnType<typeof mapDispatch>;
@@ -64,30 +67,40 @@ export class FocusChart extends Component<Props, State> {
     this.setState(
       {
         width,
-        height,
+        height: height + TRANSLATE_TOP,
       },
       () => {
         this.initZoom();
+        this.renderChartAxis();
       },
     );
   }
 
   componentDidUpdate(prevProps: Props) {
-    this.renderChartAxis();
-
-    if (prevProps.periodRange.zoomValue !== this.props.periodRange.zoomValue) {
+    if (prevProps.isAggregationActive !== this.props.isAggregationActive && !this.props.isAggregationActive) {
+      this.renderChartAxis();
+      this.initZoom();
       this.updateZoom();
     }
 
-    if (prevProps.selectedPeriod !== this.props.selectedPeriod) {
-      this.updateChartZoomOnSelectPeriod();
-    }
-    if (prevProps.zoomCounter !== this.props.zoomCounter) {
-      this.updateZoomOnClick();
-    }
+    if (!this.props.isAggregationActive) {
+      if (prevProps.periodRange.zoomValue !== this.props.periodRange.zoomValue) {
+        this.updateZoom();
+      }
 
-    if (prevProps.isEditingRange !== this.props.isEditingRange) {
-      this.toggleZoom();
+      if (prevProps.selectedPeriod !== this.props.selectedPeriod) {
+        this.updateChartZoomOnSelectPeriod();
+      }
+      if (prevProps.zoomCounter !== this.props.zoomCounter) {
+        this.updateZoomOnClick();
+      }
+
+      if (prevProps.isEditingRange !== this.props.isEditingRange) {
+        this.toggleZoom();
+      }
+    }
+    if (prevProps.isPredictionVisible !== this.props.isPredictionVisible) {
+      this.setChartHeight();
     }
   }
 
@@ -124,7 +137,7 @@ export class FocusChart extends Component<Props, State> {
   }
 
   drawLine(data) {
-    const { periodRange } = this.props;
+    const { periodRange, currentChartStyle } = this.props;
     const { zoomValue } = periodRange;
     const { xCoord, yCoord } = this.getScale();
     const xCoordCopy = xCoord.copy();
@@ -137,13 +150,15 @@ export class FocusChart extends Component<Props, State> {
       .x((d) => xCoord(d[0]))
       .y((d) => yCoord(d[1]));
 
-    // TODO: depends on the current chart style
-    line.curve(d3.curveStepAfter);
+    line.curve(currentChartStyle === 'linear' ? d3.curveLinear : d3.curveStepBefore);
     return line(data);
   }
 
   renderEventTooltip() {
-    const { eventData } = this.state;
+    const { eventData, isTooltipVisible } = this.state;
+    if (!isTooltipVisible) {
+      return null;
+    }
     const startDate = formatDate(eventData.startDate);
     const endDate = formatDate(eventData.stopDate);
     const tooltipOffset = 20;
@@ -200,6 +215,12 @@ export class FocusChart extends Component<Props, State> {
     );
   }
 
+  toggleEventTooltip(tooltipState) {
+    this.setState({
+      isTooltipVisible: tooltipState,
+    });
+  }
+
   renderEventArea(currentEvent) {
     const { dataRun, periodRange, setActiveEvent, activeEventID } = this.props;
     const { timeSeries } = dataRun;
@@ -228,6 +249,7 @@ export class FocusChart extends Component<Props, State> {
 
     const pathClassName = currentEvent[4]?.replace(/\s/g, '_').toLowerCase() || 'untagged';
     const activeClass = currentEvent[3] === activeEventID ? 'active' : '';
+
     return (
       <g
         className="line-highlight"
@@ -245,7 +267,7 @@ export class FocusChart extends Component<Props, State> {
             },
           });
         }}
-        onMouseLeave={() => this.setState({ isTooltipVisible: false })}
+        onMouseLeave={() => this.toggleEventTooltip(false)}
       >
         <path className={`evt-highlight ${pathClassName}`} d={this.drawLine(event)} />
         <g className="event-comment">
@@ -288,7 +310,9 @@ export class FocusChart extends Component<Props, State> {
     const yAxis = d3.axisLeft(yCoord);
 
     d3.select('.axis.axis--x').call(xAxis);
-    d3.select('.axis.axis--y').call(yAxis).call(yAxis.ticks(5, ',f'));
+    d3.select('.axis.axis--y')
+      .call(yAxis)
+      .call(yAxis.ticks(5, ',f').tickFormat(d3.format('.4s')));
   }
 
   initZoom() {
@@ -314,7 +338,12 @@ export class FocusChart extends Component<Props, State> {
 
   updateZoom() {
     const { periodRange } = this.props;
+    const zoomKvalue = Math.min(Math.floor(periodRange.zoomValue.k), 3);
     d3.select('.zoom').call(this.zoom.transform, periodRange.zoomValue);
+    d3.select('.focus-chart path.chart-wawes').style('stroke-width', zoomKvalue);
+    d3.select('.focus-chart path.predictions').style('stroke-width', zoomKvalue);
+    d3.selectAll('.focus-chart path.evt-highlight').style('stroke-width', zoomKvalue);
+    this.renderChartAxis();
   }
 
   zoomHandler() {
@@ -395,6 +424,15 @@ export class FocusChart extends Component<Props, State> {
     }
   }
 
+  setChartHeight() {
+    const { isPredictionVisible } = this.props;
+    const { height } = this.state;
+    const chartHeight = isPredictionVisible ? height - TRANSLATE_TOP : height + TRANSLATE_TOP;
+    this.setState({
+      height: chartHeight,
+    });
+  }
+
   drawChartData() {
     const { width, height } = this.state;
     const { dataRun, isPredictionVisible, isZoomEnabled, isSimilarShapesActive, similarShapesCoords } = this.props;
@@ -430,25 +468,32 @@ export class FocusChart extends Component<Props, State> {
             <g className="axis axis--x" transform={`translate(0, ${height - 3.5 * CHART_MARGIN})`} />
             <g className="axis axis--y" />
           </g>
-          <AddEvent />
+          <AddEvent width={width} height={height} />
         </g>
       )
     );
   }
 
   render() {
-    const { width, height, isTooltipVisible } = this.state;
+    const { isAggregationActive } = this.props;
+    const { width, height } = this.state;
     return (
       <div className="focus-chart" id="focusChartWrapper">
-        {isTooltipVisible && this.renderEventTooltip()}
-        <ShowErrors isOpen={this.props.isPredictionVisible} />
+        {this.renderEventTooltip()}
+        <ShowErrors />
         {/* <EventDetails /> */}
-        <svg width={width} height={height} id="focusChart">
-          {this.drawChartData()}
-        </svg>
-        <div className="zoomControlsHolder">
-          <ZoomControls />
-        </div>
+        {isAggregationActive ? (
+          <AggregationLevels width={width} height={height} toggleTooltip={() => this.toggleEventTooltip(false)} />
+        ) : (
+          <>
+            <svg width={width} height={height} id="focusChart">
+              {this.drawChartData()}
+            </svg>
+            <div className="zoomControlsHolder">
+              <ZoomControls />
+            </div>
+          </>
+        )}
       </div>
     );
   }
@@ -471,6 +516,8 @@ const mapState = (state: RootState) => ({
   selectedEventDetails: getCurrentEventDetails(state),
   activeShape: getActiveShape(state),
   activeEventID: getActiveEventID(state),
+  currentChartStyle: getCurrentChartStyle(state),
+  isAggregationActive: getIsAggregationActive(state),
 });
 
 const mapDispatch = (dispatch: Function) => ({

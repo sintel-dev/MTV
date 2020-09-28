@@ -38,6 +38,7 @@ import {
   EVENT_UPDATE_STATUS,
   TOGGLE_TIME_SYNC_RANGE,
   SET_SCROLL_HISTORY,
+  SWITCH_CHART_STYLE,
 } from '../types';
 import { toggleSimilarShapesAction } from './similarShapes';
 import { AUTHENTICATED_USER_ID, AUTH_USER_DATA } from '../utils/constants';
@@ -79,6 +80,32 @@ export function setTimeseriesPeriod(eventRange: {
       eventRange,
     };
     dispatch(action);
+  };
+}
+
+export function cancelEventEditing() {
+  return async function (dispatch, getState) {
+    dispatch({ type: IS_UPDATE_POPUP_OPEN, isPopupOpen: false });
+    const currentEventDetails = getCurrentEventDetails(getState());
+    if (currentEventDetails) {
+      await API.events.find(`${currentEventDetails.id}/`).then((response) => {
+        const { start_time, stop_time } = response;
+        dispatch({
+          type: UPDATE_EVENT_DETAILS,
+          eventDetails: {
+            ...response,
+            start_time: start_time * 1000,
+            stop_time: stop_time * 1000,
+          },
+        });
+      });
+    }
+    dispatch({ type: ADDING_NEW_EVENTS, isAddingEvent: false });
+    dispatch({ type: IS_UPDATE_POPUP_OPEN, isPopupOpen: false });
+    dispatch({ type: IS_CHANGING_EVENT_RANGE, isEditingEventRange: false });
+    dispatch({ type: UPDATE_EVENT_DETAILS, eventDetails: {} });
+    dispatch(toggleSimilarShapesAction(false));
+    dispatch(setActiveEventAction(null));
   };
 }
 
@@ -535,5 +562,14 @@ export function recordCommentAction(recordState) {
       dispatch(updateEventDetailsAction({ commentsDraft: comments }));
       dispatch({ type: 'SPEECH_STATUS', isSpeechInProgress: false });
     };
+  };
+}
+
+export function switchChartStyleAction(chartStyle) {
+  return function (dispatch) {
+    dispatch({
+      type: SWITCH_CHART_STYLE,
+      chartStyle,
+    });
   };
 }
