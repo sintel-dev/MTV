@@ -1,26 +1,18 @@
 import React from 'react';
+import { grouppedEvents } from 'src/tests/testmocks/grouppedEvents';
 import EventSummary from './index';
-import { grouppedEvents } from '../../../../tests/testmocks/grouppedEvents';
 
 describe('Testing Event Summary component -> ', () => {
   const evtSummaryProps = {
     isSummaryVisible: true,
     selectedPeriodLevel: [],
     grouppedEvents,
+    filteredPeriodRange: [{ level: 'year', name: 2015 }],
   };
 
   it('Should render without crashing', () => {
     const evtSummaryComponent = shallow(<EventSummary {...evtSummaryProps} />);
     expect(evtSummaryComponent).toMatchSnapshot();
-  });
-
-  it('Should display propper button text', () => {
-    const evtSummaryComponent = mount(<EventSummary {...evtSummaryProps} />);
-    const btnTrigger = evtSummaryComponent.find('#toggleSummary');
-    expect(btnTrigger.text()).toContain('HIDE');
-    btnTrigger.simulate('click');
-
-    expect(btnTrigger.text()).toContain('SHOW');
   });
 
   it('Should handle mouse over on column', () => {

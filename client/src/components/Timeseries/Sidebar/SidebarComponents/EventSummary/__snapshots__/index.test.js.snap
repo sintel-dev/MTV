@@ -5,71 +5,11 @@ exports[`Testing Event Summary component ->  Should render without crashing 1`] 
   className="event-summary"
 >
   <div
-    className="event-header"
-  >
-    <div
-      className="left-wrapper"
-    >
-      <span>
-        Overview Events Table
-      </span>
-    </div>
-    <div
-      className="right-wrapper"
-    >
-      <button
-        id="toggleSummary"
-        onClick={[Function]}
-        type="button"
-      >
-        <span>
-          HIDE
-        </span>
-        <FontAwesomeIcon
-          border={false}
-          className=""
-          fixedWidth={false}
-          flip={null}
-          icon={
-            Object {
-              "icon": Array [
-                320,
-                512,
-                Array [],
-                "f054",
-                "M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z",
-              ],
-              "iconName": "chevron-right",
-              "prefix": "fas",
-            }
-          }
-          inverse={false}
-          listItem={false}
-          mask={null}
-          pull={null}
-          pulse={false}
-          rotation={null}
-          size={null}
-          spin={false}
-          swapOpacity={false}
-          symbol={false}
-          title=""
-          transform={null}
-        />
-      </button>
-    </div>
-    <div
-      className="clear"
-    />
-  </div>
-  <div
-    className="summary-details active"
+    className="summary-details"
   >
     <table>
       <tbody>
-        <tr
-          className="row-light"
-        >
+        <tr>
           <th>
             event tag
           </th>
@@ -195,7 +135,48 @@ exports[`Testing Event Summary component ->  Should render without crashing 1`] 
         </tr>
         <tr>
           <th>
-            Year
+            All
+          </th>
+          <td
+            key="Investigate"
+          >
+            0
+          </td>
+          <td
+            key="Do not Investigate"
+          >
+            0
+          </td>
+          <td
+            key="Postpone"
+          >
+            0
+          </td>
+          <td
+            key="Problem"
+          >
+            0
+          </td>
+          <td
+            key="Previously seen"
+          >
+            0
+          </td>
+          <td
+            key="Normal"
+          >
+            0
+          </td>
+          <td
+            key="Untagged"
+          >
+            0
+          </td>
+        </tr>
+        <tr>
+          <th>
+            Year 
+             
           </th>
           <td
             key="Investigate"
@@ -233,11 +214,9 @@ exports[`Testing Event Summary component ->  Should render without crashing 1`] 
             -
           </td>
         </tr>
-        <tr
-          className="row-light"
-        >
+        <tr>
           <th>
-            Month
+            Month 
           </th>
           <td
             key="Investigate"
