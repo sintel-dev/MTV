@@ -33,7 +33,7 @@ export interface LoginState {
   rememberMe: boolean;
 }
 
-class Login extends Component<LoginProps, LoginState> {
+export class Login extends Component<LoginProps, LoginState> {
   constructor(props) {
     super(props);
     this.state = {
@@ -167,6 +167,7 @@ class Login extends Component<LoginProps, LoginState> {
             color="primary"
             type="button"
             onClick={this.onFormSubmitHandler}
+            id="loginBtn"
           >
             {isLoading && <CircularProgress color="secondary" size={28} />}
             <span>Login</span>

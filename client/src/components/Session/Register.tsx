@@ -32,7 +32,7 @@ export interface RegisterProps {
   };
 }
 
-class Register extends Component<RegisterProps, RegisterState> {
+export class Register extends Component<RegisterProps, RegisterState> {
   constructor(props) {
     super(props);
 
