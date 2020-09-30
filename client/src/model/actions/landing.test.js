@@ -6,7 +6,6 @@ import { configureStore } from '../store';
 import * as pipelines from '../../tests/testmocks/pipelines';
 import * as experiments from '../../tests/testmocks/experiments';
 import * as datasets from '../../tests/testmocks/datasets';
-import * as datarun from '../../tests/testmocks/dataRun';
 
 describe('Landing async actions ->', () => {
   const store = configureStore();
@@ -54,17 +53,11 @@ describe('Landing async actions ->', () => {
     expect(store.getState().pipelines.selectedPipelineName).toEqual('lstm');
   });
 
-  it('Should handle SELECT_EXPERIMENT', async () => {
-    mockAxios.get.mockImplementationOnce(() => Promise.resolve({ data: datarun }));
-
-    const promise = store.dispatch(actions.selectExperiment(null, '5da80104abc56689357439e5'));
+  it('Should handle SELECT_EXPERIMENT', () => {
+    store.dispatch(actions.selectExperiment(null, '5da80104abc56689357439e5'));
     expect(store.getState().experiments.isExperimentsLoading).toBe(false);
     expect(store.getState().experiments.selectedExperimentID).toBe('5da80104abc56689357439e5');
     expect(store.getState().selectedExperimentData.isExperimentDataLoading).toBe(true);
-
-    const result = await promise;
-    expect(store.getState().selectedExperimentData.isExperimentDataLoading).toBe(false);
-    expect(store.getState().selectedExperimentData.data.dataRun).toEqual(result.dataRun);
   });
 
   it('Should handle SELECT_PROJECT', () => {
