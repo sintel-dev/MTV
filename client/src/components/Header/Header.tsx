@@ -107,6 +107,7 @@ export const Header: React.FC<Props> = (props) => {
   const { name, picture } = userData;
   const isLinearBtnActive = currentChartStyle === 'linear' ? 'active' : '';
   const isStepBtnActive = currentChartStyle !== 'linear' ? 'active' : '';
+
   return (
     <header id="header" className="main-header">
       <div className="header-container">
