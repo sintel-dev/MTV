@@ -24,7 +24,7 @@ import './AggregationLevels.scss';
 const { MIN_VALUE, MAX_VALUE, TRANSLATE_LEFT, CHART_MARGIN, TIME_INTERVALS_HEIGHT } = FocusChartConstants;
 const TRANSLATE_CHART = TRANSLATE_LEFT + 20;
 
-class AggregationLevels extends Component {
+export class AggregationLevels extends Component {
   componentDidMount() {
     this.props.getSignalRawData();
     this.props.toggleTooltip();
@@ -177,8 +177,7 @@ class AggregationLevels extends Component {
   }
 
   drawChartData() {
-    const { signalRawData, eventInterval } = this.props;
-    const { width, height, currentEventDetails, isSignalRawLoading } = this.props;
+    const { width, height, currentEventDetails, isSignalRawLoading, signalRawData, eventInterval } = this.props;
     const chartWidth = width - TRANSLATE_CHART - 2 * CHART_MARGIN;
     const chartHeight = height - TIME_INTERVALS_HEIGHT; // time granulation height;
     const pathClassName = currentEventDetails.tag?.replace(/\s/g, '_').toLowerCase() || 'untagged';

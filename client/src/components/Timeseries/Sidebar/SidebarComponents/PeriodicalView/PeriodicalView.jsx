@@ -227,7 +227,7 @@ class PeriodicalView extends Component {
         <div id="dataWrapper" className="data-wrapper">
           {this.renderWeekDays()}
           <div className="wrapper-container scroll-style" style={{ maxHeight: `${this.getWrapperHeight()}px` }}>
-            <svg id="multiPeriodChart" width={width} height={this.getWrapperHeight()}>
+            <svg id="multiPeriodChart" width={width} height={height}>
               {this.drawData()}
               <defs>
                 <radialGradient id="blueGradient">

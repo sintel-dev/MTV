@@ -1,0 +1,261 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Testing Event Summary component ->  Should render without crashing 1`] = `
+<div
+  className="event-summary"
+>
+  <div
+    className="summary-details"
+  >
+    <table>
+      <tbody>
+        <tr>
+          <th>
+            event tag
+          </th>
+          <td
+            key="Investigate"
+          >
+            <span
+              className="tooltip-data"
+            >
+              <i
+                className="indicator investigate"
+                key="investigate"
+              />
+              Investigate
+            </span>
+            <i
+              className="indicator investigate"
+              key="investigate"
+            />
+          </td>
+          <td
+            key="Do not Investigate"
+          >
+            <span
+              className="tooltip-data"
+            >
+              <i
+                className="indicator not_investigate"
+                key="not_investigate"
+              />
+              Do not Investigate
+            </span>
+            <i
+              className="indicator not_investigate"
+              key="not_investigate"
+            />
+          </td>
+          <td
+            key="Postpone"
+          >
+            <span
+              className="tooltip-data"
+            >
+              <i
+                className="indicator postpone"
+                key="postpone"
+              />
+              Postpone
+            </span>
+            <i
+              className="indicator postpone"
+              key="postpone"
+            />
+          </td>
+          <td
+            key="Problem"
+          >
+            <span
+              className="tooltip-data"
+            >
+              <i
+                className="indicator problem"
+                key="problem"
+              />
+              Problem
+            </span>
+            <i
+              className="indicator problem"
+              key="problem"
+            />
+          </td>
+          <td
+            key="Previously seen"
+          >
+            <span
+              className="tooltip-data"
+            >
+              <i
+                className="indicator seen"
+                key="seen"
+              />
+              Previously seen
+            </span>
+            <i
+              className="indicator seen"
+              key="seen"
+            />
+          </td>
+          <td
+            key="Normal"
+          >
+            <span
+              className="tooltip-data"
+            >
+              <i
+                className="indicator normal"
+                key="normal"
+              />
+              Normal
+            </span>
+            <i
+              className="indicator normal"
+              key="normal"
+            />
+          </td>
+          <td
+            key="Untagged"
+          >
+            <span
+              className="tooltip-data"
+            >
+              <i
+                className="indicator untagged"
+                key="untagged"
+              />
+              Untagged
+            </span>
+            <i
+              className="indicator untagged"
+              key="untagged"
+            />
+          </td>
+        </tr>
+        <tr>
+          <th>
+            All
+          </th>
+          <td
+            key="Investigate"
+          >
+            0
+          </td>
+          <td
+            key="Do not Investigate"
+          >
+            0
+          </td>
+          <td
+            key="Postpone"
+          >
+            0
+          </td>
+          <td
+            key="Problem"
+          >
+            0
+          </td>
+          <td
+            key="Previously seen"
+          >
+            0
+          </td>
+          <td
+            key="Normal"
+          >
+            0
+          </td>
+          <td
+            key="Untagged"
+          >
+            0
+          </td>
+        </tr>
+        <tr>
+          <th>
+            Year 
+             
+          </th>
+          <td
+            key="Investigate"
+          >
+            -
+          </td>
+          <td
+            key="Do not Investigate"
+          >
+            -
+          </td>
+          <td
+            key="Postpone"
+          >
+            -
+          </td>
+          <td
+            key="Problem"
+          >
+            -
+          </td>
+          <td
+            key="Previously seen"
+          >
+            -
+          </td>
+          <td
+            key="Normal"
+          >
+            -
+          </td>
+          <td
+            key="Untagged"
+          >
+            -
+          </td>
+        </tr>
+        <tr>
+          <th>
+            Month 
+          </th>
+          <td
+            key="Investigate"
+          >
+            -
+          </td>
+          <td
+            key="Do not Investigate"
+          >
+            -
+          </td>
+          <td
+            key="Postpone"
+          >
+            -
+          </td>
+          <td
+            key="Problem"
+          >
+            -
+          </td>
+          <td
+            key="Previously seen"
+          >
+            -
+          </td>
+          <td
+            key="Normal"
+          >
+            -
+          </td>
+          <td
+            key="Untagged"
+          >
+            -
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+`;

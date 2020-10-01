@@ -1,0 +1,210 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Testing Aggregation levels component Should render without crashing 1`] = `
+<div
+  class="aggregation-chart"
+  id="aggregationChart"
+  style="position:relative;width:200px;height:700px"
+>
+  <div
+    class="aggregation-wrapper"
+  >
+    <ul
+      class="aggregation-controls"
+    >
+      <li>
+        <button
+          class=""
+          type="button"
+        >
+          30 days
+        </button>
+      </li>
+      <li>
+        <button
+          class=""
+          type="button"
+        >
+          21 days
+        </button>
+      </li>
+      <li>
+        <button
+          class=""
+          type="button"
+        >
+          14 days
+        </button>
+      </li>
+      <li>
+        <button
+          class=""
+          type="button"
+        >
+          7 days
+        </button>
+      </li>
+      <li>
+        <button
+          class=""
+          type="button"
+        >
+          5 days
+        </button>
+      </li>
+      <li>
+        <button
+          class=""
+          type="button"
+        >
+          3 days
+        </button>
+      </li>
+      <li>
+        <button
+          class=""
+          type="button"
+        >
+          2 days
+        </button>
+      </li>
+      <li>
+        <button
+          class=""
+          type="button"
+        >
+          1 day
+        </button>
+      </li>
+      <li
+        class="context-info"
+      >
+        <span>
+          Context info
+        </span>
+        <div
+          class="tag-select css-2b097c-container"
+        >
+          <div
+            class="tag-options__control css-yk16xz-control"
+          >
+            <div
+              class="tag-options__value-container css-g1d714-ValueContainer"
+            >
+              <div
+                class="tag-options__placeholder css-1wa3eu0-placeholder"
+              >
+                1x
+              </div>
+              <input
+                aria-autocomplete="list"
+                class="css-62g3xt-dummyInput"
+                id="react-select-2-input"
+                readonly=""
+                tabindex="0"
+                value=""
+              />
+            </div>
+            <div
+              class="tag-options__indicators css-1hb7zxy-IndicatorsContainer"
+            >
+              <span
+                class="tag-options__indicator-separator css-1okebmr-indicatorSeparator"
+              />
+              <div
+                aria-hidden="true"
+                class="tag-options__indicator tag-options__dropdown-indicator css-tlfecz-indicatorContainer"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="css-6q0nyr-Svg"
+                  focusable="false"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  width="20"
+                >
+                  <path
+                    d="M4.516 7.548c0.436-0.446 1.043-0.481 1.576 0l3.908 3.747 3.908-3.747c0.533-0.481 1.141-0.446 1.574 0 0.436 0.445 0.408 1.197 0 1.615-0.406 0.418-4.695 4.502-4.695 4.502-0.217 0.223-0.502 0.335-0.787 0.335s-0.57-0.112-0.789-0.335c0 0-4.287-4.084-4.695-4.502s-0.436-1.17 0-1.615z"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+  <svg
+    height="700"
+    width="200"
+  >
+    <g
+      class="aggregation-focus"
+      transform="translate(85, 10)"
+    >
+      <defs>
+        <clipPath
+          id="aggregationClip"
+        >
+          <rect
+            height="635"
+            width="95"
+          />
+        </clipPath>
+      </defs>
+      <g
+        class="grid-lines"
+        id="aggGridLines"
+      />
+      <g
+        class="aggregation-data"
+        clip-path="url(#aggregationClip)"
+      >
+        <path
+          class="aggregation-wawes"
+          d="M0,325.4364123199175L13.571428571428571,20.861119467221023L27.142857142857142,0L40.714285714285715,0.9516037277847333L54.285714285714285,145.0047505726004L67.85714285714286,145.0047505726004L81.42857142857143,600L95,358.3015883889453"
+        />
+        <path
+          class="evt-highlight aggregation-event untagged"
+          d="M1824,13295.600712883732L1837.5714285714284,13290.257268078236L1851.1428571428569,13286.304650200002L1864.7142857142858,13298.89463557598L1878.2857142857144,13285.572630149307L1891.857142857143,13285.572630149307L1905.4285714285713,13279.131211113065L1919,13281.473585922819L1932.5714285714284,13296.259463915008L1946.1428571428569,13300.651304992718"
+        />
+        <g
+          class="event-highight"
+        >
+          <rect
+            class="event-tag"
+            fill="#D5D5D5"
+            height="10"
+            width="122.14285714285688"
+            x="1824"
+            y="0"
+          />
+          <rect
+            class="event-area"
+            height="600"
+            width="122.14285714285688"
+            x="1824"
+            y="0"
+          />
+        </g>
+      </g>
+      <g
+        class="aggregation-axis"
+      >
+        <g
+          class="axis axis--x"
+          transform="translate(0, 600)"
+        />
+        <g
+          class="axis axis--y"
+        />
+      </g>
+      <rect
+        class="aggregation-zoom"
+        height="635"
+        width="95"
+      />
+    </g>
+  </svg>
+</div>
+`;
