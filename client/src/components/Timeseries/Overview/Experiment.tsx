@@ -50,7 +50,6 @@ class Experiment extends Component<Props, LocalState> {
       });
     }
   }
-  /* eslint-enable react/no-did-update-set-state */
 
   render() {
     const { experimentData } = this.props;
