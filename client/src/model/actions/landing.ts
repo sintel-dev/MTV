@@ -123,7 +123,6 @@ export function selectExperiment(history: any, experimentID: string) {
       datarunID: '',
     });
 
-    dispatch(action);
     dispatch({
       type: SET_TIMESERIES_PERIOD,
       eventRange: {

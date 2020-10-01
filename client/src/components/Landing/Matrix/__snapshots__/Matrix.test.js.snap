@@ -19,7 +19,7 @@ exports[`Testing the matrix component Should render matrix component without cra
         <g>
           <rect
             class="bar"
-            fill="#FFCD00"
+            fill="#FF9100"
             height="13"
             width="0"
             x="-3"
@@ -33,7 +33,7 @@ exports[`Testing the matrix component Should render matrix component without cra
         <g>
           <rect
             class="bar"
-            fill="#7CA8FF"
+            fill="#4684FF"
             height="13"
             width="0"
             x="-3"
@@ -47,7 +47,7 @@ exports[`Testing the matrix component Should render matrix component without cra
         <g>
           <rect
             class="bar"
-            fill="#A042FF"
+            fill="#8446C2"
             height="13"
             width="0"
             x="-3"
@@ -61,7 +61,7 @@ exports[`Testing the matrix component Should render matrix component without cra
         <g>
           <rect
             class="bar"
-            fill="#F64242"
+            fill="#C24D4D"
             height="13"
             width="0"
             x="-3"
@@ -75,7 +75,7 @@ exports[`Testing the matrix component Should render matrix component without cra
         <g>
           <rect
             class="bar"
-            fill="#F5FF00"
+            fill="#F2FF00"
             height="13"
             width="0"
             x="-3"
@@ -89,7 +89,7 @@ exports[`Testing the matrix component Should render matrix component without cra
         <g>
           <rect
             class="bar"
-            fill="#45F642"
+            fill="#6BC969"
             height="13"
             width="0"
             x="-3"
@@ -103,7 +103,7 @@ exports[`Testing the matrix component Should render matrix component without cra
         <g>
           <rect
             class="bar"
-            fill="#C7C7C7"
+            fill="#D5D5D5"
             height="13"
             width="23.4375"
             x="-26.4375"
@@ -116,7 +116,7 @@ exports[`Testing the matrix component Should render matrix component without cra
           <path
             class="bar-hat"
             d="M-25.4375,86L-26.604166666666668,86C-27.770833333333332,86,-30.104166666666668,86,-31.270833333333332,88.16666666666667C-32.4375,90.33333333333333,-32.4375,94.66666666666667,-31.270833333333332,96.83333333333333C-30.104166666666668,99,-27.770833333333332,99,-26.604166666666668,99L-25.4375,99"
-            fill="#C7C7C7"
+            fill="#D5D5D5"
           />
         </g>
         <line

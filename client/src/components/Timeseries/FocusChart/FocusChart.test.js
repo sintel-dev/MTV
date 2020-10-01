@@ -39,7 +39,7 @@ describe('Testing FocusChart component -> ', () => {
   it('Set focus chart dimensions in state', () => {
     const mountedFocusChart = shallow(<FocusChart {...focusChartProps} />);
     expect(mountedFocusChart.instance().state.width).toBe(300);
-    expect(mountedFocusChart.instance().state.height).toBe(300);
+    expect(mountedFocusChart.instance().state.height).toBe(390);
   });
 
   it('Should Render without crashing', () => {
