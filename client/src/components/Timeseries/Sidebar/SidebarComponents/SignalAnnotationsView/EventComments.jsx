@@ -50,7 +50,6 @@ class EventComments extends Component {
     const { tag, insert_time } = currentEvent;
     const color = tag ? colorSchemes[tag] : colorSchemes.Untagged;
     const eventClassName = (tag && tag.replace(/\s/g, '_').toLowerCase()) || 'untagged';
-
     return (
       <div key={currentEvent.id} className={`user-activity ${(isLastItem && 'last-activity') || ''}`}>
         <table width="100%">

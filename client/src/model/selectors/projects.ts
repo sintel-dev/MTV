@@ -21,8 +21,11 @@ const getSignalNum = (projectName: string) => {
       return 55;
     case 'MSL':
       return 27;
+    case 'MSL':
+      return 27;
+    case 'stock':
+      return 29;
     default:
-      // For SES
       return 71;
   }
 };

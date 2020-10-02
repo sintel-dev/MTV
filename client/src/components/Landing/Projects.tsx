@@ -45,7 +45,8 @@ export const RenderProject: React.FC<renderProjectProps> = ({
       <div className="item-data">
         <ul>
           <li>{project.signalNum} Signals</li>
-          <li>{project.uniquePipelineNum} unique pipelines</li>
+          <li>1 unique pipelines</li>
+          {/* <li>{project.uniquePipelineNum} unique pipelines</li> */}
         </ul>
         <ul className="last">
           <li>{project.experimentNum} experiments</li>
