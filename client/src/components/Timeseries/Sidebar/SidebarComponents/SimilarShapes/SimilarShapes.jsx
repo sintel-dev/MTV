@@ -151,6 +151,7 @@ class SimilarShapes extends Component {
       activeShape,
       resetShapesTags,
       isRsetBtnDisabled,
+      resetSimilarShapes,
     } = this.props;
     if (!similarShapes.length || currentEvent === null) {
       return null;
@@ -177,7 +178,7 @@ class SimilarShapes extends Component {
         </ul>
         <ul>
           <li>
-            <button type="button" className="clean" onClick={() => this.resetShapes()}>
+            <button type="button" className="clean" onClick={() => resetSimilarShapes()}>
               Cancel
             </button>
           </li>
@@ -317,13 +318,6 @@ class SimilarShapes extends Component {
     });
   }
 
-  resetShapes() {
-    const { setActiveEvent, toggleSimilarShapes, resetSimilarShapes } = this.props;
-    resetSimilarShapes();
-    toggleSimilarShapes(false);
-    setActiveEvent(null);
-  }
-
   shapeTagOverride() {
     const { overrideAllTags, currentShapesTag, similarShapes } = this.props;
 
@@ -352,6 +346,7 @@ class SimilarShapes extends Component {
       isSimilarShapesLoading,
       isEditingEventRange,
       isSimilarShapesActive,
+      resetSimilarShapes,
     } = this.props;
     const isSearchDisabled =
       currentEvent === null || (!similarShapes.length && isSimilarShapesLoading) || isEditingEventRange;
@@ -361,7 +356,7 @@ class SimilarShapes extends Component {
         <div className="submit">
           <ul>
             <li>
-              <button className="clean" type="button" onClick={() => this.resetShapes()} disabled={isSearchDisabled}>
+              <button className="clean" type="button" onClick={() => resetSimilarShapes()} disabled={isSearchDisabled}>
                 CANCEL
               </button>
             </li>
@@ -397,7 +392,7 @@ class SimilarShapes extends Component {
   }
 
   renderShapeFormular() {
-    const { currentEvent, isEditingEventRange, isSimilarShapesLoading, rawShapes } = this.props;
+    const { currentEvent, isEditingEventRange, isSimilarShapesLoading, rawShapes, isSimilarShapesActive } = this.props;
     const shapesDisabled = currentEvent === null || isEditingEventRange ? 'disabled' : '';
     const { isShapeFilteringVisible } = this.state;
 
@@ -406,7 +401,7 @@ class SimilarShapes extends Component {
         <div className="shape-container">
           <div className="shape-form">
             {this.renderEventData()}
-            {rawShapes.length !== 0 && (
+            {rawShapes.length !== 0 && isSimilarShapesActive && (
               <FilterShapes
                 toggleShapesFiltering={() => this.toggleShapesFiltering()}
                 isShapeFilteringVisible={isShapeFilteringVisible}

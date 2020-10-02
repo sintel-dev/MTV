@@ -6,6 +6,7 @@ import {
   getIsSimilarShapesLoading,
   getSimilarShapesCoords,
 } from 'src/model/selectors/similarShapes';
+import { resetSimilarShapesAction } from 'src/model/actions/similarShapes';
 import { RootState, DatarunDataType } from '../../../model/types';
 import { formatDate } from '../../../model/utils/Utils';
 import { FocusChartConstants } from '../FocusChart/Constants';
@@ -225,7 +226,8 @@ export class DrawChart extends Component<ChartProps, ChartState> {
   }
 
   handleBrushClick(dataRunID) {
-    const { isEditingEvent, isAddingNewEvent, isPopupOpen } = this.props;
+    const { isEditingEvent, isAddingNewEvent, isPopupOpen, resetShapes } = this.props;
+    resetShapes();
     !isEditingEvent && !isAddingNewEvent && !isPopupOpen && this.props.onSelectDatarun(dataRunID);
   }
 
@@ -367,6 +369,7 @@ const mapDispatch = (dispatch: Function) => ({
   onSelectDatarun: (datarunID: string) => dispatch(selectDatarun(datarunID)),
   onChangePeriod: (period: { eventRange: Array<number>; zoomValue: object; timeStamp: Array<number> }) =>
     dispatch(setTimeseriesPeriod(period)),
+  resetShapes: () => dispatch(resetSimilarShapesAction()),
 });
 
 export default connect<StateProps, DispatchProps, {}, RootState>(mapState, mapDispatch)(DrawChart);

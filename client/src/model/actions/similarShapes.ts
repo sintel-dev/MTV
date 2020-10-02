@@ -15,9 +15,11 @@ import {
   getCurrentShapeMetrics,
   similarShapesResults,
   getPercentageInterval,
+  getIsSimilarShapesActive,
 } from '../selectors/similarShapes';
 import { getSelectedExperimentData } from '../selectors/experiment';
 import { AUTH_USER_DATA } from '../utils/constants';
+import { setActiveEventAction } from './datarun';
 
 const percentageCount = () => {
   const stepValues = [];
@@ -69,10 +71,18 @@ export function getSimilarShapesAction() {
 
 export function resetSimilarShapesAction() {
   return function (dispatch, getState) {
+    const isSimilarShapesActive = getIsSimilarShapesActive(getState());
+    if (!isSimilarShapesActive) {
+      return;
+    }
+
     const currentShapes = getSimilarShapesCoords(getState());
     if (currentShapes.length !== 0) {
       dispatch({ type: 'RESET_SIMILAR_SHAPES' });
     }
+
+    dispatch(toggleSimilarShapesAction(false));
+    dispatch(setActiveEventAction(null));
   };
 }
 
