@@ -28,8 +28,8 @@ import {
 import { timestampToDate } from 'src/components/Timeseries/AggregationLevels/AggregationChart/Utils';
 import { setActiveEventAction } from 'src/model/actions/datarun';
 import Dropdown from 'src/components/Common/Dropdown';
-import { selectedOption } from 'src/components/Timeseries/FocusChart/EventDetails/eventUtils';
 import { colorSchemes } from 'src/components/Timeseries/FocusChart/Constants';
+import { selectedOption } from '../EventDetailsView/eventUtils';
 import FilterShapes from './FilterShapes';
 
 const shapesLanding = () => (
