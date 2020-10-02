@@ -43,9 +43,10 @@ class GoogleAuthentication(Resource):
             return {
                 'data': {
                     'uid': str(db_user.id),
+                    'gid': str(db_user.gid),
                     'name': db_user.name,
                     'email': db_user.email,
-                    # 'picture': db_user.picture,
+                    'picture': db_user.picture,
                     'token': token
                 }
             }, 200

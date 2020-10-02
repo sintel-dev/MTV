@@ -94,7 +94,7 @@ export function googleLoginAction(userData) {
   return async function (dispatch) {
     await axios.post(`${API_URL}auth/google_login/`, userData).then((response) => {
       const { data } = response.data;
-      Cookies.set(AUTH_USER_DATA, response.config.data);
+      Cookies.set(AUTH_USER_DATA, data);
       Cookies.set(SESSION_TOKEN, data.token);
       dispatch({ type: 'SET_LOGIN_STATUS', loginStatus: 'authenticated' });
 
