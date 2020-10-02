@@ -7,7 +7,6 @@ import * as chartUtils from './FocusChartUtils';
 import * as utils from '../../../model/utils/Utils';
 
 jest.mock('./ShowErrors', () => () => 'Show Errors component');
-jest.mock('./EventDetails', () => () => 'Event Details Component');
 jest.mock('./ZoomControls', () => () => 'Zoom Controls Component');
 jest.mock('./FocusChartEvents/AddEvent', () => () => 'Add Event Component');
 

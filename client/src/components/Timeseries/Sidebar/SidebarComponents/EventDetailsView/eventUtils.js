@@ -1,4 +1,4 @@
-import { grouppedOptions } from '../../../../Common/Dropdown';
+import { grouppedOptions } from 'src/components/Common/Dropdown';
 
 export const selectedOption = (selectedLabel) =>
   selectedLabel === null || selectedLabel === 'Untagged'
