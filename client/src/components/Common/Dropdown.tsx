@@ -1,13 +1,38 @@
 import React from 'react';
 import Select from 'react-select';
+import propTypes from 'prop-types';
 
-const optionsKnown = [
+type DropdownOptions = {
+  label: string;
+  icon: string;
+};
+
+type FilterOptions = {
+  value: string;
+  label: string;
+  icon?: string;
+  isFixed?: boolean;
+};
+
+type DropdownProps = {
+  onChange: (tag: string) => string;
+  isSearchable: boolean;
+  isMulti: boolean;
+  closeMenuOnSelect: boolean;
+  value?: string;
+  placeholder?: string;
+  options: DropdownOptions[];
+  formatLabel?: boolean;
+  isDisabled?: boolean;
+};
+
+const optionsKnown: DropdownOptions[] = [
   { label: 'Investigate', icon: 'investigate' },
   { label: 'Do not Investigate', icon: 'not_investigate' },
   { label: 'Postpone', icon: 'postpone' },
 ];
 
-const optionsUnknown = [
+const optionsUnknown: DropdownOptions[] = [
   { label: 'Problem', icon: 'problem' },
   { label: 'Previously seen', icon: 'seen' },
   { label: 'Normal', icon: 'normal' },
@@ -24,7 +49,7 @@ export const grouppedOptions = [
   },
 ];
 
-export const filterOptions = [
+export const filterOptions: FilterOptions[] = [
   { value: 'Investigate', label: 'Investigate', icon: 'investigate', isFixed: true },
   { value: 'Do not Investigate', label: 'Do not Investigate', icon: 'not_investigate', isFixed: true },
   { value: 'Postpone', label: 'Postpone', icon: 'postpone', isFixed: true },
@@ -33,14 +58,17 @@ export const filterOptions = [
   { value: 'Normal', label: 'Normal', icon: 'normal', isFixed: true },
 ];
 
-export const formatOptionLabel = ({ label, icon }) => (
-  <div className="select-row">
-    <i className={`select ${icon}`} />
-    <span>{label}</span>
-  </div>
-);
+export const formatOptionLabel = (props: DropdownOptions) => {
+  const { label, icon } = props;
+  return (
+    <div className="select-row">
+      <i className={`select ${icon}`} />
+      <span>{label}</span>
+    </div>
+  );
+};
 
-export const Dropdown = (props) => {
+export const Dropdown = (props: DropdownProps) => {
   const {
     onChange,
     isSearchable,
@@ -71,7 +99,6 @@ export const Dropdown = (props) => {
 };
 
 Dropdown.defaultProps = {
-  isGrouppedOptions: false,
   placeholder: 'Select a tag',
   isMulti: false,
   isSearchable: false,
@@ -79,6 +106,15 @@ Dropdown.defaultProps = {
   options: filterOptions,
   formatLabel: true,
   isDisabled: false,
+};
+
+Dropdown.propTypes = {
+  onChange: propTypes.func,
+  placeholder: propTypes.string,
+  isMulti: propTypes.bool,
+  isSearchable: propTypes.bool,
+  closeMenuOnSelect: propTypes.bool,
+  options: propTypes.array,
 };
 
 export default Dropdown;
