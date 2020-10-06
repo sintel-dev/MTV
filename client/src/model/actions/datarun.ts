@@ -40,7 +40,7 @@ import {
   SET_SCROLL_HISTORY,
   SWITCH_CHART_STYLE,
 } from '../types';
-import { toggleSimilarShapesAction } from './similarShapes';
+import { resetSimilarShapesAction, toggleSimilarShapesAction } from './similarShapes';
 import { AUTHENTICATED_USER_ID, AUTH_USER_DATA } from '../utils/constants';
 import { setActivePanelAction } from './sidebar';
 import { getCurrentActivePanel } from '../selectors/sidebar';
@@ -60,7 +60,7 @@ export function selectDatarun(datarunID: string) {
     dispatch({ type: SET_ACTIVE_EVENT_ID, activeEventID: null });
     dispatch({ type: ADDING_NEW_EVENTS, isAddingEvent: false });
     dispatch({ type: IS_UPDATE_POPUP_OPEN, isPopupOpen: false });
-    dispatch(toggleSimilarShapesAction(false));
+    dispatch(resetSimilarShapesAction());
   };
 }
 

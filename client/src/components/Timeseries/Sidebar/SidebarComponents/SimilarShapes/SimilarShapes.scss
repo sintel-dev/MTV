@@ -68,7 +68,9 @@
 
         .form-wrapper {
             flex: 1;
-
+            p {
+                display: inline-block;
+            }
             input {
                 &[type='radio'] {
                     width: 0;

@@ -5,6 +5,7 @@ import {
   UPDATE_SIMILAR_SHAPES,
   SET_ACTIVE_SHAPE,
   CHANGE_SHAPES_METRICS,
+  SET_ACTIVE_EVENT_ID,
 } from '../types';
 import { getCurrentEventDetails, getDatarunDetails } from '../selectors/datarun';
 import API from '../utils/api';
