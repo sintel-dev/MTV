@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { Component } from 'react';
 import Select from 'react-select';
-import propTypes from 'prop-types';
 
-type DropdownOptions = {
+type DropdownOption = {
   label: string;
   icon: string;
 };
@@ -14,25 +13,25 @@ type FilterOptions = {
   isFixed?: boolean;
 };
 
-type DropdownProps = {
-  onChange: (tag: string) => string;
-  isSearchable: boolean;
-  isMulti: boolean;
-  closeMenuOnSelect: boolean;
-  value?: string;
+type Props = {
+  onChange: (tag) => any;
+  isSearchable?: boolean;
+  isMulti?: boolean;
+  closeMenuOnSelect?: boolean;
+  value?: string | undefined;
   placeholder?: string;
-  options: DropdownOptions[];
+  options?: FilterOptions[];
   formatLabel?: boolean;
   isDisabled?: boolean;
 };
 
-const optionsKnown: DropdownOptions[] = [
+const optionsKnown: DropdownOption[] = [
   { label: 'Investigate', icon: 'investigate' },
   { label: 'Do not Investigate', icon: 'not_investigate' },
   { label: 'Postpone', icon: 'postpone' },
 ];
 
-const optionsUnknown: DropdownOptions[] = [
+const optionsUnknown: DropdownOption[] = [
   { label: 'Problem', icon: 'problem' },
   { label: 'Previously seen', icon: 'seen' },
   { label: 'Normal', icon: 'normal' },
@@ -58,7 +57,7 @@ export const filterOptions: FilterOptions[] = [
   { value: 'Normal', label: 'Normal', icon: 'normal', isFixed: true },
 ];
 
-export const formatOptionLabel = (props: DropdownOptions) => {
+export const formatOptionLabel = (props: DropdownOption) => {
   const { label, icon } = props;
   return (
     <div className="select-row">
@@ -68,53 +67,46 @@ export const formatOptionLabel = (props: DropdownOptions) => {
   );
 };
 
-export const Dropdown = (props: DropdownProps) => {
-  const {
-    onChange,
-    isSearchable,
-    isMulti,
-    closeMenuOnSelect,
-    value,
-    placeholder,
-    options,
-    formatLabel,
-    isDisabled,
-  } = props;
+export class Dropdown extends Component<Props> {
+  static defaultProps = {
+    placeholder: 'Select a tag',
+    isMulti: false,
+    isSearchable: false,
+    closeMenuOnSelect: true,
+    options: filterOptions,
+    formatLabel: true,
+    isDisabled: false,
+  };
 
-  return (
-    <Select
-      formatOptionLabel={formatLabel && formatOptionLabel}
-      options={options}
-      classNamePrefix="tag-options"
-      className="tag-select"
-      placeholder={placeholder}
-      onChange={onChange}
-      isSearchable={isSearchable}
-      isMulti={isMulti}
-      closeMenuOnSelect={closeMenuOnSelect}
-      value={value}
-      isDisabled={isDisabled}
-    />
-  );
-};
+  render() {
+    const {
+      onChange,
+      isSearchable,
+      isMulti,
+      closeMenuOnSelect,
+      value,
+      placeholder,
+      options,
+      formatLabel,
+      isDisabled,
+    } = this.props;
 
-Dropdown.defaultProps = {
-  placeholder: 'Select a tag',
-  isMulti: false,
-  isSearchable: false,
-  closeMenuOnSelect: true,
-  options: filterOptions,
-  formatLabel: true,
-  isDisabled: false,
-};
-
-Dropdown.propTypes = {
-  onChange: propTypes.func,
-  placeholder: propTypes.string,
-  isMulti: propTypes.bool,
-  isSearchable: propTypes.bool,
-  closeMenuOnSelect: propTypes.bool,
-  options: propTypes.array,
-};
+    return (
+      <Select
+        formatOptionLabel={formatLabel && formatOptionLabel}
+        options={options}
+        classNamePrefix="tag-options"
+        className="tag-select"
+        placeholder={placeholder}
+        onChange={onChange}
+        isSearchable={isSearchable}
+        isMulti={isMulti}
+        closeMenuOnSelect={closeMenuOnSelect}
+        value={value}
+        isDisabled={isDisabled}
+      />
+    );
+  }
+}
 
 export default Dropdown;
