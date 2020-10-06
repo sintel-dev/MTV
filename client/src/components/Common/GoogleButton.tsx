@@ -4,7 +4,14 @@ import { GOOGLE_CLIEN_ID } from '../../model/utils/constants';
 
 import './google-button.scss';
 
-export interface GoogleButtonProps {
+type userPayload = {
+  email: string;
+  name: string;
+  gid: string;
+  picture: string;
+};
+
+interface GoogleButtonProps {
   text: string;
   onUserSelect?: (userData) => void;
 }
@@ -17,7 +24,7 @@ export class GoogleButton extends Component<GoogleButtonProps> {
       }
       const { email, name, googleId, imageUrl } = response.profileObj;
 
-      const payload = {
+      const payload: userPayload = {
         email,
         name,
         gid: googleId,
