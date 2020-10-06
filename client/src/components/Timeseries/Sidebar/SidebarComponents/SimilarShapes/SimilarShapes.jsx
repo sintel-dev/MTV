@@ -346,7 +346,7 @@ class SimilarShapes extends Component {
       isSimilarShapesLoading,
       isEditingEventRange,
       isSimilarShapesActive,
-      resetSimilarShapes,
+      setActiveEvent,
     } = this.props;
     const isSearchDisabled =
       currentEvent === null || (!similarShapes.length && isSimilarShapesLoading) || isEditingEventRange;
@@ -356,7 +356,7 @@ class SimilarShapes extends Component {
         <div className="submit">
           <ul>
             <li>
-              <button className="clean" type="button" onClick={() => resetSimilarShapes()} disabled={isSearchDisabled}>
+              <button className="clean" type="button" onClick={() => setActiveEvent(null)} disabled={isSearchDisabled}>
                 CANCEL
               </button>
             </li>
