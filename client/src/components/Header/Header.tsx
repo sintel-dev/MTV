@@ -24,6 +24,14 @@ import './header.scss';
 
 type StateProps = ReturnType<typeof mapState>;
 type DispatchProps = ReturnType<typeof mapDispatch>;
+
+type UserData = {
+  email: string;
+  gid: string;
+  name: string;
+  picture: string;
+};
+
 type Props = StateProps & DispatchProps;
 
 const downloadAsJSON = (dataRun) => {
@@ -32,25 +40,8 @@ const downloadAsJSON = (dataRun) => {
   fileDownload(jsonData, `Datarun_${id}.json`);
 };
 
-const filterOptions = [
-  { value: 'Investigate', label: 'Investigate', icon: 'investigate', isFixed: true },
-  { value: 'Do not Investigate', label: 'Do not Investigate', icon: 'not_investigate', isFixed: true },
-  { value: 'Postpone', label: 'Postpone', icon: 'postpone', isFixed: true },
-  { value: 'Problem', label: 'Problem', icon: 'problem', isFixed: true },
-  { value: 'Previously seen', label: 'Previously seen', icon: 'seen', isFixed: true },
-  { value: 'Normal', label: 'Normal', icon: 'normal', isFixed: true },
-  { value: 'Untagged', label: 'Untagged', icon: 'untagged', isFixed: true },
-];
-
-const formatOptionLabel = ({ label, icon }) => (
-  <div className="select-row">
-    <i className={`select ${icon}`} />
-    <span>{label}</span>
-  </div>
-);
-
 export const Header: React.FC<Props> = (props) => {
-  const isSwitchVisible = props.selectedExperimentID ? 'active' : '';
+  const switchClassName: string = props.selectedExperimentID ? 'active' : '';
   const {
     experimentDetails,
     isTimeSyncEnabled,
@@ -63,13 +54,11 @@ export const Header: React.FC<Props> = (props) => {
     activeEvent,
   } = props;
   const { isExperimentDataLoading } = experimentData;
-
   let location = useLocation();
+  const currentView: string = location.pathname;
+  const linkTo: string = currentView === '/' ? `/experiment/${props.selectedExperimentID}` : '/';
 
-  const currentView = location.pathname;
-  const linkTo = currentView === '/' ? `/experiment/${props.selectedExperimentID}` : '/';
-
-  const logoutUser = () => {
+  const logoutUser = (): void => {
     props.userLogout();
     window.location.href = '/';
   };
@@ -77,15 +66,13 @@ export const Header: React.FC<Props> = (props) => {
   const [isInfoOpen, toggleInfo] = useState(false);
   const [isOptsOpen, toggleOptsState] = useState(false);
   const [isUploadModalVisible, toggleUploadModalState] = useState(false);
-  const activeClass = isInfoOpen ? 'active' : '';
+  const activeClass: string = isInfoOpen ? 'active' : '';
 
   const dropDownProps = {
     isMulti: true,
     closeMenuOnSelect: false,
     placeholder: 'Filter',
     onChange: filterByTags,
-    formatOptionLabel,
-    options: filterOptions,
     isDisabled: activeEvent !== null,
   };
 
@@ -93,20 +80,18 @@ export const Header: React.FC<Props> = (props) => {
     if (currentView === '/') {
       return null;
     }
-    const dropdown = document.querySelector('.exp-info');
+    const dropdown: Node = document.querySelector('.exp-info');
     dropdown && !dropdown.contains(evt.target as Node) && toggleInfo(false);
 
-    const userOpts = document.querySelector('.data-opts');
+    const userOpts: Node = document.querySelector('.data-opts');
     userOpts && !userOpts.contains(evt.target as Node) && toggleOptsState(false);
     return null;
   });
 
   // @TODO - check the case of normal/non google login
-  const userData = JSON.parse(Cookies.get(AUTH_USER_DATA));
+  const userData: UserData = JSON.parse(Cookies.get(AUTH_USER_DATA));
 
   const { name, picture } = userData;
-  const isLinearBtnActive = currentChartStyle === 'linear' ? 'active' : '';
-  const isStepBtnActive = currentChartStyle !== 'linear' ? 'active' : '';
 
   return (
     <header id="header" className="main-header">
@@ -114,7 +99,7 @@ export const Header: React.FC<Props> = (props) => {
         <Link to="/" className="logo">
           <b>MTV</b>
         </Link>
-        <Link to={linkTo} className={`page-switch-btn ${isSwitchVisible}`}>
+        <Link to={linkTo} className={`page-switch-btn ${switchClassName}`}>
           <FontAwesomeIcon icon={currentView === '/' ? faChevronRight : faChevronLeft} />
         </Link>
         {currentView !== '/' && (
@@ -169,11 +154,19 @@ export const Header: React.FC<Props> = (props) => {
                   <li className="view-options">
                     <span>Chart Style</span>
                     <div className="switch-control-wrapper">
-                      <button type="button" className={isLinearBtnActive} onClick={() => switchChartStyle('linear')}>
+                      <button
+                        type="button"
+                        className={currentChartStyle === 'linear' ? 'active' : ''}
+                        onClick={() => switchChartStyle('linear')}
+                      >
                         <LineIcon />
                         Line
                       </button>
-                      <button type="button" className={isStepBtnActive} onClick={() => switchChartStyle('step')}>
+                      <button
+                        type="button"
+                        className={currentChartStyle === 'step' ? 'active' : ''}
+                        onClick={() => switchChartStyle('step')}
+                      >
                         <StepIcon />
                         Step
                       </button>
