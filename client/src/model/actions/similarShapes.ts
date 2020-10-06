@@ -5,7 +5,6 @@ import {
   UPDATE_SIMILAR_SHAPES,
   SET_ACTIVE_SHAPE,
   CHANGE_SHAPES_METRICS,
-  SET_ACTIVE_EVENT_ID,
 } from '../types';
 import { getCurrentEventDetails, getDatarunDetails } from '../selectors/datarun';
 import API from '../utils/api';
@@ -48,10 +47,22 @@ export function getSimilarShapesAction() {
     start_time /= 1000;
     stop_time /= 1000;
 
-    const getMinpercentage = (currentPercent) => {
+    const getMinpercentage = (shapesList) => {
       const percentageRange = percentageCount();
-      const percentageIndex = percentageRange.findIndex((current) => current >= currentPercent);
-      return percentageRange[percentageIndex];
+      let minPercent = 0;
+
+      shapesList.forEach((shape) => {
+        const { similarity } = shape;
+        minPercent = similarity * 100 < 100 ? similarity : minPercent;
+      });
+
+      minPercent *= 100;
+
+      const closest = percentageRange.reduce((current, next) =>
+        Math.abs(next - minPercent) < Math.abs(current - minPercent) ? next : current,
+      );
+
+      return closest;
     };
 
     dispatch({ type: 'FETCH_SIMILAR_SHAPES_REQUEST' });
@@ -60,8 +71,7 @@ export function getSimilarShapesAction() {
       .then((shapesData) => {
         dispatch({ type: 'FETCH_SIMILAR_SHAPES_SUCCESS', similarShapes: shapesData.windows });
         const currentShapes = getSimilarShapesCoords(getState());
-        const currentPercent = currentShapes[4]?.similarity * 100 || 0;
-        const minPercentage = getMinpercentage(currentPercent);
+        const minPercentage = getMinpercentage(currentShapes.length > 5 ? currentShapes.slice(0, 5) : currentShapes);
 
         dispatch(updateCurrentPercentage(minPercentage));
         dispatch(toggleSimilarShapesAction(true));
