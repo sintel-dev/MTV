@@ -6,31 +6,29 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import { connect } from 'react-redux';
 import { registerUserAction, googleRegisterAction } from 'src/model/actions/users';
 import { registerStatus, googleRegisterStatus } from 'src/model/selectors/users';
+import { RootState } from 'src/model/types';
+import { isEmail, isName } from 'src/model/utils/Utils';
 import { FooterWrapper } from './FooterWrapper';
 import { GoogleButton } from '../Common/GoogleButton';
-import { isEmail, isName } from '../../model/utils/Utils';
-import './Login.scss';
 import Wrapper from './Wrapper';
+import './Login.scss';
 
-export interface RegisterState {
+type RegisterState = {
   name: string;
   nameError: boolean;
   email: string;
   emailError: boolean;
-}
-export interface RegisterPayload {
-  email: string;
-  name: string;
-}
-export interface RegisterProps {
-  registerStatus: 'loading' | 'success' | 'fail';
-  googleRegisterStatus: 'success' | 'fail';
-  register: (data: RegisterPayload) => void;
-  googleRegister: (userData) => void;
+};
+
+type OwnProps = {
   history: {
     push: (url: string) => void;
   };
-}
+};
+
+type StateProps = ReturnType<typeof mapState>;
+type DispatchProps = ReturnType<typeof mapDispatch>;
+type RegisterProps = StateProps & DispatchProps & OwnProps;
 
 export class Register extends Component<RegisterProps, RegisterState> {
   constructor(props) {
@@ -179,13 +177,14 @@ export class Register extends Component<RegisterProps, RegisterState> {
   }
 }
 
-export default connect(
-  (state) => ({
-    registerStatus: registerStatus(state),
-    googleRegisterStatus: googleRegisterStatus(state),
-  }),
-  (dispatch: Function) => ({
-    register: (data) => dispatch(registerUserAction(data)),
-    googleRegister: (userData) => dispatch(googleRegisterAction(userData)),
-  }),
-)(Register);
+const mapState = (state: RootState) => ({
+  registerStatus: registerStatus(state),
+  googleRegisterStatus: googleRegisterStatus(state),
+});
+
+const mapDispatch = (dispatch: Function) => ({
+  register: (data) => dispatch(registerUserAction(data)),
+  googleRegister: (userData) => dispatch(googleRegisterAction(userData)),
+});
+
+export default connect<StateProps, DispatchProps, {}, RootState>(mapState, mapDispatch)(Register);
