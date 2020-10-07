@@ -24,5 +24,5 @@ export type UsersState = {
   googleRegisterStatus?: string;
   registerFailure?: string;
   isUsersDataLoading: boolean;
-  userData: Array<[]>;
+  usersData: Array<[]>;
 };
