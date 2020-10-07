@@ -6,26 +6,25 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import { RootState } from 'src/model/types';
+import { getLoginStatus } from 'src/model/selectors/users';
+import { isEmail } from 'src/model/utils/Utils';
+import { onUserLoginAction, googleLoginAction, getUserAuthStatusAction } from 'src/model/actions/users';
 import { FooterWrapper } from './FooterWrapper';
 import { GoogleButton } from '../Common/GoogleButton';
 import Wrapper from './Wrapper';
-import { getLoginStatus } from '../../model/selectors/users';
-import { isEmail } from '../../model/utils/Utils';
 
-import { onUserLoginAction, googleLoginAction, getUserAuthStatusAction } from '../../model/actions/users';
-
-export interface LoginProps {
-  loginStatus: 'loading' | 'success' | 'fail' | 'authenticated';
-  onUserLogin: (userData: object) => void;
-  isUserLoggedIn: boolean;
+interface LoginProps {
   history: {
     push: (url: string) => void;
   };
-  googleLogin: (userData) => void;
-  isUserAuthenthicated: () => void;
 }
 
-export interface LoginState {
+type StateProps = ReturnType<typeof mapState>;
+type DispatchProps = ReturnType<typeof mapDispatch>;
+type Props = StateProps & DispatchProps & LoginProps;
+
+interface LoginState {
   email: string;
   emailError: boolean;
   passkey: string;
@@ -33,7 +32,7 @@ export interface LoginState {
   rememberMe: boolean;
 }
 
-export class Login extends Component<LoginProps, LoginState> {
+export class Login extends Component<Props, LoginState> {
   constructor(props) {
     super(props);
     this.state = {
@@ -43,6 +42,7 @@ export class Login extends Component<LoginProps, LoginState> {
       emailError: false,
       passkeyError: false,
     };
+
     this.onFormSubmitHandler = this.onFormSubmitHandler.bind(this);
     this.onEmailChangeHandler = this.onEmailChangeHandler.bind(this);
     this.onPasskeyChangeHandler = this.onPasskeyChangeHandler.bind(this);
@@ -52,18 +52,20 @@ export class Login extends Component<LoginProps, LoginState> {
     this.onRememberMeChangeHandler = this.onRememberMeChangeHandler.bind(this);
   }
 
-  componentDidUpdate(prevProps) {
-    if (this.props.loginStatus === 'authenticated' && prevProps.loginStatus !== this.props.loginStatus) {
-      this.props.history.push('/');
-      this.props.isUserAuthenthicated();
+  componentDidUpdate(prevProps): void {
+    const { loginStatus, history, isUserAuthenthicated } = this.props;
+    if (loginStatus === 'authenticated' && prevProps.loginStatus !== loginStatus) {
+      history.push('/');
+      isUserAuthenthicated();
     }
   }
 
-  onFormSubmitHandler() {
+  onFormSubmitHandler(): void {
+    const { email, passkey, rememberMe } = this.state;
     this.props.onUserLogin({
-      email: this.state.email,
-      password: this.state.passkey,
-      rememberMe: this.state.rememberMe,
+      email,
+      password: passkey,
+      rememberMe,
     });
   }
 
@@ -106,7 +108,9 @@ export class Login extends Component<LoginProps, LoginState> {
   }
 
   render() {
-    const isLoading = this.props.loginStatus === 'loading';
+    const isLoading: boolean = this.props.loginStatus === 'loading';
+    const { googleLogin } = this.props;
+    const { passkey, email, emailError, passkeyError, rememberMe } = this.state;
     return (
       <Wrapper title="Login">
         <div className="field-wrapper">
@@ -121,9 +125,9 @@ export class Login extends Component<LoginProps, LoginState> {
             name="new-email"
             helperText="Invalid e-mail"
             onChange={this.onEmailChangeHandler}
-            value={this.state.email}
+            value={email}
             disabled={isLoading}
-            error={this.state.emailError}
+            error={emailError}
             onBlur={this.onEmailBlurHandler}
           />
         </div>
@@ -136,14 +140,14 @@ export class Login extends Component<LoginProps, LoginState> {
             label="Passkey"
             autoComplete="new-password"
             name="new-password"
-            helperText={this.state.passkeyError ? 'Passkey is required' : null}
+            helperText={passkeyError ? 'Passkey is required' : null}
             disabled={isLoading}
-            value={this.state.passkey}
-            error={this.state.passkeyError}
+            value={passkey}
+            error={passkeyError}
             onChange={this.onPasskeyChangeHandler}
             onBlur={this.onPasskeyBlurHandler}
           />
-          {this.state.passkeyError && (
+          {passkeyError && (
             <Link to="/reset-passkey" className="field-url">
               Forgot Passkey?
             </Link>
@@ -152,9 +156,7 @@ export class Login extends Component<LoginProps, LoginState> {
         <div className="field-wrapper">
           <FormControlLabel
             className="checkbox-label"
-            control={
-              <Checkbox checked={this.state.rememberMe} onChange={this.onRememberMeChangeHandler} color="primary" />
-            }
+            control={<Checkbox checked={rememberMe} onChange={this.onRememberMeChangeHandler} color="primary" />}
             label="Remember Me"
           />
         </div>
@@ -182,20 +184,21 @@ export class Login extends Component<LoginProps, LoginState> {
           <p>- or -</p>
         </FooterWrapper>
         <FooterWrapper>
-          <GoogleButton onUserSelect={this.props.googleLogin} text="Sign In with Google" />
+          <GoogleButton onUserSelect={googleLogin} text="Sign In with Google" />
         </FooterWrapper>
       </Wrapper>
     );
   }
 }
 
-export default connect(
-  (state) => ({
-    loginStatus: getLoginStatus(state),
-  }),
-  (dispatch: Function) => ({
-    onUserLogin: (userData) => dispatch(onUserLoginAction(userData)),
-    googleLogin: (userData) => dispatch(googleLoginAction(userData)),
-    isUserAuthenthicated: () => dispatch(getUserAuthStatusAction()),
-  }),
-)(Login);
+const mapState = (state: RootState) => ({
+  loginStatus: getLoginStatus(state),
+});
+
+const mapDispatch = (dispatch: Function) => ({
+  onUserLogin: (userData) => dispatch(onUserLoginAction(userData)),
+  googleLogin: (userData) => dispatch(googleLoginAction(userData)),
+  isUserAuthenthicated: () => dispatch(getUserAuthStatusAction()),
+});
+
+export default connect<StateProps, DispatchProps, {}, RootState>(mapState, mapDispatch)(Login);
