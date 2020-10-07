@@ -6,24 +6,22 @@ import { connect } from 'react-redux';
 import { onUserResetPassKey } from 'src/model/actions/users';
 import { getPasswordResetStatus } from 'src/model/selectors/users';
 import { Link } from 'react-router-dom';
+import { RootState } from 'src/model/types';
 import { isEmail } from '../../model/utils/Utils';
 import Wrapper from './Wrapper';
 
-export interface ResetPasskeyState {
+interface ResetPasskeyState {
   email: string;
   emailError: boolean;
 }
 
-export interface ResetPasskeyProps {
-  resetPassKyeStatus: 'loading' | 'success' | 'fail' | '';
-  resetPasskey: (userData) => void;
-  error: {
-    message: string;
-  };
-}
+type StateProps = ReturnType<typeof mapState>;
+type DispatchProps = ReturnType<typeof mapDispatch>;
+type Props = StateProps & DispatchProps;
 
-class ResetPassKey extends Component<ResetPasskeyProps, ResetPasskeyState> {
-  constructor(props) {
+// @TODO - check to see if it's needed, not in use at the moment
+class ResetPassKey extends Component<Props, ResetPasskeyState> {
+  constructor(props: Props) {
     super(props);
     this.state = {
       email: '',
@@ -109,11 +107,12 @@ class ResetPassKey extends Component<ResetPasskeyProps, ResetPasskeyState> {
   }
 }
 
-export default connect(
-  (state) => ({
-    resetPassKyeStatus: getPasswordResetStatus(state),
-  }),
-  (dispatch: Function) => ({
-    resetPasskey: (userEmail) => dispatch(onUserResetPassKey(userEmail)),
-  }),
-)(ResetPassKey);
+const mapState = (state: RootState) => ({
+  resetPassKyeStatus: getPasswordResetStatus(state),
+});
+
+const mapDispatch = (dispatch: Function) => ({
+  resetPasskey: (userEmail) => dispatch(onUserResetPassKey(userEmail)),
+});
+
+export default connect<StateProps, DispatchProps, {}, RootState>(mapState, mapDispatch)(ResetPassKey);
