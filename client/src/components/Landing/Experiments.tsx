@@ -2,16 +2,16 @@ import React from 'react';
 import { connect } from 'react-redux';
 import * as _ from 'lodash';
 import { withRouter, useHistory } from 'react-router-dom';
-import Loader from '../Common/Loader';
+import { RootState, ExperimentDataType } from 'src/model/types';
+import { selectExperiment } from 'src/model/actions/landing';
 import {
   getFilteredExperiments,
   getIsExperimentsLoading,
   getSelectedPipeline,
   getSelectedExperiment,
-} from '../../model/selectors/projects';
-import { selectExperiment } from '../../model/actions/landing';
-import { RootState, ExperimentDataType } from '../../model/types';
-import { TagStats, Scale as MatrixScale } from './Matrix/types';
+} from 'src/model/selectors/projects';
+import Loader from '../Common/Loader';
+import { TagStats, MatrixScale } from './Matrix/types';
 import { fromTagToID } from './utils';
 import Matrix from './Matrix/Matrix';
 
@@ -45,17 +45,19 @@ export const Experiment: React.FC<ExperimentProps> = ({
   let history = useHistory();
   const activeClass = selectedPipeline || selectedExperiment === experiment.id ? 'active' : '';
   const eventCounts = countDatarunEvents(experiment);
+  const { id, dataruns, name, date_creation, created_by } = experiment;
+
   return (
-    <div className={`cell ${activeClass}`} key={index} onClick={() => history.push(`/experiment/${experiment.id}`)}>
+    <div className={`cell ${activeClass}`} key={index} onClick={() => history.push(`/experiment/${id}`)}>
       <h3>
-        #{index + 1} {experiment.name}
+        #{index + 1} {name}
       </h3>
       <div className="item-data">
         <ul>
-          <li>Signals: {experiment.dataruns.length}</li>
+          <li>Signals: {dataruns.length}</li>
           <li>Events: {eventCounts}</li>
-          <li>DC: {experiment.date_creation.substring(0, 10)}</li>
-          <li>By: {`${experiment.created_by}`}</li>
+          <li>DC: {date_creation.substring(0, 10)}</li>
+          <li>By: {`${created_by}`}</li>
         </ul>
         <Matrix experiment={experiment} tagStats={tagStats} scale={matrixScale} />
       </div>
@@ -77,7 +79,6 @@ export const Experiments: React.FC<Props> = ({
   let maxScore: number = Number.MIN_SAFE_INTEGER;
   let tagStatsList: TagStats[] = [];
 
-  // @TODO - move this logic to selectors/experiment
   filteredExperiments.forEach((currentExperiment) => {
     const { dataruns } = currentExperiment;
     let tagStats: { [index: string]: number } = {};

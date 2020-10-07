@@ -7,7 +7,7 @@ export const FETCH_EVENT_HISTORY = 'FETCH_EVENT_HISTORY';
 export type EventDataType = {
   id: string;
   score: number;
-  tag: string;
+  tag: string | null;
   start_time: number;
   stop_time: number;
   insert_time?: string;
