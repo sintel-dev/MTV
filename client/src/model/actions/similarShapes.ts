@@ -48,7 +48,6 @@ export function getSimilarShapesAction() {
     stop_time /= 1000;
 
     const getMinpercentage = (shapesList) => {
-      const percentageRange = percentageCount();
       let minPercent = 0;
 
       shapesList.forEach((shape) => {
@@ -58,11 +57,9 @@ export function getSimilarShapesAction() {
 
       minPercent *= 100;
 
-      const closest = percentageRange.reduce((current, next) =>
-        Math.abs(next - minPercent) < Math.abs(current - minPercent) ? next : current,
-      );
+      minPercent = Math.ceil(Math.ceil(minPercent / 5) * 5) - 5;
 
-      return closest;
+      dispatch(updateCurrentPercentage(minPercent));
     };
 
     dispatch({ type: 'FETCH_SIMILAR_SHAPES_REQUEST' });
@@ -70,10 +67,8 @@ export function getSimilarShapesAction() {
       .all({}, { start: start_time, end: stop_time, datarun_id: datarun, metric: shapeMetric })
       .then((shapesData) => {
         dispatch({ type: 'FETCH_SIMILAR_SHAPES_SUCCESS', similarShapes: shapesData.windows });
-        const currentShapes = getSimilarShapesCoords(getState());
-        const minPercentage = getMinpercentage(currentShapes.length > 5 ? currentShapes.slice(0, 5) : currentShapes);
-
-        dispatch(updateCurrentPercentage(minPercentage));
+        const currentShapes = shapesData.windows;
+        getMinpercentage(currentShapes.length > 5 ? currentShapes.slice(0, 5) : currentShapes);
         dispatch(toggleSimilarShapesAction(true));
       })
       .catch((error) => dispatch({ type: 'FETCH_SIMILAR_SHAPES_FAILURE', error }));
