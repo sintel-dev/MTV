@@ -1,14 +1,14 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { fetchProjects } from '../../model/actions/landing';
+import { fetchProjects } from 'src/model/actions/landing';
+import { getSelectedExperiment } from 'src/model/selectors/projects';
+import { RootState } from 'src/model/types';
+import { getProcessedDataRuns } from 'src/model/selectors/experiment';
 import Projects from './Projects';
 import Pipelines from './Pipelines';
 import Experiments from './Experiments';
 
-import { getSelectedExperiment } from '../../model/selectors/projects';
-import { RootState } from '../../model/types';
 import './Landing.scss';
-import { getProcessedDataRuns } from '../../model/selectors/experiment';
 
 type StateProps = ReturnType<typeof mapState>;
 type DispatchProps = ReturnType<typeof mapDispatch>;
