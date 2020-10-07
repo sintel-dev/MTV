@@ -37,20 +37,6 @@ export const getSimilarShapesCoords = createSelector(
     }
 
     const { timeSeries } = dataRun;
-    // const { events } = dataRun;
-    // const currentEvents = [];
-
-    // Avoid shapes overlaping entirely current events
-    // events.forEach((current) => {
-    //   currentEvents.push(current.start_time);
-    //   currentEvents.push(current.stop_time);
-    // });
-
-    // console.log(similarShapes);
-
-    // const filteredShapes = similarShapes.filter(
-    //   (shape) => currentEvents.indexOf(shape.start) === -1 && shape.similarity * 100 >= percentageInterval[0],
-    // );
     const filteredShapes = similarShapes.filter((shape) => shape.similarity * 100 >= percentageInterval[0]);
 
     return filteredShapes.map((currentShape) => {
