@@ -1,15 +1,15 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { getProjectsList, getIsProjectsLoading, getSelectedProjectName } from 'src/model/selectors/projects';
+import { selectProject } from 'src/model/actions/landing';
+import { RootState } from 'src/model/types';
 import Loader from '../Common/Loader';
-import { getProjectsList, getIsProjectsLoading, getSelectedProjectName } from '../../model/selectors/projects';
-import { selectProject } from '../../model/actions/landing';
-import { RootState } from '../../model/types';
 
 type StateProps = ReturnType<typeof mapState>;
 type DispatchProps = ReturnType<typeof mapDispatch>;
 type Props = StateProps & DispatchProps;
 
-const Projects: React.FC<Props> = ({ projects, isProjectsLoading, onSelectProject, selectedProjectName }) => (
+const Projects: React.FC<Props> = ({ projects, isProjectsLoading, onSelectProject, selectedProjectName }: Props) => (
   <div className="item-row scroll-style" id="projects">
     <h2>Datasets</h2>
     <div className="item-wrapper">
@@ -25,30 +25,31 @@ const Projects: React.FC<Props> = ({ projects, isProjectsLoading, onSelectProjec
 );
 
 let props: Props;
-type renderProjectProps = {
+type ProjectProps = {
   project: any;
   index: number;
   onSelectProject: typeof props.onSelectProject;
   selectedProjectName: typeof props.selectedProjectName;
 };
 
-export const RenderProject: React.FC<renderProjectProps> = ({
+export const RenderProject: React.FC<ProjectProps> = ({
   project,
   index,
   onSelectProject,
   selectedProjectName,
-}) => {
+}: ProjectProps) => {
   const activeClass = project.name === selectedProjectName ? 'active' : '';
+  const { name, signalNum, uniquePipelineNum, experimentNum } = project;
   return (
-    <div className={`cell ${activeClass}`} key={index} onClick={() => onSelectProject(project.name)}>
-      <h3>{project.name}</h3>
+    <div className={`cell ${activeClass}`} key={index} onClick={() => onSelectProject(name)}>
+      <h3>{name}</h3>
       <div className="item-data">
         <ul>
-          <li>{project.signalNum} Signals</li>
-          <li>{project.uniquePipelineNum} unique pipelines</li>
+          <li>{signalNum} Signals</li>
+          <li>{uniquePipelineNum} unique pipelines</li>
         </ul>
         <ul className="last">
-          <li>{project.experimentNum} experiments</li>
+          <li>{experimentNum} experiments</li>
         </ul>
       </div>
     </div>
