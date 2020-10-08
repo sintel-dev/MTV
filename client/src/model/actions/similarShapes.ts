@@ -21,15 +21,6 @@ import { getSelectedExperimentData } from '../selectors/experiment';
 import { AUTH_USER_DATA } from '../utils/constants';
 import { setActiveEventAction } from './datarun';
 
-const percentageCount = () => {
-  const stepValues = [];
-  for (let iterator = 0; iterator <= 100; iterator += 5) {
-    stepValues.push(iterator);
-  }
-
-  return stepValues;
-};
-
 export function toggleSimilarShapesAction(modalState) {
   return async function (dispatch) {
     dispatch({

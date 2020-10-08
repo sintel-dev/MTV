@@ -1,14 +1,15 @@
 import { createSelector } from 'reselect';
+import { RootState } from '../types';
 
 import { getDatarunDetails, getCurrentEventDetails } from './datarun';
 
-export const getIsSimilarShapesActive = (state) => state.similarShapes.isShapesModalOpen;
-export const getIsSimilarShapesLoading = (state) => state.similarShapes.isSimilarShapesLoading;
-export const similarShapesResults = (state) => state.similarShapes.similarShapes;
-export const getActiveShape = (state) => state.similarShapes.activeShape;
-export const getCurrentShapeMetrics = (state) => state.similarShapes.shapeMetrics;
-export const getCurrentShapesTag = (state) => state.similarShapes.shapesTag;
-export const getPercentageInterval = (state) => state.similarShapes.currentPercentage;
+export const getIsSimilarShapesActive = (state: RootState) => state.similarShapes.isShapesModalOpen;
+export const getIsSimilarShapesLoading = (state: RootState) => state.similarShapes.isSimilarShapesLoading;
+export const similarShapesResults = (state: RootState) => state.similarShapes.similarShapes;
+export const getActiveShape = (state: RootState) => state.similarShapes.activeShape;
+export const getCurrentShapeMetrics = (state: RootState) => state.similarShapes.shapeMetrics;
+export const getCurrentShapesTag = (state: RootState) => state.similarShapes.shapesTag;
+export const getPercentageInterval = (state: RootState) => state.similarShapes.currentPercentage;
 
 export const getSimilarShapesFound = createSelector(
   [getIsSimilarShapesLoading, similarShapesResults, getCurrentEventDetails],

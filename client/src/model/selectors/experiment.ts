@@ -236,12 +236,12 @@ export const getProcessedDataRuns = createSelector(
     )[0];
 
     return experimentData.data.dataruns.map((datarun) => {
-      const timeSeries = groupDataBy(datarun.prediction, 'y_raw');
-      const maxTimeSeries = groupDataBy(maxTimeSeriesData.prediction, 'y_raw');
-      const timeseriesPred = groupDataBy(datarun.prediction, 'y_raw_hat');
-      const timeseriesErr = groupDataBy(datarun.prediction, 'es_raw') as [number, number][];
-      const period = groupDataByPeriod(datarun.raw);
-      const { events } = datarun;
+      const { prediction, events, raw } = datarun;
+      const timeSeries = groupDataBy(prediction, 'y_raw') as [number, number][];
+      const maxTimeSeries = groupDataBy(maxTimeSeriesData.prediction, 'y_raw') as [number, number][];
+      const timeseriesPred = groupDataBy(prediction, 'y_raw_hat') as [number, number][];
+      const timeseriesErr = groupDataBy(prediction, 'es_raw') as [number, number][];
+      const period = groupDataByPeriod(raw);
 
       normalizePeriodData(period);
 

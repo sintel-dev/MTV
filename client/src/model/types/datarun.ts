@@ -58,7 +58,7 @@ export type DatarunState = {
   isAddingEvent: boolean;
   newEventDetails: object;
   filterTags: any;
-  zoomDirection: '';
+  zoomDirection: string;
   zoomCounter: number;
   zoomMode: boolean;
   periodLevel: {
