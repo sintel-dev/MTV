@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as d3 from 'd3';
-import PropTypes from 'prop-types';
+// import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import {
   getAggregationZoomValue,
@@ -8,20 +8,27 @@ import {
   getIsSigRawLoading,
   getSignalRawData,
 } from 'src/model/selectors/aggregationLevels';
-import { getWrapperSize } from '../FocusChartUtils';
 import {
   getSelectedPeriodRange,
   getDatarunDetails,
   isPredictionEnabled,
   getIsAggregationActive,
-} from '../../../../model/selectors/datarun';
+} from 'src/model/selectors/datarun';
+import { RootState } from 'src/model/types';
+import { getWrapperSize } from '../FocusChartUtils';
 import { FocusChartConstants } from '../Constants';
 import './ShowErrors.scss';
 
 const { TRANSLATE_TOP, TRANSLATE_LEFT, CHART_MARGIN, MIN_VALUE, MAX_VALUE } = FocusChartConstants;
 
-class ShowErrors extends Component {
-  constructor(props) {
+type StateProps = ReturnType<typeof mapState>;
+type LocalState = {
+  width: number;
+  height: number;
+};
+
+class ShowErrors extends Component<StateProps, LocalState> {
+  constructor(props: StateProps) {
     super(props);
     this.state = {
       width: 0,
@@ -35,7 +42,7 @@ class ShowErrors extends Component {
     this.setState({ width });
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: StateProps) {
     if (this.props.isAggregationActive) {
       const { aggZoomValue, isSignalRawLoading } = this.props;
       if (aggZoomValue !== prevProps.aggZoomValue && !isSignalRawLoading) {
@@ -64,19 +71,19 @@ class ShowErrors extends Component {
     const { maxTimeSeries } = dataRun;
     const { width, height } = this.state;
 
-    const [minTX, maxTX] = d3.extent(this.getTimeSeriesinterval(), (time) => time[0]);
-    const [minTY, maxTY] = d3.extent(maxTimeSeries, (time) => time[1]);
-    const drawableWidth = width - 2 * CHART_MARGIN - TRANSLATE_LEFT;
-    const drawableHeight = height - 3.5 * CHART_MARGIN;
+    const [minTX, maxTX] = d3.extent(this.getTimeSeriesinterval(), (time) => time[0]) as [number, number];
+    const [minTY, maxTY] = d3.extent(maxTimeSeries, (time) => time[1]) as [number, number];
+    const drawableWidth: number = width - 2 * CHART_MARGIN - TRANSLATE_LEFT;
+    const drawableHeight: number = height - 3.5 * CHART_MARGIN;
 
     const xCoord = d3.scaleTime().range([0, drawableWidth]);
     const yCoord = d3.scaleLinear().range([drawableHeight, 0]);
 
-    const minX = Math.min(MIN_VALUE, minTX);
-    const maxX = Math.max(MAX_VALUE, maxTX);
+    const minX: number = Math.min(MIN_VALUE, minTX);
+    const maxX: number = Math.max(MAX_VALUE, maxTX);
 
-    const minY = Math.min(MIN_VALUE, minTY);
-    const maxY = Math.max(MAX_VALUE, maxTY);
+    const minY: number = Math.min(MIN_VALUE, minTY);
+    const maxY: number = Math.max(MAX_VALUE, maxTY);
 
     xCoord.domain([minX, maxX]);
     yCoord.domain([minY, maxY]);
@@ -92,34 +99,35 @@ class ShowErrors extends Component {
     const yRange = d3.scaleLinear().range([0, height - 10]);
     yRange.domain(d3.extent(timeseriesErr, (tmsData) => tmsData[1]));
 
-    let area = d3
+    const area = d3
       .area()
       .x((d) => xCoord(d[0]))
       .y0((d) => -yRange(d[1]) / 2)
       .y1((d) => yRange(d[1]) / 2);
 
+    // @TODO - refactor with aggregation levels
     if (isAggregationActive) {
       if (isSignalRawLoading) {
         return null;
       }
 
-      const startIndex = timeseriesErr.findIndex((current) => signalRawData[0][0] - current[0] < 0) - 1;
-      const stopIndex = timeseriesErr.findIndex((current) => signalRawData[0] - current[0][0] < 0);
+      const startIndex: number = timeseriesErr.findIndex((current) => signalRawData[0][0] - current[0] < 0) - 1;
+      const stopIndex: number = timeseriesErr.findIndex((current) => signalRawData[0] - current[0][0] < 0);
 
       return area(timeseriesErr.slice(startIndex, stopIndex));
     }
-
     return area(timeseriesErr);
   }
 
   updateZoom() {
-    const { width, height } = this.state;
+    const { height } = this.state;
     const { dataRun, periodRange, isAggregationActive, aggZoomValue, isPredictionVisible } = this.props;
     const zoomValue = isAggregationActive ? aggZoomValue : periodRange.zoomValue;
-    const { timeseriesErr, maxTimeSeries } = dataRun;
-    const { xCoord } = this.getScale(width, height, maxTimeSeries);
+    const { timeseriesErr } = dataRun;
+    const { xCoord } = this.getScale();
     const xCoordCopy = xCoord.copy();
     const yRange = d3.scaleLinear().range([0, height - 10]);
+
     const area = d3
       .area()
       .x((data) => xCoord(data[0]))
@@ -136,16 +144,14 @@ class ShowErrors extends Component {
 
   render() {
     const { width, height } = this.state;
-    const { isOpen, isPredictionVisible } = this.props;
-    const active = isOpen ? 'active' : '';
-    const focusChartWidth = width;
+    const { isPredictionVisible } = this.props;
     return (
       isPredictionVisible && (
         <div className="show-errors">
-          <svg id="showErrors" className={active} width={width} height={height}>
+          <svg id="showErrors" width={width} height={height}>
             <rect className="err-bg" width={width} />
             <clipPath id="prectionClip">
-              <rect width={focusChartWidth} height={height} />
+              <rect width={width} height={height} />
             </clipPath>
             <g clipPath="url(#prectionClip)">
               <path
@@ -161,12 +167,7 @@ class ShowErrors extends Component {
   }
 }
 
-ShowErrors.propTypes = {
-  dataRun: PropTypes.object,
-  periodRange: PropTypes.object,
-};
-
-export default connect((state) => ({
+const mapState = (state: RootState) => ({
   periodRange: getSelectedPeriodRange(state),
   dataRun: getDatarunDetails(state),
   isAggregationActive: getIsAggregationActive(state),
@@ -175,4 +176,5 @@ export default connect((state) => ({
   isSignalRawLoading: getIsSigRawLoading(state),
   signalRawData: getSignalRawData(state),
   aggZoomValue: getAggregationZoomValue(state),
-}))(ShowErrors);
+});
+export default connect<StateProps, {}, {}, RootState>(mapState, null)(ShowErrors);
