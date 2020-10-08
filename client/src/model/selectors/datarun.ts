@@ -19,7 +19,7 @@ export const getSelectedPeriodRange = (state: RootState) => state.datarun.select
 export const getIsEditingEventRange = (state) => state.datarun.isEditingEventRange;
 export const getIsEditingEventRangeDone = (state) => state.datarun.isEditingEventRangeDone;
 export const getIsPopupOpen = (state) => state.datarun.isPopupOpen;
-export const getIsAddingNewEvents = (state) => state.datarun.isAddingEvent;
+export const getIsAddingNewEvents = (state: RootState) => state.datarun.isAddingEvent;
 export const getAddingNewEventStatus = (state) => state.datarun.addingNewEvent;
 export const getZoomOnClickDirection = (state) => state.datarun.zoomDirection;
 export const getZoomCounter = (state) => state.datarun.zoomCounter;
