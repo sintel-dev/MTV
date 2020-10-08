@@ -239,7 +239,7 @@ export const getProcessedDataRuns = createSelector(
       const timeSeries = groupDataBy(datarun.prediction, 'y_raw');
       const maxTimeSeries = groupDataBy(maxTimeSeriesData.prediction, 'y_raw');
       const timeseriesPred = groupDataBy(datarun.prediction, 'y_raw_hat');
-      const timeseriesErr = groupDataBy(datarun.prediction, 'es_raw');
+      const timeseriesErr = groupDataBy(datarun.prediction, 'es_raw') as [number, number][];
       const period = groupDataByPeriod(datarun.raw);
       const { events } = datarun;
 

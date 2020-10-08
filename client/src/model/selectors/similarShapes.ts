@@ -30,9 +30,9 @@ export const getSimilarShapesFound = createSelector(
 );
 
 export const getSimilarShapesCoords = createSelector(
-  [getIsSimilarShapesLoading, similarShapesResults, getDatarunDetails, getPercentageInterval],
-  (isShapesLoading, similarShapes, dataRun, percentageInterval) => {
-    if (isShapesLoading) {
+  [getIsSimilarShapesLoading, similarShapesResults, getDatarunDetails, getPercentageInterval, getIsSimilarShapesActive],
+  (isShapesLoading, similarShapes, dataRun, percentageInterval, isSimilarShpesActive) => {
+    if (isShapesLoading || !isSimilarShpesActive) {
       return [];
     }
 
