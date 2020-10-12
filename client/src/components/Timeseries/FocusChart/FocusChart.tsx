@@ -58,8 +58,6 @@ type dateFormat = {
   time: string | null;
 };
 
-type eventType = Array<[number, number, number, string, null | number]>;
-
 export class FocusChart extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -119,7 +117,7 @@ export class FocusChart extends Component<Props, State> {
 
   private zoom: any;
 
-  getScale() {
+  private getScale() {
     const { width, height } = this.state;
     const { dataRun } = this.props;
 
@@ -149,7 +147,7 @@ export class FocusChart extends Component<Props, State> {
     return { xCoord, yCoord, maxDtXCood };
   }
 
-  drawLine(data: Array<[number, number]>) {
+  private drawLine(data: Array<[number, number]>) {
     const { periodRange, currentChartStyle } = this.props;
     const { zoomValue } = periodRange;
     const { xCoord, yCoord } = this.getScale();
@@ -203,7 +201,7 @@ export class FocusChart extends Component<Props, State> {
     );
   }
 
-  renderSimilarShapes(shape) {
+  private renderSimilarShapes(shape) {
     const { dataRun, periodRange, activeShape, setActiveShape } = this.props;
     const { timeSeries } = dataRun;
     const { height } = this.state;
@@ -230,13 +228,13 @@ export class FocusChart extends Component<Props, State> {
     );
   }
 
-  toggleEventTooltip(tooltipState) {
+  private toggleEventTooltip(tooltipState) {
     this.setState({
       isTooltipVisible: tooltipState,
     });
   }
 
-  renderEventArea(currentEvent: Array<any>) {
+  private renderEventArea(currentEvent: Array<any>) {
     const { dataRun, periodRange, setActiveEvent, activeEventID } = this.props;
     const { timeSeries } = dataRun;
     const { height } = this.state;
@@ -299,7 +297,7 @@ export class FocusChart extends Component<Props, State> {
     );
   }
 
-  renderEvents() {
+  private renderEvents() {
     const { dataRun, selectedEventDetails, isSimilarShapesActive } = this.props;
 
     const { eventWindows } = dataRun;
@@ -314,7 +312,7 @@ export class FocusChart extends Component<Props, State> {
     return eventWindows.map((currentWindow) => this.renderEventArea(currentWindow));
   }
 
-  renderChartAxis() {
+  private renderChartAxis() {
     const { periodRange } = this.props;
     const { xCoord, yCoord } = this.getScale();
     const xCoordCopy = xCoord.copy();
@@ -334,7 +332,7 @@ export class FocusChart extends Component<Props, State> {
     this.renderChartGrid();
   }
 
-  renderChartGrid() {
+  private renderChartGrid() {
     const { yCoord } = this.getScale();
     const { width } = this.state;
     const chartWidth: number = width - TRANSLATE_LEFT - 2 * CHART_MARGIN;
@@ -342,8 +340,8 @@ export class FocusChart extends Component<Props, State> {
     d3.select('#gridLines').call(drawGridLines().tickSize(-chartWidth));
   }
 
-  initZoom() {
-    const { width, height, zoomWidth } = this.state;
+  private initZoom() {
+    const { height, zoomWidth } = this.state;
     // const zoomWidth: number = width - TRANSLATE_LEFT - 2 * CHART_MARGIN;
     const zoom = d3
       .zoom()
@@ -363,7 +361,7 @@ export class FocusChart extends Component<Props, State> {
     this.zoom = zoom;
   }
 
-  updateZoom() {
+  private updateZoom() {
     const { periodRange } = this.props;
     const zoomKvalue: number = Math.min(Math.floor(periodRange.zoomValue.k), 3);
     d3.select('.zoom').call(this.zoom.transform, periodRange.zoomValue);
@@ -373,7 +371,7 @@ export class FocusChart extends Component<Props, State> {
     this.renderChartAxis();
   }
 
-  zoomHandler() {
+  private zoomHandler() {
     if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') {
       return;
     }
@@ -398,7 +396,7 @@ export class FocusChart extends Component<Props, State> {
     this.rangeToTimestamp(periodRange);
   }
 
-  toggleZoom() {
+  private toggleZoom() {
     const { zoomWidth } = this.state;
     const { isEditingRange } = this.props;
     if (isEditingRange) {
@@ -418,7 +416,7 @@ export class FocusChart extends Component<Props, State> {
     this.props.setPeriodRange({ ...periodRange, timeStamp: [timestampStart, timestampStop] });
   }
 
-  updateChartZoomOnSelectPeriod() {
+  private updateChartZoomOnSelectPeriod() {
     const { width } = this.state;
     const focusChartWidth: number = width - TRANSLATE_LEFT - 2 * CHART_MARGIN;
     const { selectedPeriod, setPeriodRange, dataRun } = this.props;
@@ -443,7 +441,7 @@ export class FocusChart extends Component<Props, State> {
       });
   }
 
-  updateZoomOnClick() {
+  private updateZoomOnClick() {
     const { zoomDirection } = this.props;
     const { zoom } = this;
     const zoomInstance = d3.select('.zoom');
@@ -455,7 +453,7 @@ export class FocusChart extends Component<Props, State> {
     }
   }
 
-  setChartHeight() {
+  private setChartHeight() {
     const { isPredictionVisible } = this.props;
     const { height } = this.state;
     const chartHeight: number = isPredictionVisible ? height - TRANSLATE_TOP : height + TRANSLATE_TOP;
@@ -467,7 +465,7 @@ export class FocusChart extends Component<Props, State> {
     );
   }
 
-  drawChartData() {
+  private drawChartData() {
     const { width, height } = this.state;
     const { dataRun, isPredictionVisible, isZoomEnabled, isSimilarShapesActive, similarShapesCoords } = this.props;
     const { timeSeries, timeseriesPred } = dataRun;
@@ -509,7 +507,7 @@ export class FocusChart extends Component<Props, State> {
     );
   }
 
-  render() {
+  public render() {
     const { isAggregationActive } = this.props;
     const { width, height } = this.state;
     return (
