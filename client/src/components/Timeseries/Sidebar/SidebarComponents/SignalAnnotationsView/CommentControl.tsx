@@ -12,8 +12,21 @@ import {
 import { RecordingIcon, MicrophoneIcon, CloseIcon } from 'src/components/Common/icons';
 import Select from 'react-select';
 import './CommentControl.scss';
+import { RootState } from 'src/model/types';
 
-class CommentControl extends Component {
+type OwnProps = {
+  eventDetails: {
+    id: string;
+    tag: string;
+  };
+  isChangeTagEnabled: boolean;
+};
+
+type StateProps = ReturnType<typeof mapState>;
+type DispatchProps = ReturnType<typeof mapDispatch>;
+type Props = StateProps & DispatchProps & OwnProps;
+
+class CommentControl extends Component<Props> {
   renderTagBadge() {
     const { tag } = this.props.updatedEventDetails;
 
@@ -49,12 +62,13 @@ class CommentControl extends Component {
       return null;
     }
 
-    const isEventTagChanged =
+    const isEventTagChanged: boolean =
       updatedEventDetails.id === eventDetails.id && updatedEventDetails.tag !== eventDetails.tag;
 
-    const commentText = updatedEventDetails.id === eventDetails.id ? updatedEventDetails.commentsDraft : '';
-    const isEventCommentChanged = updatedEventDetails.id === eventDetails.id && updatedEventDetails.commentsDraft;
-    const isEventChanged = isEventCommentChanged || isEventTagChanged;
+    const commentText: string = updatedEventDetails.id === eventDetails.id ? updatedEventDetails.commentsDraft : '';
+    const isEventCommentChanged: boolean =
+      updatedEventDetails.id === eventDetails.id && updatedEventDetails.commentsDraft;
+    const isEventChanged: boolean = isEventCommentChanged || isEventTagChanged;
 
     return (
       <div className="comment-wrapper">
@@ -72,11 +86,10 @@ class CommentControl extends Component {
                   isMulti={false}
                   isSearchable={false}
                   value="Assing a tag"
-                  onChange={(option) => updateEventDetails({ tag: option.value })}
+                  onChange={(option: { value: string }) => updateEventDetails({ tag: option.value })}
                 />
               )}
             </li>
-
             <li>
               <button className="clean" type="button" onClick={() => recordComment(!isSpeechInProgress)}>
                 {isSpeechInProgress ? <RecordingIcon /> : <MicrophoneIcon />}
@@ -116,19 +129,16 @@ class CommentControl extends Component {
   }
 }
 
-CommentControl.defaultProps = {
-  isChangeTagEnabled: true,
-};
+const mapState = (state: RootState) => ({
+  isSpeechInProgress: getIsSpeechInProgress(state),
+  updatedEventDetails: getUpdatedEventDetails(state),
+});
 
-export default connect(
-  (state) => ({
-    isSpeechInProgress: getIsSpeechInProgress(state),
-    updatedEventDetails: getUpdatedEventDetails(state),
-  }),
-  (dispatch) => ({
-    recordComment: (recordState) => dispatch(recordCommentAction(recordState)),
-    updateEventDetails: (eventDetails) => dispatch(updateEventDetailsAction(eventDetails)),
-    closeEventDetails: () => dispatch(closeEventModal()),
-    saveEventDetails: () => dispatch(saveEventDetailsAction()),
-  }),
-)(CommentControl);
+const mapDispatch = (dispatch: Function) => ({
+  recordComment: (recordState) => dispatch(recordCommentAction(recordState)),
+  updateEventDetails: (eventDetails) => dispatch(updateEventDetailsAction(eventDetails)),
+  closeEventDetails: () => dispatch(closeEventModal()),
+  saveEventDetails: () => dispatch(saveEventDetailsAction()),
+});
+
+export default connect<StateProps, DispatchProps, {}, RootState>(mapState, mapDispatch)(CommentControl);
