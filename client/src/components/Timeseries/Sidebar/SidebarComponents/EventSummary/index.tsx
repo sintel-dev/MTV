@@ -1,7 +1,16 @@
 import React, { Component } from 'react';
 import * as _ from 'lodash';
+import { RootState } from 'src/model/types';
+import {
+  getDatarunDetails,
+  getFilteredPeriodRange,
+  getGrouppedDatarunEvents,
+  getIsTimeSyncModeEnabled,
+  getSelectedPeriodLevel,
+} from 'src/model/selectors/datarun';
+import { fromMonthToIndex } from 'src/model/utils/Utils';
+import { connect } from 'react-redux';
 import { tagSeq, fromTagToClassName } from '../../../../Landing/utils';
-import { fromMonthToIndex } from '../../../../../model/utils/Utils';
 
 import './EventSummary.scss';
 
@@ -16,9 +25,9 @@ const renderTagIcon = () =>
     </td>
   ));
 
-const countEventsPerTag = (tag, events) => {
+const countEventsPerTag = (filterTag: string, events: object): number => {
   const currentEvents = Object.values(events);
-  return currentEvents.filter((currentEvent) => currentEvent.tag === tag).length;
+  return currentEvents.filter((currentEvent) => currentEvent.tag === filterTag).length;
 };
 
 const renderTagEventsAll = (grouppedEvents) => {
@@ -60,23 +69,26 @@ const renderTagEventsPerMonth = (periodRange, month, monthEvents) => {
   return tagSeq.map((currentTag) => <td key={currentTag}>0</td>);
 };
 
-class EventSummary extends Component {
+type StateProps = ReturnType<typeof mapState>;
+
+class EventSummary extends Component<StateProps> {
   componentDidMount() {
     this.handleColHover();
   }
 
   handleColHover() {
-    const td = document.querySelectorAll('.summary-details td');
+    const td: NodeList = document.querySelectorAll('.summary-details td');
+
     td.forEach((currentTd) => {
       currentTd.addEventListener('mouseover', function () {
-        const index = this.cellIndex + 1;
+        const index: number = this.cellIndex + 1;
         document.querySelectorAll(`td:nth-child(${index})`).forEach((hoveredTd) => {
           hoveredTd.classList.add('highlighted');
         });
       });
 
       currentTd.addEventListener('mouseleave', function () {
-        const index = this.cellIndex + 1;
+        const index: number = this.cellIndex + 1;
         document.querySelectorAll(`td:nth-child(${index})`).forEach((hoveredTd) => {
           hoveredTd.classList.remove('highlighted');
         });
@@ -88,7 +100,7 @@ class EventSummary extends Component {
     const { grouppedEvents, filteredPeriodRange } = this.props;
     const { level } = filteredPeriodRange[0];
 
-    let eventsPerRange = {
+    let eventsPerRange: object = {
       perYear: null,
       perMonth: null,
     };
@@ -170,4 +182,12 @@ class EventSummary extends Component {
   }
 }
 
-export default EventSummary;
+const mapState = (state: RootState) => ({
+  selectedPeriodLevel: getSelectedPeriodLevel(state),
+  grouppedEvents: getGrouppedDatarunEvents(state),
+  filteredPeriodRange: getFilteredPeriodRange(state),
+  dataRun: getDatarunDetails(state),
+  isTimeSyncEnabled: getIsTimeSyncModeEnabled(state),
+});
+
+export default connect<StateProps, {}, {}, RootState>(mapState)(EventSummary);
