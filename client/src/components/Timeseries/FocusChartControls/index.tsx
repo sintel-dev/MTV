@@ -1,68 +1,65 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
+import { RootState } from 'src/model/types';
 import { togglePredictionsAction, addNewEventAction } from '../../../model/actions/datarun';
 import { isPredictionEnabled, getIsAddingNewEvents } from '../../../model/selectors/datarun';
 
 import './FocusChartControls.scss';
 
-class FocusChartControls extends Component {
-  render() {
-    const { isAddingEvent, togglePredictions, addNewEvent, isEnabledPrediction } = this.props;
+type StateProps = ReturnType<typeof mapState>;
+type DispatchProps = ReturnType<typeof mapDispatch>;
+type Props = StateProps & DispatchProps;
 
-    return (
-      <div className="chart-controls" id="chartControls">
-        <div className="legend">
-          <p>Signal Focused View</p>
-        </div>
+const FocusChartControls: React.FC<Props> = (props) => {
+  const { isAddingEvent, togglePredictions, addNewEvent, isEnabledPrediction } = props;
+  return (
+    <div className="chart-controls" id="chartControls">
+      <div className="legend">
+        <p>Signal Focused View</p>
+      </div>
 
-        <div className="controls">
-          <div className="linechart-controls">
-            <div className="row">
-              <div className="switch-control">
-                <div className="row">
-                  <label htmlFor="showPredictions">
-                    <input
-                      type="checkbox"
-                      id="showPredictions"
-                      checked={isEnabledPrediction}
-                      onChange={(event) => togglePredictions(event.target.checked)}
-                    />
-                    <span className="switch" />
-                    Show Predictions
-                  </label>
-                </div>
+      <div className="controls">
+        <div className="linechart-controls">
+          <div className="row">
+            <div className="switch-control">
+              <div className="row">
+                <label htmlFor="showPredictions">
+                  <input
+                    type="checkbox"
+                    id="showPredictions"
+                    checked={isEnabledPrediction}
+                    onChange={(event) => togglePredictions(event.target.checked)}
+                  />
+                  <span className="switch" />
+                  Show Predictions
+                </label>
               </div>
             </div>
-
-            <button
-              type="button"
-              className="btn btn-add-event"
-              disabled={isAddingEvent}
-              onClick={() => addNewEvent(!isAddingEvent)}
-            >
-              <span>+</span>
-              Add Event
-            </button>
           </div>
+
+          <button
+            type="button"
+            className="btn btn-add-event"
+            disabled={isAddingEvent}
+            onClick={() => addNewEvent(!isAddingEvent)}
+          >
+            <span>+</span>
+            Add Event
+          </button>
         </div>
       </div>
-    );
-  }
-}
-
-FocusChartControls.propTypes = {
-  togglePredictions: PropTypes.func,
-  isEnabledPrediction: PropTypes.bool,
+    </div>
+  );
 };
 
-export default connect(
-  (state) => ({
-    isEnabledPrediction: isPredictionEnabled(state),
-    isAddingEvent: getIsAddingNewEvents(state),
-  }),
-  (dispatch) => ({
-    togglePredictions: (event) => dispatch(togglePredictionsAction(event)),
-    addNewEvent: (isAddingEvent) => dispatch(addNewEventAction(isAddingEvent)),
-  }),
-)(FocusChartControls);
+const mapState = (state: RootState) => ({
+  isEnabledPrediction: isPredictionEnabled(state),
+  isAddingEvent: getIsAddingNewEvents(state),
+});
+
+const mapDispatch = (dispatch: Function) => ({
+  togglePredictions: (event) => dispatch(togglePredictionsAction(event)),
+  addNewEvent: (isAddingEvent) => dispatch(addNewEventAction(isAddingEvent)),
+});
+
+export default connect<StateProps, DispatchProps, {}, RootState>(mapState, mapDispatch)(FocusChartControls);
