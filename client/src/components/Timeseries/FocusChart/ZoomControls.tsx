@@ -2,10 +2,15 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowsAlt } from '@fortawesome/free-solid-svg-icons';
+import { RootState } from 'src/model/types';
 import { getZoomMode, getIsEditingEventRange } from '../../../model/selectors/datarun';
 import { zoomOnClick, zoomToggleAction } from '../../../model/actions/datarun';
 
-export const ZoomControls = (props) => (
+type StateProps = ReturnType<typeof mapState>;
+type DispatchProps = ReturnType<typeof mapDispatch>;
+type ZoomControlsProps = StateProps & DispatchProps;
+
+export const ZoomControls: React.FC<ZoomControlsProps> = (props) => (
   <div>
     <ul>
       <li>
@@ -34,13 +39,14 @@ export const ZoomControls = (props) => (
   </div>
 );
 
-export default connect(
-  (state) => ({
-    isZoomEnabled: getZoomMode(state),
-    isEditingEventRange: getIsEditingEventRange(state),
-  }),
-  (dispatch) => ({
-    zoom: (direction) => dispatch(zoomOnClick(direction)),
-    zoomToggle: (mode) => dispatch(zoomToggleAction(mode)),
-  }),
-)(ZoomControls);
+const mapState = (state: RootState) => ({
+  isZoomEnabled: getZoomMode(state),
+  isEditingEventRange: getIsEditingEventRange(state),
+});
+
+const mapDispatch = (dispatch: Function) => ({
+  zoom: (direction) => dispatch(zoomOnClick(direction)),
+  zoomToggle: (mode) => dispatch(zoomToggleAction(mode)),
+});
+
+export default connect<StateProps, DispatchProps, {}, RootState>(mapState, mapDispatch)(ZoomControls);
