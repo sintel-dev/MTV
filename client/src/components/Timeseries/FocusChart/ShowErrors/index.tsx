@@ -56,7 +56,7 @@ class ShowErrors extends Component<StateProps, LocalState> {
     }
   }
 
-  getTimeSeriesinterval() {
+  private getTimeSeriesinterval(): Array<[number, number]> {
     const { isAggregationActive, dataRun, signalRawData } = this.props;
     const { maxTimeSeries } = dataRun;
 
@@ -66,13 +66,16 @@ class ShowErrors extends Component<StateProps, LocalState> {
     return maxTimeSeries;
   }
 
-  getScale() {
+  private getScale() {
     const { dataRun } = this.props;
     const { maxTimeSeries } = dataRun;
     const { width, height } = this.state;
 
-    const [minTX, maxTX] = d3.extent(this.getTimeSeriesinterval(), (time) => time[0]) as [number, number];
-    const [minTY, maxTY] = d3.extent(maxTimeSeries, (time) => time[1]) as [number, number];
+    const [minTX, maxTX] = d3.extent(this.getTimeSeriesinterval(), (time: Array<number>) => time[0]) as [
+      number,
+      number,
+    ];
+    const [minTY, maxTY] = d3.extent(maxTimeSeries, (time: Array<number>) => time[1]) as [number, number];
     const drawableWidth: number = width - 2 * CHART_MARGIN - TRANSLATE_LEFT;
     const drawableHeight: number = height - 3.5 * CHART_MARGIN;
 
@@ -87,11 +90,10 @@ class ShowErrors extends Component<StateProps, LocalState> {
 
     xCoord.domain([minX, maxX]);
     yCoord.domain([minY, maxY]);
-
     return { xCoord, yCoord };
   }
 
-  getArea() {
+  private getArea() {
     const { height } = this.state;
     const { dataRun, isSignalRawLoading, isAggregationActive, signalRawData } = this.props;
     const { timeseriesErr } = dataRun;
@@ -119,7 +121,7 @@ class ShowErrors extends Component<StateProps, LocalState> {
     return area(timeseriesErr);
   }
 
-  updateZoom() {
+  private updateZoom() {
     const { height } = this.state;
     const { dataRun, periodRange, isAggregationActive, aggZoomValue, isPredictionVisible } = this.props;
     const zoomValue = isAggregationActive ? aggZoomValue : periodRange.zoomValue;
@@ -142,7 +144,7 @@ class ShowErrors extends Component<StateProps, LocalState> {
     }
   }
 
-  render() {
+  public render() {
     const { width, height } = this.state;
     const { isPredictionVisible } = this.props;
     return (
