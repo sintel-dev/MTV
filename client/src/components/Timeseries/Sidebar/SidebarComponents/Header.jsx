@@ -1,24 +1,22 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { toggleRelativeScaleAction, toggleEventSummaryAction } from 'src/model/actions/sidebar';
-import { getIsRelativeScaleEnabled, getIsSummaryViewActive } from 'src/model/selectors/sidebar';
-import EventSummary from './EventSummary';
+import { toggleRelativeScaleAction } from 'src/model/actions/sidebar';
+import { getIsRelativeScaleEnabled } from 'src/model/selectors/sidebar';
 import {
-  getDatarunDetails,
   getSelectedPeriodLevel,
   getIsEditingEventRange,
-  getGrouppedDatarunEvents,
   getIsEventModeEnabled,
   getIsTimeSyncModeEnabled,
   getFilteredPeriodRange,
   getScrollHistory,
-} from '../../../../model/selectors/datarun';
+} from 'src/model/selectors/datarun';
 import {
   toggleEventModeAction,
   setPeriodRangeAction,
   setScrollHistoryAction,
   setReviewPeriodAction,
-} from '../../../../model/actions/datarun';
+} from 'src/model/actions/datarun';
+import EventSummary from './EventSummary';
 
 const showPeriod = (periodRange) => {
   let periodString = (
@@ -96,18 +94,13 @@ class Header extends Component {
   render() {
     const {
       setReviewPeriod,
-      selectedPeriodLevel,
       isEditingEventRange,
-      grouppedEvents,
       filteredPeriodRange,
       currentPeriod,
       scrollHistory,
       isTimeSyncEnabled,
       isRelativeScaleEnabled,
       toggleRelativeScale,
-      dataRun,
-      toggleEventSummaryState,
-      isSummaryViewActive,
     } = this.props;
 
     const getBtnProps = (button) => {
@@ -138,16 +131,7 @@ class Header extends Component {
 
     return (
       <div className="period-control">
-        <EventSummary
-          selectedPeriodLevel={selectedPeriodLevel}
-          grouppedEvents={grouppedEvents}
-          filteredPeriodRange={filteredPeriodRange}
-          signalName={dataRun.signal}
-          isTimeSyncEnabled={isTimeSyncEnabled}
-          showPeriod={showPeriod(filteredPeriodRange[0])}
-          toggleEventSummary={toggleEventSummaryState}
-          isSummaryViewActive={isSummaryViewActive}
-        />
+        <EventSummary />
         <div className="period-wrapper">
           <div className="sidechart-controls switch-control">
             <div className="row">
@@ -209,17 +193,13 @@ class Header extends Component {
 
 export default connect(
   (state) => ({
-    dataRun: getDatarunDetails(state),
-    selectedPeriodLevel: getSelectedPeriodLevel(state),
     isEditingEventRange: getIsEditingEventRange(state),
-    grouppedEvents: getGrouppedDatarunEvents(state),
     isEventModeEnabled: getIsEventModeEnabled(state),
     isTimeSyncEnabled: getIsTimeSyncModeEnabled(state),
     filteredPeriodRange: getFilteredPeriodRange(state),
     currentPeriod: getSelectedPeriodLevel(state),
     scrollHistory: getScrollHistory(state),
     isRelativeScaleEnabled: getIsRelativeScaleEnabled(state),
-    isSummaryViewActive: getIsSummaryViewActive(state),
   }),
   (dispatch) => ({
     setPeriodRange: (periodRange) => dispatch(setPeriodRangeAction(periodRange)),
@@ -227,6 +207,5 @@ export default connect(
     setScrollHistory: (period) => dispatch(setScrollHistoryAction(period)),
     setReviewPeriod: (period) => dispatch(setReviewPeriodAction(period)),
     toggleRelativeScale: () => dispatch(toggleRelativeScaleAction()),
-    toggleEventSummaryState: () => dispatch(toggleEventSummaryAction()),
   }),
 )(Header);
