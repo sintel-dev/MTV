@@ -1,9 +1,10 @@
-import React, { Component } from 'react';
+import React, { Component, ReactNode } from 'react';
 import { connect } from 'react-redux';
 import { ArrowDown, ArrowUp } from 'src/components/Common/icons';
 import { Collapse } from 'react-collapse';
 import { setActivePanelAction } from 'src/model/actions/sidebar';
 import { getCurrentActivePanel } from 'src/model/selectors/sidebar';
+import { RootState } from 'src/model/types';
 import { getSelectedExperimentData } from '../../../model/selectors/experiment';
 import Loader from '../../Common/Loader';
 import { getIsEditingEventRange, getSelectedDatarun } from '../../../model/selectors/datarun';
@@ -13,7 +14,13 @@ import SignalAnnotations from './SidebarComponents/SignalAnnotationsView/SignalA
 import SimilarShapes from './SidebarComponents/SimilarShapes/SimilarShapes';
 import './Sidebar.scss';
 
-const sidebarPanels = [
+type SidebarPanels = {
+  key: string;
+  title: string;
+  component: ReactNode;
+}[];
+
+const sidebarPanels: SidebarPanels = [
   {
     key: 'periodicalView',
     title: 'Periodical View',
@@ -36,8 +43,12 @@ const sidebarPanels = [
   },
 ];
 
-class Sidebar extends Component {
-  toggleActivePanel(newPanel) {
+type StateProps = ReturnType<typeof mapState>;
+type DispatchProps = ReturnType<typeof mapDispatch>;
+type Props = StateProps & DispatchProps;
+
+class Sidebar extends Component<Props> {
+  private toggleActivePanel(newPanel: string): void {
     const { activePanel, setActivePanel } = this.props;
     if (newPanel !== activePanel) {
       return setActivePanel(newPanel);
@@ -49,7 +60,7 @@ class Sidebar extends Component {
   render() {
     const { experimentData, activePanel, dataRun } = this.props;
 
-    const events = (dataRun && dataRun.events) || [];
+    const events: Array<any> = (dataRun && dataRun.events) || [];
 
     return (
       <div className="right-sidebar">
@@ -81,14 +92,15 @@ class Sidebar extends Component {
   }
 }
 
-export default connect(
-  (state) => ({
-    experimentData: getSelectedExperimentData(state),
-    isEditingEventRange: getIsEditingEventRange(state),
-    activePanel: getCurrentActivePanel(state),
-    dataRun: getSelectedDatarun(state),
-  }),
-  (dispatch) => ({
-    setActivePanel: (activePanel) => dispatch(setActivePanelAction(activePanel)),
-  }),
-)(Sidebar);
+const mapState = (state: RootState) => ({
+  experimentData: getSelectedExperimentData(state),
+  isEditingEventRange: getIsEditingEventRange(state),
+  activePanel: getCurrentActivePanel(state),
+  dataRun: getSelectedDatarun(state),
+});
+
+const mapDispatch = (dispatch: Function) => ({
+  setActivePanel: (activePanel) => dispatch(setActivePanelAction(activePanel)),
+});
+
+export default connect<StateProps, DispatchProps, {}, RootState>(mapState, mapDispatch)(Sidebar);
