@@ -144,7 +144,7 @@ class EventDetailsView extends Component<Props> {
         {!isAddingNewEvent && (
           <div className="evt-row evt-actions">
             <EventComments isEventJumpVisible={false} />
-            <CommentControl isChangeTagEnabled={false} eventDetails={eventDetails} />
+            <CommentControl isChangeTagEnabled={false} currentEvent={eventDetails} />
           </div>
         )}
         {this.renderEventFooter()}
