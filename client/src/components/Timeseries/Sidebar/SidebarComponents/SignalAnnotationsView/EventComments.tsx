@@ -7,10 +7,48 @@ import { getUsersData, getIsUsersDataloading } from 'src/model/selectors/users';
 import { timestampToDate } from 'src/components/Timeseries/AggregationLevels/AggregationChart/Utils';
 import { setActivePanelAction } from 'src/model/actions/sidebar';
 import { colorSchemes } from 'src/components/Timeseries/FocusChart/Constants';
+import { RootState } from 'src/model/types';
 import { MAX_EVENTS_ACTIVITY } from '../../SidebarUtils';
 import './EventComments.scss';
 
-class EventComments extends Component {
+type OwnProps = {
+  isEventJumpVisible: boolean;
+};
+type StateProps = ReturnType<typeof mapState>;
+type DispatchProps = ReturnType<typeof mapDispatch>;
+type Props = StateProps & DispatchProps & OwnProps;
+
+type UserData = {
+  email: string;
+  id: string;
+  name: string;
+  picture: string;
+};
+
+type EventComment = {
+  created_by: string;
+  event: string;
+  id: string;
+  insert_time: string;
+  text: string;
+};
+
+type EventType = {
+  action: string | null;
+  annotation?: null;
+  created_by: string;
+  event: string;
+  id: string;
+  insert_time: string;
+  tag: string;
+  text: string;
+};
+
+class EventComments extends Component<Props> {
+  static defaultProps = {
+    isEventJumpVisible: true,
+  };
+
   componentDidUpdate() {
     const { eventDetails } = this.props;
     const lastActivity =
@@ -21,27 +59,28 @@ class EventComments extends Component {
     lastActivity && lastActivity.scrollIntoView();
   }
 
-  findUser(userName) {
+  private findUser(userName: string) {
     const { usersData } = this.props;
     return usersData.filter((user) => user.name === userName)[0];
   }
 
-  renderEventComment(eventComment, userData, isLastItem) {
+  private renderEventComment(eventComment: EventComment, userData: UserData, isLastItem: boolean) {
     const { id, insert_time, text } = eventComment;
+    const { name, picture } = userData;
     return (
       <div key={id} className={`user-activity ${(isLastItem && 'last-activity') || ''}`}>
         <table width="99%">
           <tbody>
             <tr>
-              <td rowSpan="2" width="40" valign="top">
-                <img src={userData.picture} referrerPolicy="no-referrer" alt={userData.name} />
+              <td rowSpan={2} width="40" valign="top">
+                <img src={picture} referrerPolicy="no-referrer" alt={name} />
               </td>
               <td>
-                <strong>{userData.name}</strong> {timestampToDate(insert_time)}
+                <strong>{name}</strong> {timestampToDate(insert_time)}
               </td>
             </tr>
             <tr>
-              <td colSpan="2">
+              <td colSpan={2}>
                 <p>{text}</p>
               </td>
             </tr>
@@ -51,17 +90,17 @@ class EventComments extends Component {
     );
   }
 
-  renderEventTag(currentEvent, userData, isLastItem) {
+  private renderEventTag(currentEvent: EventType, userData: UserData, isLastItem: boolean) {
     const { tag, insert_time } = currentEvent;
-    const color = tag ? colorSchemes[tag] : colorSchemes.Untagged;
-    const eventClassName = (tag && tag.replace(/\s/g, '_').toLowerCase()) || 'untagged';
+    const color: string = tag ? colorSchemes[tag] : colorSchemes.Untagged;
+    const eventClassName: string = (tag && tag.replace(/\s/g, '_').toLowerCase()) || 'untagged';
 
     return (
       <div key={currentEvent.id} className={`user-activity ${(isLastItem && 'last-activity') || ''}`}>
         <table width="100%">
           <tbody>
             <tr>
-              <td rowSpan="2" width="40" className="align-top">
+              <td rowSpan={2} width="40" className="align-top">
                 <img src={userData.picture} referrerPolicy="no-referrer" alt={userData.name} />
               </td>
               <td>
@@ -83,21 +122,21 @@ class EventComments extends Component {
     );
   }
 
-  renderEventHistory() {
+  private renderEventHistory() {
     const { isEventJumpVisible, eventHistory } = this.props;
 
     if (eventHistory === null || !eventHistory.length) {
       return <p>This event has no activity yet.</p>;
     }
 
-    const maxActivity = isEventJumpVisible
+    const maxActivity: Array<EventType> = isEventJumpVisible
       ? eventHistory.slice(Math.max(eventHistory.length - MAX_EVENTS_ACTIVITY, 0))
       : eventHistory;
-
+    const activityLength = maxActivity.length - 1;
     return maxActivity.map((currentActivity, currentIndex) => {
-      const userData = this.findUser(currentActivity.created_by);
-      const action = currentActivity.action || null;
-      const isLastItem = currentIndex === maxActivity.length - 1;
+      const userData: UserData = this.findUser(currentActivity.created_by);
+      const action: string | null = currentActivity.action || null;
+      const isLastItem: boolean = currentIndex === activityLength - 1;
 
       return action === null
         ? this.renderEventComment(currentActivity, userData, isLastItem)
@@ -114,7 +153,7 @@ class EventComments extends Component {
         eventDetails.eventComments.comments.length) ||
       0;
 
-    const maxActivity = Math.min(eventActivity, MAX_EVENTS_ACTIVITY);
+    const maxActivity: number = Math.min(eventActivity, MAX_EVENTS_ACTIVITY);
 
     return (
       eventDetails && (
@@ -144,19 +183,16 @@ class EventComments extends Component {
   }
 }
 
-EventComments.defaultProps = {
-  isEventJumpVisible: true,
-};
+const mapState = (state: RootState) => ({
+  eventDetails: getCurrentEventDetails(state),
+  usersData: getUsersData(state),
+  isUsersDataLoading: getIsUsersDataloading(state),
+  eventHistory: getEventSortedHistory(state),
+});
 
-export default connect(
-  (state) => ({
-    eventDetails: getCurrentEventDetails(state),
-    usersData: getUsersData(state),
-    isUsersDataLoading: getIsUsersDataloading(state),
-    eventHistory: getEventSortedHistory(state),
-  }),
-  (dispatch) => ({
-    setActivePanel: (activePanel) => dispatch(setActivePanelAction(activePanel)),
-    getEventHistory: () => dispatch(getCurrentEventHistoryAction()),
-  }),
-)(EventComments);
+const mapDispatch = (dispatch: Function) => ({
+  setActivePanel: (activePanel) => dispatch(setActivePanelAction(activePanel)),
+  getEventHistory: () => dispatch(getCurrentEventHistoryAction()),
+});
+
+export default connect<StateProps, DispatchProps, {}, RootState>(mapState, mapDispatch)(EventComments);
