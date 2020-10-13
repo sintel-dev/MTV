@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, ReactNode } from 'react';
 import { connect } from 'react-redux';
 import * as d3 from 'd3';
 import './SimilarShapes.scss';
@@ -29,10 +29,11 @@ import { timestampToDate } from 'src/components/Timeseries/AggregationLevels/Agg
 import { setActiveEventAction } from 'src/model/actions/datarun';
 import Dropdown from 'src/components/Common/Dropdown';
 import { colorSchemes } from 'src/components/Timeseries/FocusChart/Constants';
+import { RootState } from 'src/model/types';
 import { selectedOption } from '../EventDetailsView/eventUtils';
 import FilterShapes from './FilterShapes';
 
-const shapesLanding = () => (
+const shapesLanding = (): ReactNode => (
   <div className="shapes-landing">
     <p>
       Select an Event in <br /> order to see Similar Segments
@@ -40,24 +41,31 @@ const shapesLanding = () => (
   </div>
 );
 
-const shapesLoader = () => (
+const shapesLoader = (): ReactNode => (
   <div className="shapes-landing">
     <p>Loading</p>
   </div>
 );
 
-const noShapesFound = () => (
+const noShapesFound = (): ReactNode => (
   <div className="shapes-landing">
     <p>No shapes have been found for the selected interval</p>
   </div>
 );
 
-const getShapesResultHeight = (visibility) => {
+const getShapesResultHeight = (visibility: boolean): { maxHeight: string } => {
   const maxHeight = visibility ? '30.3vh' : '38.3vh';
   return { maxHeight };
 };
 
-class SimilarShapes extends Component {
+type StateProps = ReturnType<typeof mapState>;
+type DispatchProps = ReturnType<typeof mapDispatch>;
+type Props = StateProps & DispatchProps;
+type State = {
+  isShapeFilteringVisible: boolean;
+};
+
+class SimilarShapes extends Component<Props, State> {
   constructor(props) {
     super(props);
     this.state = {
@@ -69,19 +77,20 @@ class SimilarShapes extends Component {
     this.props.resetSimilarShapes();
   }
 
-  componentDidUpdate(prevProps) {
-    const currentEventID =
-      (this.props.currentEvent && this.props.currentEvent.id) ||
-      (prevProps.currentEvent && prevProps.currentEvent.id) ||
-      null;
+  componentDidUpdate(prevProps: Props) {
+    const { currentEvent } = this.props;
+    const currentEventID: string | null =
+      (currentEvent && currentEvent.id) || (prevProps.currentEvent && prevProps.currentEvent.id) || null;
+
     if (prevProps.currentEvent && prevProps.currentEvent.id !== currentEventID) {
       this.props.resetSimilarShapes();
     }
+
     const activeShape = document.querySelector('.shape-details.active');
     activeShape && activeShape.scrollIntoView();
   }
 
-  getScale(data, data2) {
+  private getScale(data, data2): { xCoord: Function; yCoord: Function } {
     const MIN_VALUE = Number.MAX_SAFE_INTEGER;
     const MAX_VALUE = Number.MIN_SAFE_INTEGER;
     const width = 210;
@@ -89,15 +98,15 @@ class SimilarShapes extends Component {
     const xCoord = d3.scaleTime().range([0, width]);
     const yCoord = d3.scaleLinear().range([height, 0]);
 
-    const [minTX, maxTX] = d3.extent(data, (time) => time[0]);
-    const [minTY, maxTY] = d3.extent(data, (time) => time[1]);
-    const [minTY2, maxTY2] = d3.extent(data2, (time) => time[1]);
+    const [minTX, maxTX] = d3.extent(data, (time: Array<number>) => time[0]) as [number, number];
+    const [minTY, maxTY] = d3.extent(data, (time: Array<number>) => time[1]) as [number, number];
+    const [minTY2, maxTY2] = d3.extent(data2, (time: Array<number>) => time[1]) as [number, number];
 
-    const minX = Math.min(MIN_VALUE, minTX);
-    const maxX = Math.max(MAX_VALUE, maxTX);
+    const minX: number = Math.min(MIN_VALUE, minTX);
+    const maxX: number = Math.max(MAX_VALUE, maxTX);
 
-    const minY = Math.min(MIN_VALUE, minTY, minTY2);
-    const maxY = Math.max(MAX_VALUE, maxTY, maxTY2);
+    const minY: number = Math.min(MIN_VALUE, minTY, minTY2);
+    const maxY: number = Math.max(MAX_VALUE, maxTY, maxTY2);
 
     xCoord.domain([minX, maxX]);
     yCoord.domain([minY, maxY]);
@@ -105,9 +114,8 @@ class SimilarShapes extends Component {
     return { xCoord, yCoord };
   }
 
-  drawLine(event, event2) {
+  private drawLine(event: Array<[number, number]>, event2: Array<[number, number]>) {
     const { xCoord, yCoord } = this.getScale(event, event2);
-
     const line = d3
       .line()
       .x((d) => xCoord(d[0]))
@@ -115,7 +123,12 @@ class SimilarShapes extends Component {
     return line(event);
   }
 
-  getShapeDetails(shape) {
+  private getShapeDetails(shape: {
+    start: number;
+    end: number;
+    similarity: number;
+    source: string;
+  }): { startTime: ReactNode; stopTime: ReactNode; similarity: string; eventInterval: Array<[number, number]> } {
     const { timeSeries } = this.props.dataRun;
     const { start, end, similarity } = shape;
     const startTime = timeSeries[start][0];
@@ -131,18 +144,17 @@ class SimilarShapes extends Component {
     };
   }
 
-  getCurrentEventShape() {
+  private getCurrentEventShape(): Array<[number, number]> {
     const { currentEvent, dataRun } = this.props;
     const { timeSeries } = dataRun;
     const { start_time, stop_time } = currentEvent;
-    const startIndex = timeSeries.findIndex((currentSeries) => currentSeries[0] === start_time);
-    const stopIndex = timeSeries.findIndex((currentSeries) => currentSeries[0] === stop_time);
-    const eventInterval = timeSeries.slice(startIndex, stopIndex + 1);
-
+    const startIndex: number = timeSeries.findIndex((currentSeries) => currentSeries[0] === start_time);
+    const stopIndex: number = timeSeries.findIndex((currentSeries) => currentSeries[0] === stop_time);
+    const eventInterval: Array<[number, number]> = timeSeries.slice(startIndex, stopIndex + 1);
     return eventInterval;
   }
 
-  renderShapeFooter() {
+  private renderShapeFooter(): ReactNode {
     const {
       deleteShape,
       saveShapes,
@@ -153,6 +165,7 @@ class SimilarShapes extends Component {
       isRsetBtnDisabled,
       resetSimilarShapes,
     } = this.props;
+
     if (!similarShapes.length || currentEvent === null) {
       return null;
     }
@@ -192,12 +205,12 @@ class SimilarShapes extends Component {
     );
   }
 
-  renderShapes() {
+  private renderShapes(): ReactNode {
     const { similarShapes, currentEvent, activeShape, setActiveShape, changeShapeTag } = this.props;
     if (currentEvent === null) {
       return null;
     }
-    const currentEventShape = this.getCurrentEventShape();
+    const currentEventShape: Array<[number, number]> = this.getCurrentEventShape();
 
     return similarShapes.map((currentShape) => {
       const { startTime, stopTime, similarity, eventInterval } = this.getShapeDetails(currentShape);
@@ -246,7 +259,7 @@ class SimilarShapes extends Component {
     });
   }
 
-  renderEventData() {
+  private renderEventData(): ReactNode {
     const { currentEvent } = this.props;
     const { start_time, stop_time } = currentEvent || { start_time: null, stop_time: null };
 
@@ -264,7 +277,7 @@ class SimilarShapes extends Component {
     );
   }
 
-  renderShapeOptions() {
+  private renderShapeOptions(): ReactNode {
     const { currentEvent, similarShapes, activeMetric, changeShapeMetric } = this.props;
     if (similarShapes.length) {
       return null;
@@ -311,14 +324,14 @@ class SimilarShapes extends Component {
     );
   }
 
-  toggleShapesFiltering() {
+  private toggleShapesFiltering(): void {
     const { isShapeFilteringVisible } = this.state;
     this.setState({
       isShapeFilteringVisible: !isShapeFilteringVisible,
     });
   }
 
-  shapeTagOverride() {
+  private shapeTagOverride(): ReactNode {
     const { overrideAllTags, currentShapesTag, similarShapes } = this.props;
 
     return (
@@ -338,7 +351,7 @@ class SimilarShapes extends Component {
     );
   }
 
-  renderSearchControls() {
+  renderSearchControls(): ReactNode {
     const {
       currentEvent,
       getSimilarShapes,
@@ -348,10 +361,10 @@ class SimilarShapes extends Component {
       isSimilarShapesActive,
       setActiveEvent,
     } = this.props;
-    const isSearchDisabled =
+    const isSearchDisabled: boolean =
       currentEvent === null || (!similarShapes.length && isSimilarShapesLoading) || isEditingEventRange;
 
-    const searchControls = (
+    const searchControls: ReactNode = (
       <>
         <div className="submit">
           <ul>
@@ -391,9 +404,9 @@ class SimilarShapes extends Component {
     return searchControls;
   }
 
-  renderShapeFormular() {
+  renderShapeFormular(): ReactNode {
     const { currentEvent, isEditingEventRange, isSimilarShapesLoading, rawShapes, isSimilarShapesActive } = this.props;
-    const shapesDisabled = currentEvent === null || isEditingEventRange ? 'disabled' : '';
+    const shapesDisabled: string = currentEvent === null || isEditingEventRange ? 'disabled' : '';
     const { isShapeFilteringVisible } = this.state;
 
     return (
@@ -431,31 +444,32 @@ class SimilarShapes extends Component {
   }
 }
 
-export default connect(
-  (state) => ({
-    currentEvent: getCurrentEventDetails(state),
-    similarShapes: getSimilarShapesCoords(state),
-    dataRun: getDatarunDetails(state),
-    isSimilarShapesLoading: getIsSimilarShapesLoading(state),
-    isSimilarShapesActive: getIsSimilarShapesActive(state),
-    isEditingEventRange: getIsEditingEventRange(state),
-    activeShape: getActiveShape(state),
-    activeMetric: getCurrentShapeMetrics(state),
-    currentShapesTag: getCurrentShapesTag(state),
-    isRsetBtnDisabled: getIsResetSimilarDisabled(state),
-    rawShapes: similarShapesResults(state),
-  }),
-  (dispatch) => ({
-    toggleSimilarShapes: (state) => dispatch(toggleSimilarShapesAction(state)),
-    getSimilarShapes: () => dispatch(getSimilarShapesAction()),
-    saveShapes: () => dispatch(saveSimilarShapesAction()),
-    setActiveEvent: (eventID) => dispatch(setActiveEventAction(eventID)),
-    resetSimilarShapes: () => dispatch(resetSimilarShapesAction()),
-    overrideAllTags: (tag) => dispatch(shapesTagsOverrideAction(tag)),
-    setActiveShape: (shape) => dispatch(setActiveShapeAction(shape)),
-    changeShapeTag: (tag) => dispatch(changeActiveShapeTagAction(tag)),
-    changeShapeMetric: (metric) => dispatch(changeMetricsAction(metric)),
-    deleteShape: () => dispatch(deleteShapeAction()),
-    resetShapesTags: () => dispatch(resetShapesTagsAction()),
-  }),
-)(SimilarShapes);
+const mapState = (state: RootState) => ({
+  currentEvent: getCurrentEventDetails(state),
+  similarShapes: getSimilarShapesCoords(state),
+  dataRun: getDatarunDetails(state),
+  isSimilarShapesLoading: getIsSimilarShapesLoading(state),
+  isSimilarShapesActive: getIsSimilarShapesActive(state),
+  isEditingEventRange: getIsEditingEventRange(state),
+  activeShape: getActiveShape(state),
+  activeMetric: getCurrentShapeMetrics(state),
+  currentShapesTag: getCurrentShapesTag(state),
+  isRsetBtnDisabled: getIsResetSimilarDisabled(state),
+  rawShapes: similarShapesResults(state),
+});
+
+const mapDispatch = (dispatch: Function) => ({
+  toggleSimilarShapes: (state) => dispatch(toggleSimilarShapesAction(state)),
+  getSimilarShapes: () => dispatch(getSimilarShapesAction()),
+  saveShapes: () => dispatch(saveSimilarShapesAction()),
+  setActiveEvent: (eventID) => dispatch(setActiveEventAction(eventID)),
+  resetSimilarShapes: () => dispatch(resetSimilarShapesAction()),
+  overrideAllTags: (tag) => dispatch(shapesTagsOverrideAction(tag)),
+  setActiveShape: (shape) => dispatch(setActiveShapeAction(shape)),
+  changeShapeTag: (tag) => dispatch(changeActiveShapeTagAction(tag)),
+  changeShapeMetric: (metric) => dispatch(changeMetricsAction(metric)),
+  deleteShape: () => dispatch(deleteShapeAction()),
+  resetShapesTags: () => dispatch(resetShapesTagsAction()),
+});
+
+export default connect<StateProps, DispatchProps, {}, RootState>(mapState, mapDispatch)(SimilarShapes);
