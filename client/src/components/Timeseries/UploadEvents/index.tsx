@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, ReactNode } from 'react';
 import { connect } from 'react-redux';
 import { Modal, ModalBody, ModalFooter } from 'react-bootstrap';
 import SyntaxHighlighter from 'react-syntax-highlighter';
@@ -47,14 +47,14 @@ class UploadEvents extends Component<Props, State> {
     this.onRemoveFile = this.onRemoveFile.bind(this);
   }
 
-  switchStep() {
+  private switchStep(): void {
     const { uploadStep } = this.state;
     this.setState({
       uploadStep: uploadStep + 1,
     });
   }
 
-  onAbortUpload() {
+  private onAbortUpload(): void {
     this.props.toggleModalState(false);
     this.setState({
       uploadStep: 1,
@@ -62,7 +62,7 @@ class UploadEvents extends Component<Props, State> {
     });
   }
 
-  onAddFiles(newFiles) {
+  private onAddFiles(newFiles) {
     const { currentFiles } = this.state;
     const combined = currentFiles;
 
@@ -73,7 +73,7 @@ class UploadEvents extends Component<Props, State> {
     });
   }
 
-  retryUpload() {
+  private retryUpload(): void {
     this.setState({
       uploadStep: 2,
       currentFiles: [],
@@ -82,22 +82,22 @@ class UploadEvents extends Component<Props, State> {
 
   onRemoveFile(file) {
     const { currentFiles } = this.state;
-
-    currentFiles.forEach((currentFile) => {
-      if (currentFile === file) {
-        currentFiles.splice(currentFile, 1);
+    currentFiles.forEach((currentFile, index) => {
+      if (currentFile.name === file.name) {
+        currentFiles.splice(index, 1);
       }
     });
+
     this.setState({
       currentFiles,
     });
   }
 
-  renderModalContent() {
+  private renderModalContent(): ReactNode | null {
     const { uploadStep } = this.state;
     const { uploadStatus } = this.props;
 
-    const ModalContent = () => {
+    const modalContent = (): ReactNode => {
       if (uploadStatus && uploadStatus === 'success') {
         return (
           <div>
@@ -131,15 +131,15 @@ class UploadEvents extends Component<Props, State> {
       }
     };
 
-    return <ModalContent />;
+    return modalContent();
   }
 
-  renderModalFooter() {
+  renderModalFooter(): ReactNode | null {
     const { uploadStep } = this.state;
     const { uploadStatus } = this.props;
     const btnStyles = 'btn-controls';
 
-    const ModalButtons = () => {
+    const modalButtons = (): ReactNode => {
       if (uploadStatus === 'fail' && this.state.currentFiles.length) {
         return (
           <ul className={`${btnStyles} load`}>
@@ -193,32 +193,26 @@ class UploadEvents extends Component<Props, State> {
       }
     };
 
-    return (
-      <div>
-        <ModalButtons />
-      </div>
-    );
-  }
-
-  uploadModal() {
-    return (
-      <Modal
-        show={this.props.isUploadModalVisible}
-        centered
-        onHide={() => this.onAbortUpload()}
-        className="upload-modal"
-      >
-        <Modal.Header closeButton>Loading .JSON file</Modal.Header>
-        <ModalBody>
-          <div>{this.renderModalContent()}</div>
-        </ModalBody>
-        <ModalFooter>{this.renderModalFooter()}</ModalFooter>
-      </Modal>
-    );
+    return <div>{modalButtons()}</div>;
   }
 
   render() {
-    return this.props.isUploadModalVisible && this.uploadModal();
+    return (
+      this.props.isUploadModalVisible && (
+        <Modal
+          show={this.props.isUploadModalVisible}
+          centered
+          onHide={() => this.onAbortUpload()}
+          className="upload-modal"
+        >
+          <Modal.Header closeButton>Loading .JSON file</Modal.Header>
+          <ModalBody>
+            <div>{this.renderModalContent()}</div>
+          </ModalBody>
+          <ModalFooter>{this.renderModalFooter()}</ModalFooter>
+        </Modal>
+      )
+    );
   }
 }
 
