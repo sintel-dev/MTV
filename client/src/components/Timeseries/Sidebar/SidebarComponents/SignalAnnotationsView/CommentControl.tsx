@@ -15,11 +15,11 @@ import './CommentControl.scss';
 import { RootState } from 'src/model/types';
 
 type OwnProps = {
-  eventDetails: {
+  currentEvent: {
     id: string;
     tag: string;
   };
-  isChangeTagEnabled: boolean;
+  isChangeTagEnabled?: boolean;
 };
 
 type StateProps = ReturnType<typeof mapState>;
@@ -48,7 +48,7 @@ class CommentControl extends Component<Props> {
 
   render() {
     const {
-      eventDetails,
+      currentEvent,
       isSpeechInProgress,
       recordComment,
       updatedEventDetails,
@@ -58,16 +58,16 @@ class CommentControl extends Component<Props> {
       isChangeTagEnabled,
     } = this.props;
 
-    if (!eventDetails) {
+    if (!currentEvent) {
       return null;
     }
 
     const isEventTagChanged: boolean =
-      updatedEventDetails.id === eventDetails.id && updatedEventDetails.tag !== eventDetails.tag;
+      updatedEventDetails.id === currentEvent.id && updatedEventDetails.tag !== currentEvent.tag;
 
-    const commentText: string = updatedEventDetails.id === eventDetails.id ? updatedEventDetails.commentsDraft : '';
+    const commentText: string = updatedEventDetails.id === currentEvent.id ? updatedEventDetails.commentsDraft : '';
     const isEventCommentChanged: boolean =
-      updatedEventDetails.id === eventDetails.id && updatedEventDetails.commentsDraft;
+      updatedEventDetails.id === currentEvent.id && updatedEventDetails.commentsDraft;
     const isEventChanged: boolean = isEventCommentChanged || isEventTagChanged;
 
     return (

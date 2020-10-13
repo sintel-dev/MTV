@@ -145,15 +145,16 @@ class EventComments extends Component<Props> {
   }
 
   render() {
-    const { eventDetails, isUsersDataLoading, isEventJumpVisible, setActivePanel } = this.props;
-    const eventActivity =
+    const { eventDetails, isUsersDataLoading, isEventJumpVisible, eventHistory, setActivePanel } = this.props;
+    const commentsActivity =
       (eventDetails &&
         eventDetails.eventComments &&
         eventDetails.eventComments.comments &&
         eventDetails.eventComments.comments.length) ||
       0;
 
-    const maxActivity: number = Math.min(eventActivity, MAX_EVENTS_ACTIVITY);
+    const historyActivity: number = eventHistory && eventHistory.length;
+    const maxActivity: number = Math.min(commentsActivity + historyActivity, MAX_EVENTS_ACTIVITY);
 
     return (
       eventDetails && (
@@ -167,7 +168,11 @@ class EventComments extends Component<Props> {
             <div className="event-jump">
               <ul>
                 <li>
-                  Showing <strong>{maxActivity} most recent</strong> - to see more details
+                  {maxActivity ? (
+                    <p>
+                      Showing <strong>{maxActivity} most recent</strong> - to see more details
+                    </p>
+                  ) : null}
                 </li>
                 <li>
                   <button type="button" onClick={() => setActivePanel('eventView')}>
