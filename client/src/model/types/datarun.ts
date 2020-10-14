@@ -81,6 +81,8 @@ export type DatarunState = {
   chartStyle: string;
 };
 
+export type EventWindowsType = Array<[number, number, number, string, string | null]>;
+
 /**
  * The single datarun item fetched from server with RESTAPI
  * API: find | delete | create | update
@@ -102,9 +104,9 @@ export type DatarunDataType = {
     timestamp: number;
     data: { means: number[]; counts: number[] }[][];
   }[];
-  eventWindows?: any;
+  eventWindows?: EventWindowsType;
   timeSeries?: Array<[number, number]>;
-  maxTimeSeries?: Array<number>;
+  maxTimeSeries?: Array<[number, number]>;
   signal_id: string;
 };
 

@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import { createSelector } from 'reselect';
 import * as _ from 'lodash';
-import { RootState, EventDataType } from '../types';
+import { RootState, EventDataType, EventWindowsType } from '../types';
 import { months } from '../utils/Utils';
 
 export const getFilterTags = (state) => state.datarun.filterTags;
@@ -254,7 +254,7 @@ export const getProcessedDataRuns = createSelector(
         .map((currentEvent) => currentEvent)
         .sort((current, next) => current.start_time - next.start_time);
 
-      const eventWindows = groupByEventWindows(
+      const eventWindows: EventWindowsType = groupByEventWindows(
         sortedEvents,
         timeSeries.map((series) => series[0]),
       );
