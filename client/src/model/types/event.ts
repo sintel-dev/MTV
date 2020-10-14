@@ -1,6 +1,16 @@
 import { CommentDataType } from './comment';
 
 export const FETCH_EVENT_HISTORY = 'FETCH_EVENT_HISTORY';
+
+export type EventCommentsType = {
+  comments?: {
+    created_by: string;
+    event: string;
+    id: string;
+    insert_time: string;
+    text: string;
+  };
+};
 /**
  * The data fetched from server with RESTAPI
  */
@@ -15,6 +25,8 @@ export type EventDataType = {
   comments?: CommentDataType[];
   source?: string;
   signalrunID: string;
+  isCommentsLoading: boolean;
+  eventComments: EventCommentsType[];
 };
 
 export type EventsResponse = {

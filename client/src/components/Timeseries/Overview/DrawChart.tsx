@@ -228,43 +228,62 @@ export class DrawChart extends Component<ChartProps, ChartState> {
     !isEditingEvent && !isAddingNewEvent && !isPopupOpen && this.props.onSelectDatarun(dataRunID);
   }
 
-  private drawEvent(event: number[]) {
+  private drawEvent(event: [number, number]) {
     const { timeSeries } = this.props.dataRun;
-    const eventData: Array<[number, number]> = timeSeries.slice(event[0], event[1] + 2);
-    return <path key={event[3]} className="wave-event" d={this.drawLine(eventData)} />;
+    const [start, end] = event;
+    const eventData: Array<[number, number]> = timeSeries.slice(start, end + 2);
+    return <path key={event[1]} className="wave-event" d={this.drawLine(eventData)} />;
   }
 
-  private renderSimilarShapes(shape: ShapeType) {
-    const { start, end } = shape;
+  private renderEvents() {
+    const { dataRun } = this.props;
+    const { eventWindows } = dataRun;
 
-    return (
-      <g className="similar-shape" key={start}>
-        {this.drawEvent([start, end])}
-      </g>
-    );
+    if (!eventWindows.length) {
+      return null;
+    }
+
+    return eventWindows.map((currentEvent) => {
+      const [start, end] = currentEvent;
+      return this.drawEvent([start, end]);
+    });
   }
 
-  private drawData() {
-    const { width, height, offset } = this.state;
+  private renderSimilarShapes() {
     const {
-      dataRun,
       isSimilarShapesLoading,
       isSimilarShapesActive,
       similarShapesCoords,
       selectedDatarunID,
+      dataRun,
     } = this.props;
-    const { eventWindows, timeSeries } = dataRun;
+
+    if (isSimilarShapesLoading || selectedDatarunID !== dataRun.id || !isSimilarShapesActive) {
+      return null;
+    }
+
+    return similarShapesCoords.map((currentShape) => {
+      const { start, end } = currentShape;
+      return (
+        <g className="similar-shape" key={start}>
+          {this.drawEvent([start, end])}
+        </g>
+      );
+    });
+  }
+
+  private drawData() {
+    const { width, height, offset } = this.state;
+    const { dataRun } = this.props;
+    const { timeSeries } = dataRun;
 
     return (
       width > 0 &&
       height > 0 && (
         <g className="event-wrapper" transform={`translate(${offset.left}, ${offset.top})`}>
           <path className="wave-data" d={this.drawLine(timeSeries)} />
-          {eventWindows.length > 0 && eventWindows.map((windowEvent) => this.drawEvent(windowEvent))}
-          {isSimilarShapesActive &&
-            !isSimilarShapesLoading &&
-            dataRun.id === selectedDatarunID &&
-            similarShapesCoords.map((currentShape) => this.renderSimilarShapes(currentShape))}
+          {this.renderEvents()}
+          {this.renderSimilarShapes()}
         </g>
       )
     );
