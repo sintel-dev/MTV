@@ -25,18 +25,36 @@ export type DatarunState = {
   zoomCounter: number;
   zoomMode: boolean;
   periodLevel: {
-    year: number | null;
-    month: string | null;
-    day: string | null;
+    year: number | null | string;
+    month: string | null | number;
+    day?: string | null;
     level: string | null;
   };
   isTimeSyncModeEnabled: boolean;
   scrollHistory: {
-    year: null | string;
-    month: null | string;
-    level: string;
+    year: null | string | number;
+    month: null | string | number;
+    level: string | null;
   };
   chartStyle: string;
+  periodRange?: {
+    // circular data
+    bins: Array<number>;
+    children: Array<{
+      level: string;
+      name: string;
+      counts: Array<number>;
+      children?: Array<{
+        bins: Array<number>;
+        name: number;
+        counts: Array<number>;
+        children: any;
+      }>;
+    }>;
+    level: string;
+    name: number;
+    parent?: any;
+  };
 };
 
 export type EventWindowsType = Array<[number, number, number, string, string | null]>;
@@ -90,4 +108,40 @@ export type TimeSeriesRangeType = {
 export type SetTimeseriesPeriodAction = {
   type: typeof SET_TIMESERIES_PERIOD;
   selectedRange: TimeSeriesRangeType;
+};
+
+export type ToggleSyncActionType = {
+  type: typeof TOGGLE_TIME_SYNC_RANGE;
+  isTimeSyncModeEnabled: boolean;
+};
+
+export type SetPeriodLevelActionType = {
+  type: typeof SET_CURRENT_PERIOD_LEVEL;
+  periodLevel: DatarunState['periodLevel'];
+};
+
+export type TogglePreditionActionType = {
+  type: typeof TOGGLE_PREDICTION_MODE;
+  isPredictionEnabled: boolean;
+};
+
+export type ClickToZoomActionType = {
+  type: typeof ZOOM_ON_CLICK;
+  zoomDirection: string;
+  zoomCounter: number;
+};
+
+export type ToogleZoomActionType = {
+  type: typeof TOGGLE_ZOOM;
+  zoomMode: boolean;
+};
+
+export type SetScrollHistoryActionType = {
+  type: typeof SET_SCROLL_HISTORY;
+  scrollHistory: DatarunState['periodLevel'];
+};
+
+export type SetChartStyleActionType = {
+  type: typeof SWITCH_CHART_STYLE;
+  chartStyle: string;
 };
