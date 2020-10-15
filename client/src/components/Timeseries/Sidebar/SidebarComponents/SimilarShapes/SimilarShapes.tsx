@@ -14,7 +14,8 @@ import {
   deleteShapeAction,
   resetShapesTagsAction,
 } from 'src/model/actions/similarShapes';
-import { getCurrentEventDetails, getDatarunDetails, getIsEditingEventRange } from 'src/model/selectors/datarun';
+import { getCurrentEventDetails, getDatarunDetails } from 'src/model/selectors/datarun';
+import { getIsEditingEventRange } from 'src/model/selectors/events';
 import {
   getIsSimilarShapesLoading,
   getSimilarShapesCoords,
@@ -26,7 +27,7 @@ import {
   similarShapesResults,
 } from 'src/model/selectors/similarShapes';
 import { timestampToDate } from 'src/components/Timeseries/AggregationLevels/AggregationChart/Utils';
-import { setActiveEventAction } from 'src/model/actions/datarun';
+import { setActiveEventAction } from 'src/model/actions/events';
 import Dropdown from 'src/components/Common/Dropdown';
 import { colorSchemes } from 'src/components/Timeseries/FocusChart/Constants';
 import { RootState } from 'src/model/types';

@@ -125,7 +125,7 @@ export function selectExperiment(history: any, experimentID: string) {
 
     dispatch({
       type: SET_TIMESERIES_PERIOD,
-      eventRange: {
+      selectedRange: {
         eventRange: [0, 0],
         timeStamp: [0, 0],
         zoomValue: 1,

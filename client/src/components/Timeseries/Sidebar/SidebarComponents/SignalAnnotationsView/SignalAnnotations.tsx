@@ -4,8 +4,9 @@ import { timestampToDate } from 'src/components/Timeseries/AggregationLevels/Agg
 import { colorSchemes } from 'src/components/Timeseries/FocusChart/Constants';
 import { TriangleDown, TriangleUp } from 'src/components/Common/icons';
 import { Collapse } from 'react-collapse';
-import { getSelectedDatarun, getCurrentEventDetails, getActiveEventID } from 'src/model/selectors/datarun';
-import { setActiveEventAction } from 'src/model/actions/datarun';
+import { getSelectedDatarun, getCurrentEventDetails } from 'src/model/selectors/datarun';
+import { getActiveEventID } from 'src/model/selectors/events';
+import { setActiveEventAction } from 'src/model/actions/events';
 import { RootState } from 'src/model/types';
 import EventComments from './EventComments';
 import CommentControl from './CommentControl';

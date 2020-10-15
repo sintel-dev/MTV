@@ -2,34 +2,25 @@ import { createSelector } from 'reselect';
 import { RootState } from '../types';
 
 import { getSelectedExperimentData, getProcessedDataRuns } from './experiment';
-import { groupEventsByTimestamp, fromMonthToIndex } from '../utils/Utils';
-import { getCurrentEventHistory } from './events';
+import { fromMonthToIndex, groupEventsByTimestamp } from '../utils/Utils';
+import {
+  getActiveEventID,
+  getCurrentEventHistory,
+  getIsAddingNewEvents,
+  getIsEditingEventRange,
+  getUpdatedEventDetails,
+  getEventComments,
+  isEventCommentsLoading,
+} from './events';
 import { getCurrentActivePanel } from './sidebar';
 
-// @TODO - set state: RootState
-const getEventComments = (state) => state.datarun.eventComments;
-const isEventCommentsLoading = (state) => state.datarun.isEventCommentsLoading;
-
-export const getActiveEventID = (state) => state.datarun.activeEventID;
-export const getUpdatedEventDetails = (state) => state.datarun.eventDetails;
-export const getNewEventDetails = (state) => state.datarun.newEventDetails;
 export const isPredictionEnabled = (state) => state.datarun.isPredictionEnabled;
 export const isDatarunIDSelected = (state: RootState) => state.datarun.selectedDatarunID;
 export const getSelectedPeriodRange = (state: RootState) => state.datarun.selectedPeriodRange;
-export const getIsEditingEventRange = (state) => state.datarun.isEditingEventRange;
-export const getIsEditingEventRangeDone = (state) => state.datarun.isEditingEventRangeDone;
-export const getIsPopupOpen = (state) => state.datarun.isPopupOpen;
-export const getIsAddingNewEvents = (state: RootState) => state.datarun.isAddingEvent;
-export const getAddingNewEventStatus = (state) => state.datarun.addingNewEvent;
 export const getZoomOnClickDirection = (state) => state.datarun.zoomDirection;
 export const getZoomCounter = (state) => state.datarun.zoomCounter;
 export const getZoomMode = (state) => state.datarun.zoomMode;
 export const getSelectedPeriodLevel = (state) => state.datarun.periodLevel;
-export const getIsEventModeEnabled = (state) => state.datarun.isEventModeEnabled;
-export const getUploadEventsStatus = (state) => state.datarun.uploadEventsStatus;
-export const getUpdateEventStatus = (state) => state.datarun.eventUpdateStatus;
-export const getIsTranscriptSupported = (state) => state.datarun.isTranscriptSupported;
-export const getIsSpeechInProgress = (state) => state.datarun.isSpeechInProgress;
 export const getIsTimeSyncModeEnabled = (state) => state.datarun.isTimeSyncModeEnabled;
 export const getScrollHistory = (state) => state.datarun.scrollHistory;
 export const getCurrentChartStyle = (state) => state.datarun.chartStyle;

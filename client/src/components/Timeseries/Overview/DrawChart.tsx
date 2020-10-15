@@ -7,19 +7,17 @@ import {
   getSimilarShapesCoords,
 } from 'src/model/selectors/similarShapes';
 import { resetSimilarShapesAction } from 'src/model/actions/similarShapes';
-import { RootState, DatarunDataType } from '../../../model/types';
-import { formatDate } from '../../../model/utils/Utils';
-import { FocusChartConstants } from '../FocusChart/Constants';
+import { RootState, DatarunDataType, TimeSeriesRangeType } from 'src/model/types';
+import { formatDate } from 'src/model/utils/Utils';
+import { setTimeseriesPeriod, selectDatarun } from 'src/model/actions/datarun';
 import {
-  getCurrentEventDetails,
   getSelectedPeriodRange,
-  getIsEditingEventRange,
-  getIsAddingNewEvents,
-  getIsPopupOpen,
   getSelectedDatarunID,
   getCurrentChartStyle,
-} from '../../../model/selectors/datarun';
-import { setTimeseriesPeriod, selectDatarun } from '../../../model/actions/datarun';
+  getCurrentEventDetails,
+} from 'src/model/selectors/datarun';
+import { getIsEditingEventRange, getIsAddingNewEvents } from 'src/model/selectors/events';
+import { FocusChartConstants } from '../FocusChart/Constants';
 
 const { TRANSLATE_LEFT, CHART_MARGIN } = FocusChartConstants;
 
@@ -194,8 +192,7 @@ export class DrawChart extends Component<ChartProps, ChartState> {
     const { xCoord } = this.getScale();
     const xCoordCopy = xCoord.copy();
     const timeStamp = zoomValue.rescaleX(xCoordCopy).domain();
-
-    const selectedRange = {
+    const selectedRange: TimeSeriesRangeType = {
       eventRange,
       zoomValue,
       timeStamp: [new Date(timeStamp[0]).getTime(), new Date(timeStamp[1]).getTime()],
@@ -223,9 +220,9 @@ export class DrawChart extends Component<ChartProps, ChartState> {
   }
 
   private handleBrushClick(dataRunID: string) {
-    const { isEditingEvent, isAddingNewEvent, isPopupOpen, resetShapes } = this.props;
+    const { isEditingEvent, isAddingNewEvent, resetShapes } = this.props;
     resetShapes();
-    !isEditingEvent && !isAddingNewEvent && !isPopupOpen && this.props.onSelectDatarun(dataRunID);
+    !isEditingEvent && !isAddingNewEvent && this.props.onSelectDatarun(dataRunID);
   }
 
   private drawEvent(event: [number, number]) {
@@ -262,7 +259,7 @@ export class DrawChart extends Component<ChartProps, ChartState> {
       return null;
     }
 
-    return similarShapesCoords.map((currentShape) => {
+    return similarShapesCoords.map((currentShape: ShapeType) => {
       const { start, end } = currentShape;
       return (
         <g className="similar-shape" key={start}>
@@ -371,7 +368,6 @@ const mapState = (state: RootState) => ({
   selectedPeriod: getSelectedPeriodRange(state),
   isEditingEvent: getIsEditingEventRange(state),
   isAddingNewEvent: getIsAddingNewEvents(state),
-  isPopupOpen: getIsPopupOpen(state),
   isSimilarShapesLoading: getIsSimilarShapesLoading(state),
   isSimilarShapesActive: getIsSimilarShapesActive(state),
   similarShapesCoords: getSimilarShapesCoords(state),

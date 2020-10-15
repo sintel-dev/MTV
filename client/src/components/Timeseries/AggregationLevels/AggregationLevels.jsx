@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import * as d3 from 'd3';
-import { getCurrentEventDetails, getDatarunDetails, getCurrentChartStyle } from 'src/model/selectors/datarun';
+import { getDatarunDetails, getCurrentChartStyle, getCurrentEventDetails } from 'src/model/selectors/datarun';
 import {
   getAggregationTimeLevel,
   getSignalRawData,
@@ -180,10 +180,12 @@ export class AggregationLevels extends Component {
     const { width, height, currentEventDetails, isSignalRawLoading, signalRawData, eventInterval } = this.props;
     const chartWidth = width - TRANSLATE_CHART - 2 * CHART_MARGIN;
     const chartHeight = height - TIME_INTERVALS_HEIGHT; // time granulation height;
-    const pathClassName = currentEventDetails.tag?.replace(/\s/g, '_').toLowerCase() || 'untagged';
-    if (isSignalRawLoading) {
+    if (isSignalRawLoading || currentEventDetails === null) {
       return null;
     }
+
+    const pathClassName = currentEventDetails.tag?.replace(/\s/g, '_').toLowerCase() || 'untagged';
+
     return (
       width > 0 && (
         <g className="aggregation-focus" transform={`translate(${TRANSLATE_CHART}, ${CHART_MARGIN})`}>

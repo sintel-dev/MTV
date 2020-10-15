@@ -1,84 +1,60 @@
+import { ZoomType } from './aggregation';
 import { EventDataType } from './event';
 
 export const SELECT_DATARUN = 'SELECT_DATARUN';
 export const SET_TIMESERIES_PERIOD = 'SET_TIMESERIES_PERIOD';
-export const UPDATE_EVENT_DETAILS = 'UPDATE_EVENT_DETAILS';
 export const IS_CHANGING_EVENT_RANGE = 'IS_CHANGING_EVENT_RANGE';
-export const SET_ACTIVE_EVENT_ID = 'SET_ACTIVE_EVENT_ID';
 export const TOGGLE_PREDICTION_MODE = 'TOGGLE_PREDICTION_MODE';
-export const SAVE_EVENT_DETAILS = 'SAVE_EVENT_DETAILS';
 export const IS_UPDATE_POPUP_OPEN = 'IS_UPDATE_POPUP_OPEN';
-export const ADDING_NEW_EVENTS = 'ADDING_NEW_EVENTS';
-export const NEW_EVENT_DETAILS = 'NEW_EVENT_DETAILS';
-export const ADDING_NEW_EVENT_RESULT = 'ADDING_NEW_EVENT_RESULT';
 export const UPDATE_DATARUN_EVENTS = 'UPDATE_DATARUN_EVENTS';
-export const SET_FILTER_TAGS = 'SET_FILTER_TAGS';
 export const ZOOM_ON_CLICK = 'ZOOM_ON_CLICK';
 export const TOGGLE_ZOOM = 'TOGGLE_ZOOM';
 export const SET_CURRENT_PERIOD_LEVEL = 'SET_CURRENT_PERIOD_LEVEL';
-export const TOGGLE_EVENT_MODE = 'TOGGLE_EVENT_MODE';
-export const UPLOAD_JSON_EVENTS = 'UPLOAD_JSON_EVENTS';
-export const EVENT_UPDATE_STATUS = 'EVENT_UPDATE_STATUS';
 export const TOGGLE_TIME_SYNC_RANGE = 'TOGGLE_TIME_SYNC_RANGE';
 export const SET_SCROLL_HISTORY = 'SET_SCROLL_HISTORY';
 export const SWITCH_CHART_STYLE = 'SWITCH_CHART_STYLE';
-
-export type SelectDatarunAction = {
-  type: typeof SELECT_DATARUN;
-  datarunID: string;
-};
-
-export type SetTimeseriesPeriodAction = {
-  type: typeof SET_TIMESERIES_PERIOD;
-  eventRange: {
-    eventRange: Array<number>;
-    zoomValue: object | number;
-    timeStamp: Array<number>;
-  };
-};
 
 /**
  * Datarun State format
  */
 export type DatarunState = {
   selectedDatarunID: string;
-  selectedPeriodRange: {
-    eventRange: Array<number>;
-    zoomValue: any;
-    timeStamp: Array<number>;
-  };
-  activeEventID: string | null;
-  isEventCommentsLoading: boolean;
-  eventComments: Array<any>;
+  selectedPeriodRange: TimeSeriesRangeType;
   isPredictionEnabled: boolean;
-  eventDetails: object;
-  isEditingEventRange: boolean;
-  isEditingEventRangeDone: boolean;
-  isPopupOpen: boolean;
-  isAddingEvent: boolean;
-  newEventDetails: object;
-  filterTags: any;
   zoomDirection: string;
   zoomCounter: number;
   zoomMode: boolean;
   periodLevel: {
-    year: number | null;
-    month: string | null;
-    day: string | null;
+    year: number | null | string;
+    month: string | null | number;
+    day?: string | null;
     level: string | null;
   };
-  isEventModeEnabled: boolean;
-  uploadEventsStatus: null | boolean;
-  eventUpdateStatus: null | string;
-  isTranscriptSupported: boolean;
-  isSpeechInProgress: boolean;
   isTimeSyncModeEnabled: boolean;
   scrollHistory: {
-    year: null | string;
-    month: null | string;
-    level: string;
+    year: null | string | number;
+    month: null | string | number;
+    level: string | null;
   };
   chartStyle: string;
+  periodRange?: {
+    // circular data
+    bins: Array<number>;
+    children: Array<{
+      level: string;
+      name: string;
+      counts: Array<number>;
+      children?: Array<{
+        bins: Array<number>;
+        name: number;
+        counts: Array<number>;
+        children: any;
+      }>;
+    }>;
+    level: string;
+    name: number;
+    parent?: any;
+  };
 };
 
 export type EventWindowsType = Array<[number, number, number, string, string | null]>;
@@ -116,4 +92,56 @@ export type DatarunDataType = {
  */
 export type DatarunsResponse = {
   dataruns: DatarunDataType[];
+};
+
+export type SelectDatarunAction = {
+  type: typeof SELECT_DATARUN;
+  datarunID: string;
+};
+
+export type TimeSeriesRangeType = {
+  eventRange: Array<number>;
+  zoomValue: ZoomType;
+  timeStamp: Array<number>;
+};
+
+export type SetTimeseriesPeriodAction = {
+  type: typeof SET_TIMESERIES_PERIOD;
+  selectedRange: TimeSeriesRangeType;
+};
+
+export type ToggleSyncActionType = {
+  type: typeof TOGGLE_TIME_SYNC_RANGE;
+  isTimeSyncModeEnabled: boolean;
+};
+
+export type SetPeriodLevelActionType = {
+  type: typeof SET_CURRENT_PERIOD_LEVEL;
+  periodLevel: DatarunState['periodLevel'];
+};
+
+export type TogglePreditionActionType = {
+  type: typeof TOGGLE_PREDICTION_MODE;
+  isPredictionEnabled: boolean;
+};
+
+export type ClickToZoomActionType = {
+  type: typeof ZOOM_ON_CLICK;
+  zoomDirection: string;
+  zoomCounter: number;
+};
+
+export type ToogleZoomActionType = {
+  type: typeof TOGGLE_ZOOM;
+  zoomMode: boolean;
+};
+
+export type SetScrollHistoryActionType = {
+  type: typeof SET_SCROLL_HISTORY;
+  scrollHistory: DatarunState['periodLevel'];
+};
+
+export type SetChartStyleActionType = {
+  type: typeof SWITCH_CHART_STYLE;
+  chartStyle: string;
 };

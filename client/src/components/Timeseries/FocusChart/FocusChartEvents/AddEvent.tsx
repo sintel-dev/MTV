@@ -3,21 +3,15 @@ import { connect } from 'react-redux';
 import { RootState } from 'src/model/types';
 import * as d3 from 'd3';
 import { setActivePanelAction } from 'src/model/actions/sidebar';
-import {
-  updateNewEventDetailsAction,
-  updateEventDetailsAction,
-  // openEventDetailsPopupAction,
-} from 'src/model/actions/datarun';
+import { updateNewEventDetailsAction, updateEventDetailsAction } from 'src/model/actions/events';
 
 import {
-  getIsAddingNewEvents,
   getDatarunDetails,
   getSelectedPeriodRange,
-  getIsEditingEventRange,
-  getCurrentEventDetails,
   getIsAggregationActive,
-  getNewEventDetails,
+  getCurrentEventDetails,
 } from 'src/model/selectors/datarun';
+import { getIsAddingNewEvents, getIsEditingEventRange, getNewEventDetails } from 'src/model/selectors/events';
 
 import { FocusChartConstants } from '../Constants';
 import { normalizeHanlers } from '../FocusChartUtils';

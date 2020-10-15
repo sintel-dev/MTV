@@ -2,9 +2,11 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGripLinesVertical } from '@fortawesome/free-solid-svg-icons';
-import { RootState, DatarunDataType } from '../../../model/types';
-import { selectDatarun } from '../../../model/actions/datarun';
-import { getSelectedDatarunID, getIsEditingEventRange } from '../../../model/selectors/datarun';
+import { selectDatarun } from 'src/model/actions/datarun';
+import { getSelectedDatarunID } from 'src/model/selectors/datarun';
+import { getIsEditingEventRange } from 'src/model/selectors/events';
+import { RootState, DatarunDataType } from 'src/model/types';
+
 import DrawChart from './DrawChart';
 
 type OwnProps = {

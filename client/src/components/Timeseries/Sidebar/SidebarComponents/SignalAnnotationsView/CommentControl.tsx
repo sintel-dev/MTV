@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { getIsSpeechInProgress, getUpdatedEventDetails } from 'src/model/selectors/datarun';
 import { filterOptions, formatOptionLabel } from 'src/components/Common/Dropdown';
 import { colorSchemes } from 'src/components/Timeseries/FocusChart/Constants';
 import {
@@ -8,7 +7,8 @@ import {
   updateEventDetailsAction,
   closeEventModal,
   saveEventDetailsAction,
-} from 'src/model/actions/datarun';
+} from 'src/model/actions/events';
+import { getUpdatedEventDetails, getIsSpeechInProgress } from 'src/model/selectors/events';
 import { RecordingIcon, MicrophoneIcon, CloseIcon } from 'src/components/Common/icons';
 import Select from 'react-select';
 import './CommentControl.scss';

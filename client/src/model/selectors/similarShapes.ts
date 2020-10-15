@@ -1,7 +1,7 @@
 import { createSelector } from 'reselect';
 import { RootState } from '../types';
 
-import { getDatarunDetails, getCurrentEventDetails } from './datarun';
+import { getCurrentEventDetails, getDatarunDetails } from './datarun';
 
 export const getIsSimilarShapesActive = (state: RootState) => state.similarShapes.isShapesModalOpen;
 export const getIsSimilarShapesLoading = (state: RootState) => state.similarShapes.isSimilarShapesLoading;
