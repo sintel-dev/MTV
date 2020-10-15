@@ -2,12 +2,6 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import * as d3 from 'd3';
 
-import {
-  getCurrentEventDetails,
-  getUpdatedEventDetails,
-  getIsAddingNewEvents,
-  getNewEventDetails,
-} from 'src/model/selectors/datarun';
 import { timestampToDate } from 'src/components/Timeseries/AggregationLevels/AggregationChart/Utils';
 import Dropdown from 'src/components/Common/Dropdown';
 import {
@@ -17,7 +11,9 @@ import {
   deleteEventAction,
   setActiveEventAction,
   cancelEventEditingAction,
-} from 'src/model/actions/datarun';
+} from 'src/model/actions/events';
+import { getCurrentEventDetails } from 'src/model/selectors/datarun';
+import { getUpdatedEventDetails, getIsAddingNewEvents, getNewEventDetails } from 'src/model/selectors/events';
 
 import { RootState } from 'src/model/types';
 import { selectedOption } from './eventUtils';

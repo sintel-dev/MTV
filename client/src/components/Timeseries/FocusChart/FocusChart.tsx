@@ -3,6 +3,8 @@ import { connect } from 'react-redux';
 import * as d3 from 'd3';
 import { getIsSimilarShapesActive, getSimilarShapesCoords, getActiveShape } from 'src/model/selectors/similarShapes';
 import { setActiveShapeAction } from 'src/model/actions/similarShapes';
+import { setTimeseriesPeriod } from 'src/model/actions/datarun';
+import { setActiveEventAction } from 'src/model/actions/events';
 import {
   getDatarunDetails,
   isPredictionEnabled,
@@ -10,16 +12,14 @@ import {
   getSelectedPeriodLevel,
   getZoomCounter,
   getZoomOnClickDirection,
-  getIsEditingEventRange,
   getZoomMode,
   getIsTimeSyncModeEnabled,
   getScrollHistory,
-  getCurrentEventDetails,
-  getActiveEventID,
   getCurrentChartStyle,
   getIsAggregationActive,
+  getCurrentEventDetails,
 } from 'src/model/selectors/datarun';
-import { setTimeseriesPeriod, setActiveEventAction } from 'src/model/actions/datarun';
+import { getIsEditingEventRange, getActiveEventID } from 'src/model/selectors/events';
 import { RootState } from 'src/model/types';
 import { formatDate } from 'src/model/utils/Utils';
 import { FocusChartConstants, colorSchemes } from './Constants';

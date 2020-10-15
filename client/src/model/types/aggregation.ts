@@ -9,7 +9,7 @@ type SignalRawResponse = {
   data: [number, number][];
 };
 
-export type ZoomType = { k: number; x: number; y: number } | number;
+export type ZoomType = {} | { k: number; x: number; y: number } | number | any;
 
 export type AggregationTimeLevel = {
   selectedLevel: string | null;

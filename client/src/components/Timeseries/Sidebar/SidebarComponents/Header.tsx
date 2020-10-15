@@ -2,20 +2,15 @@ import React, { Component, ReactNode } from 'react';
 import { connect } from 'react-redux';
 import { toggleRelativeScaleAction } from 'src/model/actions/sidebar';
 import { getIsRelativeScaleEnabled } from 'src/model/selectors/sidebar';
+import { setPeriodRangeAction, setScrollHistoryAction, setReviewPeriodAction } from 'src/model/actions/datarun';
 import {
   getSelectedPeriodLevel,
-  getIsEditingEventRange,
-  getIsEventModeEnabled,
   getIsTimeSyncModeEnabled,
   getFilteredPeriodRange,
   getScrollHistory,
 } from 'src/model/selectors/datarun';
-import {
-  toggleEventModeAction,
-  setPeriodRangeAction,
-  setScrollHistoryAction,
-  setReviewPeriodAction,
-} from 'src/model/actions/datarun';
+import { getIsEditingEventRange, getIsEventModeEnabled } from 'src/model/selectors/events';
+import { toggleEventModeAction } from 'src/model/actions/events';
 import { RootState } from 'src/model/types';
 import EventSummary from './EventSummary';
 

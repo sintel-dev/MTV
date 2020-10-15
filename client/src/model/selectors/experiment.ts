@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 import { RootState, EventDataType, EventWindowsType } from '../types';
 import { months } from '../utils/Utils';
 
-export const getFilterTags = (state) => state.datarun.filterTags;
+export const getFilterTags = (state) => state.events.filterTags;
 export const getSelectedExperimentData = (state: RootState) => state.selectedExperimentData;
 
 export const filteringTags = createSelector(

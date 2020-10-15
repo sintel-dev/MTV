@@ -3,10 +3,10 @@ import { connect } from 'react-redux';
 import { Modal, ModalBody, ModalFooter } from 'react-bootstrap';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { dracula } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-import { getUploadEventsStatus } from 'src/model/selectors/datarun';
+import { loadEventsFromJsonAction } from 'src/model/actions/events';
+import { getUploadEventsStatus } from 'src/model/selectors/events';
+import { RootState } from 'src/model/types';
 import Droppable from './Droppable';
-import { RootState } from '../../../model/types';
-import { loadEventsFromJsonAction } from '../../../model/actions/datarun';
 import './UploadEvents.scss';
 
 type Ownprops = {

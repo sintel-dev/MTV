@@ -4,9 +4,9 @@ import { RootState } from 'src/model/types';
 import {
   getDatarunDetails,
   getFilteredPeriodRange,
-  getGrouppedDatarunEvents,
   getIsTimeSyncModeEnabled,
   getSelectedPeriodLevel,
+  getGrouppedDatarunEvents,
 } from 'src/model/selectors/datarun';
 import { fromMonthToIndex } from 'src/model/utils/Utils';
 import { connect } from 'react-redux';

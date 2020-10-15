@@ -6,7 +6,7 @@ import {
   SET_ACTIVE_SHAPE,
   CHANGE_SHAPES_METRICS,
 } from '../types';
-import { getCurrentEventDetails, getDatarunDetails } from '../selectors/datarun';
+import { getDatarunDetails, getCurrentEventDetails } from '../selectors/datarun';
 import API from '../utils/api';
 import {
   getSimilarShapesCoords,
@@ -19,7 +19,7 @@ import {
 } from '../selectors/similarShapes';
 import { getSelectedExperimentData } from '../selectors/experiment';
 import { AUTH_USER_DATA } from '../utils/constants';
-import { setActiveEventAction } from './datarun';
+import { setActiveEventAction } from './events';
 
 export function toggleSimilarShapesAction(modalState) {
   return async function (dispatch) {

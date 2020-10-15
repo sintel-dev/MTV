@@ -1,14 +1,10 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import {
-  getDatarunDetails,
-  getGrouppedDatarunEvents,
-  getIsTimeSyncModeEnabled,
-  getIsEventModeEnabled,
-  getIsEditingEventRange,
-} from 'src/model/selectors/datarun';
-import * as _ from 'lodash';
 import { setPeriodRangeAction } from 'src/model/actions/datarun';
+import { getDatarunDetails, getIsTimeSyncModeEnabled, getGrouppedDatarunEvents } from 'src/model/selectors/datarun';
+import { getIsEventModeEnabled, getIsEditingEventRange } from 'src/model/selectors/events';
+
+import * as _ from 'lodash';
 import { getIsRelativeScaleEnabled, getIsSummaryViewActive } from 'src/model/selectors/sidebar';
 import { RootState } from 'src/model/types';
 import { getWrapperSize, drawArc, getDataScale } from '../../SidebarUtils';

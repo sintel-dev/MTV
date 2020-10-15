@@ -1,8 +1,11 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { togglePredictionsAction } from 'src/model/actions/datarun';
+import { addNewEventAction } from 'src/model/actions/events';
+import { isPredictionEnabled } from 'src/model/selectors/datarun';
+import { getIsAddingNewEvents, getIsEditingEventRange } from 'src/model/selectors/events';
+import { getIsSimilarShapesActive } from 'src/model/selectors/similarShapes';
 import { RootState } from 'src/model/types';
-import { togglePredictionsAction, addNewEventAction } from '../../../model/actions/datarun';
-import { isPredictionEnabled, getIsAddingNewEvents } from '../../../model/selectors/datarun';
 
 import './FocusChartControls.scss';
 
@@ -11,7 +14,14 @@ type DispatchProps = ReturnType<typeof mapDispatch>;
 type Props = StateProps & DispatchProps;
 
 const FocusChartControls: React.FC<Props> = (props) => {
-  const { isAddingEvent, togglePredictions, addNewEvent, isEnabledPrediction } = props;
+  const {
+    isAddingEvent,
+    togglePredictions,
+    addNewEvent,
+    isEnabledPrediction,
+    isEditingEvent,
+    isSimilarShapesActive,
+  } = props;
   return (
     <div className="chart-controls" id="chartControls">
       <div className="legend">
@@ -40,7 +50,7 @@ const FocusChartControls: React.FC<Props> = (props) => {
           <button
             type="button"
             className="btn btn-add-event"
-            disabled={isAddingEvent}
+            disabled={isAddingEvent || isEditingEvent || isSimilarShapesActive}
             onClick={() => addNewEvent(!isAddingEvent)}
           >
             <span>+</span>
@@ -55,6 +65,8 @@ const FocusChartControls: React.FC<Props> = (props) => {
 const mapState = (state: RootState) => ({
   isEnabledPrediction: isPredictionEnabled(state),
   isAddingEvent: getIsAddingNewEvents(state),
+  isEditingEvent: getIsEditingEventRange(state),
+  isSimilarShapesActive: getIsSimilarShapesActive(state),
 });
 
 const mapDispatch = (dispatch: Function) => ({

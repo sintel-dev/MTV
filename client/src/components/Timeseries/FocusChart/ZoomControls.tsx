@@ -3,8 +3,9 @@ import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowsAlt } from '@fortawesome/free-solid-svg-icons';
 import { RootState } from 'src/model/types';
-import { getZoomMode, getIsEditingEventRange } from '../../../model/selectors/datarun';
-import { zoomOnClick, zoomToggleAction } from '../../../model/actions/datarun';
+import { zoomOnClick, zoomToggleAction } from 'src/model/actions/datarun';
+import { getZoomMode } from 'src/model/selectors/datarun';
+import { getIsEditingEventRange } from 'src/model/selectors/events';
 
 type StateProps = ReturnType<typeof mapState>;
 type DispatchProps = ReturnType<typeof mapDispatch>;
