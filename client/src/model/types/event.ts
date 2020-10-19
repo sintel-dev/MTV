@@ -16,10 +16,12 @@ export const SAVE_EVENT_DETAILS = 'SAVE_EVENT_DETAILS';
 export const IS_CHANGING_EVENT_RANGE = 'IS_CHANGING_EVENT_RANGE';
 
 export type UpdatedEventDetailsType = {
+  id?: string;
   start_time?: number;
   stop_time?: number;
   tag?: string;
   commentsDraft?: string;
+  score?: number;
 } | null;
 
 /**

@@ -165,7 +165,7 @@ function setTranscriptStatusAction() {
 
 export function saveEventDetailsAction() {
   return async function (dispatch, getState) {
-    const updatedEventDetails: EventDataType = getUpdatedEventDetails(getState());
+    const updatedEventDetails: UpdatedEventDetailsType = getUpdatedEventDetails(getState());
 
     const isAddingNewEvent: boolean = getIsAddingNewEvents(getState());
     if (isAddingNewEvent) {
@@ -192,15 +192,7 @@ export function saveEventDetailsAction() {
     const start: number = start_time / 1000;
     const stop: number = stop_time / 1000;
 
-    const payload: {
-      start_time: number;
-      stop_time: number;
-      score: number;
-      tag: string;
-      datarun_id: string;
-      event_id: string;
-      created_by: string;
-    } = {
+    const payload = {
       start_time: start,
       stop_time: stop,
       score,
