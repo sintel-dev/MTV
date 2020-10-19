@@ -5,7 +5,7 @@ import { colorSchemes } from 'src/components/Timeseries/FocusChart/Constants';
 import {
   recordCommentAction,
   updateEventDetailsAction,
-  closeEventModal,
+  closeEventDetailsAction,
   saveEventDetailsAction,
 } from 'src/model/actions/events';
 import { getUpdatedEventDetails, getIsSpeechInProgress } from 'src/model/selectors/events';
@@ -137,7 +137,7 @@ const mapState = (state: RootState) => ({
 const mapDispatch = (dispatch: Function) => ({
   recordComment: (recordState) => dispatch(recordCommentAction(recordState)),
   updateEventDetails: (eventDetails) => dispatch(updateEventDetailsAction(eventDetails)),
-  closeEventDetails: () => dispatch(closeEventModal()),
+  closeEventDetails: () => dispatch(closeEventDetailsAction()),
   saveEventDetails: () => dispatch(saveEventDetailsAction()),
 });
 
