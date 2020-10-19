@@ -32,3 +32,4 @@ export * from './project';
 export * from './aggregation';
 export * from './similarshapes';
 export * from './users';
+export * from './sidebar';
