@@ -56,7 +56,7 @@ class SignalAnnotations extends Component<Props> {
               <div className="collapsible-wrapper">
                 <Collapse isOpened={eventDetails && eventDetails.id === id}>
                   <EventComments />
-                  <CommentControl currentEvent={currentEvent} />
+                  <CommentControl currentEvent={currentEvent} isChangeTagEnabled />
                 </Collapse>
               </div>
             </div>

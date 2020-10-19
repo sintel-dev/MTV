@@ -223,29 +223,6 @@ export const getCurrentEventDetails = createSelector(
   },
 );
 
-export const getEventSortedHistory = createSelector(
-  [getCurrentEventDetails, getCurrentEventHistory],
-  (eventDetails, eventHistory) => {
-    if (eventDetails === null || eventHistory === null) {
-      return null;
-    }
-
-    const eventData = [];
-    const { comments } = eventDetails.eventComments || null;
-
-    comments && eventData.push(...comments);
-    eventData.push(...eventHistory);
-
-    const stringToTimestamp = (string) => new Date(string).getTime();
-
-    const sortedHistory = eventData.sort(
-      (prev, current) => stringToTimestamp(prev.insert_time) - stringToTimestamp(current.insert_time),
-    );
-
-    return sortedHistory;
-  },
-);
-
 export const getIsAggregationActive = createSelector(
   [getActiveEventID, getCurrentActivePanel, getIsEditingEventRange, getIsAddingNewEvents],
   (eventID, activePanel, isEditingEventRange, isAddingNewEvent) =>

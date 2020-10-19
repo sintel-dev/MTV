@@ -1,5 +1,5 @@
 import createReducer from '../store/createReducer';
-import { EventState } from '../types';
+import { EventState, GetEventCommentsActionType } from '../types';
 
 const initialState: EventState = {
   eventHistory: null,
@@ -42,9 +42,18 @@ function UPDATE_EVENT_DETAILS(nextState, { eventDetails }) {
   nextState.eventDetails = eventDetails;
 }
 
-function GET_EVENT_COMMENTS_SUCCESS(nextState, { eventComments }) {
-  nextState.eventComments = eventComments;
+function GET_EVENT_COMMENTS_REQUEST(nextState) {
+  nextState.isEventCommentsLoading = true;
+}
+
+function GET_EVENT_COMMENTS_SUCCESS(nextState: EventState, action: GetEventCommentsActionType) {
+  nextState.eventComments = action.result.comments;
   nextState.isEventCommentsLoading = false;
+}
+
+function GET_EVENT_COMMENTS_FAILURE(nextState) {
+  nextState.isEventCommentsLoading = false;
+  nextState.eventComments = [];
 }
 
 function TOGGLE_EVENT_MODE(nextState, { isEventModeEnabled }) {
@@ -92,7 +101,9 @@ export default createReducer(initialState, {
   FETCH_EVENT_HISTORY_FAILURE,
   SET_ACTIVE_EVENT_ID,
   UPDATE_EVENT_DETAILS,
+  GET_EVENT_COMMENTS_REQUEST,
   GET_EVENT_COMMENTS_SUCCESS,
+  GET_EVENT_COMMENTS_FAILURE,
   TOGGLE_EVENT_MODE,
   IS_CHANGING_EVENT_RANGE,
   ADDING_NEW_EVENTS,

@@ -6,16 +6,11 @@ import { getCurrentActivePanel } from '../selectors/sidebar';
 import {
   ADDING_NEW_EVENTS,
   ADDING_NEW_EVENT_RESULT,
-  AddNewEventActionType,
-  EVENT_UPDATE_STATUS,
-  FetchEventDetailsAction,
   FETCH_EVENT_DATA,
   FETCH_EVENT_HISTORY,
-  GET_EVENT_COMMENTS_SUCCESS,
+  GET_EVENT_COMMENTS,
   IS_CHANGING_EVENT_RANGE,
   NEW_EVENT_DETAILS,
-  SetEventIDAction,
-  SetEventStatusAction,
   SET_ACTIVE_EVENT_ID,
   SET_FILTER_TAGS,
   SET_TRANSCRIPT_STATUS,
@@ -24,6 +19,22 @@ import {
   UPDATE_DATARUN_EVENTS,
   UPDATE_EVENT_DETAILS,
   UPLOAD_JSON_EVENTS,
+  SPEECH_STATUS,
+  EVENT_UPDATE_STATUS,
+  AddNewEventActionType,
+  SetTranscriptStatusActionType,
+  EventDataType,
+  FetchEventDetailsAction,
+  FetchEventHistoryType,
+  GetEventCommentsActionType,
+  SetEventIDAction,
+  SetEventStatusAction,
+  DatarunDataType,
+  ToggleEventModeType,
+  IsEditingEventRangeType,
+  UpdatedEventDetailsType,
+  SetFilterTagsType,
+  RecordCommentType,
 } from '../types';
 import API from '../utils/api';
 import { AUTHENTICATED_USER_ID, AUTH_USER_DATA } from '../utils/constants';
@@ -36,24 +47,25 @@ export function addNewEventAction(isAddingEvent: boolean) {
       type: ADDING_NEW_EVENTS,
       isAddingEvent,
     };
+    dispatch(setActiveEventAction(null));
     dispatch(action);
   };
 }
 
 export function getCurrentEventHistoryAction() {
   return function (dispatch, getState) {
-    const currentEvent = getCurrentEventDetails(getState());
+    const currentEvent: EventDataType | null = getCurrentEventDetails(getState());
     if (!currentEvent) {
       return null;
     }
 
-    const eventID = currentEvent.id;
-    const tagHistory = {
+    const eventID: string = currentEvent.id;
+    const action: FetchEventHistoryType = {
       type: FETCH_EVENT_HISTORY,
       promise: API.eventInteraction.all({}, { event_id: eventID, action: 'TAG' }),
     };
 
-    return dispatch(tagHistory);
+    return dispatch(action);
   };
 }
 
@@ -62,8 +74,7 @@ export function getCurrentEventHistoryAction() {
  */
 export function cancelEventEditingAction() {
   return async function (dispatch, getState) {
-    // dispatch({ type: IS_UPDATE_POPUP_OPEN, isPopupOpen: false });
-    const currentEventDetails = getCurrentEventDetails(getState());
+    const currentEventDetails: EventDataType = getCurrentEventDetails(getState());
 
     if (currentEventDetails) {
       const fetchEventDetailsAction: FetchEventDetailsAction = {
@@ -73,24 +84,20 @@ export function cancelEventEditingAction() {
 
       dispatch(fetchEventDetailsAction);
 
-      await fetchEventDetailsAction.promise.then((response) => {
+      await fetchEventDetailsAction.promise.then((response: EventDataType) => {
         const { start_time, stop_time } = response;
-        const updateEventAction: UpdateEventDetailsAction = {
-          type: UPDATE_EVENT_DETAILS,
-          eventDetails: {
-            ...response,
-            start_time: start_time * 1000,
-            stop_time: stop_time * 1000,
-          },
+        const eventDetails = {
+          ...response,
+          start_time: start_time * 1000,
+          stop_time: stop_time * 1000,
         };
-
-        dispatch(updateEventAction);
+        dispatch(updateEventDetailsAction(eventDetails));
       });
     }
 
     dispatch(addNewEventAction(false));
-    dispatch({ type: IS_CHANGING_EVENT_RANGE, isEditingEventRange: false });
-    dispatch({ type: UPDATE_EVENT_DETAILS, eventDetails: {} });
+    dispatch(isEditingEventRangeAction(false));
+    dispatch(updateEventDetailsAction({}));
     dispatch({ type: NEW_EVENT_DETAILS, newEventDetails: null });
     dispatch(toggleSimilarShapesAction(false));
     dispatch(setActiveEventAction(null));
@@ -122,10 +129,13 @@ export function setActiveEventAction(eventID: string | null) {
 
 export function getEventComments() {
   return async function (dispatch, getState) {
-    const currentEventDetails = getCurrentEventDetails(getState());
+    const currentEventDetails: EventDataType = getCurrentEventDetails(getState());
     if (currentEventDetails) {
-      const evtComments = await API.comments.find(`?event_id=${currentEventDetails.id}`);
-      dispatch({ type: GET_EVENT_COMMENTS_SUCCESS, eventComments: evtComments });
+      const action: GetEventCommentsActionType = {
+        type: GET_EVENT_COMMENTS,
+        promise: API.comments.find(`?event_id=${currentEventDetails.id}`),
+      };
+      dispatch(action);
     }
   };
 }
@@ -142,7 +152,7 @@ function eventUpdateStatusAction(newStatus: string | null) {
 
 function setTranscriptStatusAction() {
   return function (dispatch) {
-    const action = {
+    const action: SetTranscriptStatusActionType = {
       type: SET_TRANSCRIPT_STATUS,
       isTranscriptSupported: 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window,
     };
@@ -153,7 +163,18 @@ function setTranscriptStatusAction() {
 
 export function saveEventDetailsAction() {
   return async function (dispatch, getState) {
-    const updatedEventDetails = getUpdatedEventDetails(getState());
+    const updatedEventDetails: EventDataType = getUpdatedEventDetails(getState());
+
+    const isAddingNewEvent: boolean = getIsAddingNewEvents(getState());
+    if (isAddingNewEvent) {
+      dispatch(saveNewEventAction());
+      return;
+    }
+
+    if (!Object.keys(updatedEventDetails).length) {
+      return;
+    }
+
     const userID = Cookies.get(AUTHENTICATED_USER_ID);
     const dataRun = getDatarunDetails(getState());
 
@@ -166,10 +187,18 @@ export function saveEventDetailsAction() {
     const { commentsDraft } = updatedEventDetails;
     const { start_time, stop_time, score, tag } = updatedEventDetails;
 
-    const start = start_time / 1000;
-    const stop = stop_time / 1000;
+    const start: number = start_time / 1000;
+    const stop: number = stop_time / 1000;
 
-    const payload = {
+    const payload: {
+      start_time: number;
+      stop_time: number;
+      score: number;
+      tag: string;
+      datarun_id: string;
+      event_id: string;
+      created_by: string;
+    } = {
       start_time: start,
       stop_time: stop,
       score,
@@ -180,84 +209,66 @@ export function saveEventDetailsAction() {
     };
 
     if (commentsDraft && commentsDraft.length) {
-      const commentData = {
+      const commentData: { event_id: string; text: string; created_by: string } = {
         event_id: updatedEventDetails.id,
         text: commentsDraft,
         created_by: userData.name,
       };
 
-      // posting comments
-      await API.comments.create(commentData);
-      dispatch(getEventComments());
-      dispatch({ type: UPDATE_EVENT_DETAILS, eventDetails: { ...updatedEventDetails, commentsDraft: '' } });
+      API.comments.create(commentData);
     }
+    await API.events
+      .update(updatedEventDetails.id, payload)
+      .then(async () => {
+        dispatch(eventUpdateStatusAction('success'));
 
-    if (updatedEventDetails.id) {
-      await API.events
-        .update(updatedEventDetails.id, payload)
-        .then(async () => {
-          dispatch(eventUpdateStatusAction('success'));
+        // @TODO - make a sinle API call with find instead of all
+        await API.events.all('events').then((response) => {
+          const { events } = response;
+          const datarun: DatarunDataType = getDatarunDetails(getState());
+          const filteredEvents: EventDataType[] = events.filter((event) => event.datarun === datarun.id);
+          const eventDetails = { ...updatedEventDetails, commentsDraft: '' };
 
-          // @TODO - make a sinle API call with find instead of all
-          await API.events.all('events').then((response) => {
-            const { events } = response;
-            const datarun = getDatarunDetails(getState());
-            const filteredEvents = events.filter((event) => event.datarun === datarun.id);
-
-            const selectedExperimentData = getSelectedExperimentData(getState());
-            const datarunIndex = selectedExperimentData.data.dataruns.findIndex(
-              (dataItem) => dataItem.id === datarun.id,
-            );
-            dispatch({
-              type: UPDATE_DATARUN_EVENTS,
-              newDatarunEvents: filteredEvents,
-              datarunIndex,
-            });
-
-            setTimeout(function () {
-              dispatch(eventUpdateStatusAction(null));
-            }, 3000);
-            dispatch({ type: IS_CHANGING_EVENT_RANGE, isEditingEventRange: false });
-            dispatch(getCurrentEventHistoryAction());
-          });
-        })
-        .catch(() => dispatch(eventUpdateStatusAction('error')));
-    } else {
-      dispatch(saveNewEventAction());
-    }
+          dispatch(updateDatarunEvents(filteredEvents));
+          dispatch(getEventComments());
+          dispatch(updateEventDetailsAction(eventDetails));
+          setTimeout(function () {
+            dispatch(eventUpdateStatusAction(null));
+          }, 3000);
+          dispatch(isEditingEventRangeAction(false));
+          dispatch(getCurrentEventHistoryAction());
+        });
+      })
+      .catch(() => dispatch(eventUpdateStatusAction('error')));
   };
 }
 
 export function saveNewEventAction() {
   return async function (dispatch, getState) {
-    const newEventDetails = getNewEventDetails(getState());
-    let { start_time, stop_time } = newEventDetails;
+    const newEventDetails: EventDataType = getNewEventDetails(getState());
+    let { start_time, stop_time }: { start_time: number; stop_time: number } = newEventDetails;
     start_time /= 1000;
     stop_time /= 1000;
-    const userData = JSON.parse(Cookies.get(AUTH_USER_DATA));
+    const userData: { name: string } = JSON.parse(Cookies.get(AUTH_USER_DATA));
     const eventDetails = {
       start_time,
       stop_time,
       score: '0.00',
       tag: newEventDetails.tag || 'Untagged',
-      datarun_id: newEventDetails.datarun_id || newEventDetails.datarun,
+      datarun_id: newEventDetails.datarun || newEventDetails.datarun,
       created_by: userData.name,
       source: newEventDetails.source ? newEventDetails.source : 'MANUALLY_CREATED',
     };
     await API.events
       .create(eventDetails)
       .then(async () => {
-        await API.events.all(newEventDetails.datarun_id || newEventDetails.datarun).then((datarunEvents) => {
-          const datarun = getDatarunDetails(getState());
-          const selectedExperimentData = getSelectedExperimentData(getState());
-          const datarunIndex = selectedExperimentData.data.dataruns.findIndex((dataItem) => dataItem.id === datarun.id);
-          const newDatarunEvents = datarunEvents.events.filter((event) => event.datarun === datarun.id);
+        await API.events.all(newEventDetails.datarun).then((datarunEvents) => {
+          const datarun: DatarunDataType = getDatarunDetails(getState());
+          const newDatarunEvents: EventDataType[] = datarunEvents.events.filter(
+            (event) => event.datarun === datarun.id,
+          );
 
-          dispatch({
-            type: UPDATE_DATARUN_EVENTS,
-            newDatarunEvents,
-            datarunIndex,
-          });
+          dispatch(updateDatarunEvents(newDatarunEvents));
           dispatch({ type: ADDING_NEW_EVENT_RESULT, result: 'success' });
           dispatch(addNewEventAction(false));
           dispatch({ type: NEW_EVENT_DETAILS, newEventDetails: {} });
@@ -268,57 +279,65 @@ export function saveNewEventAction() {
   };
 }
 
-export function closeEventModal() {
+export function closeEventDetailsAction() {
   return async function (dispatch, getState) {
-    const currentEventDetails = getCurrentEventDetails(getState());
+    const currentEventDetails: EventDataType = getCurrentEventDetails(getState());
 
     await API.events.find(`${currentEventDetails.id}/`).then((response) => {
-      const { start_time, stop_time } = response;
-      dispatch({
-        type: UPDATE_EVENT_DETAILS,
-        eventDetails: { ...response, start_time: start_time * 1000, stop_time: stop_time * 1000 },
-      });
+      const { start_time, stop_time }: { start_time: number; stop_time: number } = response;
+      const eventDetails = { ...response, start_time: start_time * 1000, stop_time: stop_time * 1000 };
+      dispatch(updateEventDetailsAction(eventDetails));
       dispatch(addNewEventAction(false));
-      dispatch({ type: IS_CHANGING_EVENT_RANGE, isEditingEventRange: false });
-      dispatch({ type: UPDATE_EVENT_DETAILS, eventDetails: {} });
+      dispatch(isEditingEventRangeAction(false));
       dispatch(toggleSimilarShapesAction(false));
     });
   };
 }
 
-export function toggleEventModeAction(mode) {
+export function toggleEventModeAction(mode: boolean) {
   return function (dispatch) {
-    dispatch({ type: TOGGLE_EVENT_MODE, isEventModeEnabled: mode });
+    const action: ToggleEventModeType = { type: TOGGLE_EVENT_MODE, isEventModeEnabled: mode };
+
+    dispatch(action);
   };
 }
 
-export function updateEventDetailsAction(updatedEventDetails) {
+export function updateEventDetailsAction(updatedEventDetails: UpdatedEventDetailsType) {
   return function (dispatch, getState) {
-    const isAddingNewEvent = getIsAddingNewEvents(getState());
-    let currentEventDetails = getCurrentEventDetails(getState());
+    const isAddingNewEvent: boolean = getIsAddingNewEvents(getState());
+    let currentEventDetails: EventDataType = getCurrentEventDetails(getState());
     if (isAddingNewEvent) {
       currentEventDetails = getNewEventDetails(getState());
       return dispatch(updateNewEventDetailsAction(updatedEventDetails));
     }
+    const eventDetails = { ...currentEventDetails, ...updatedEventDetails };
 
-    return dispatch({ type: UPDATE_EVENT_DETAILS, eventDetails: { ...currentEventDetails, ...updatedEventDetails } });
+    const action: UpdateEventDetailsAction = {
+      type: UPDATE_EVENT_DETAILS,
+      eventDetails,
+    };
+    return dispatch(action);
   };
 }
 
-export function isEditingEventRangeAction(eventState) {
+export function isEditingEventRangeAction(eventState: boolean) {
   return function (dispatch) {
-    dispatch({ type: IS_CHANGING_EVENT_RANGE, isEditingEventRange: eventState });
+    const action: IsEditingEventRangeType = {
+      type: IS_CHANGING_EVENT_RANGE,
+      isEditingEventRange: eventState,
+    };
+    dispatch(action);
   };
 }
 
-export function updateNewEventDetailsAction(eventDetails) {
+export function updateNewEventDetailsAction(eventDetails: UpdatedEventDetailsType) {
   return function (dispatch, getState) {
-    const datarun = getDatarunDetails(getState());
+    const datarun: DatarunDataType = getDatarunDetails(getState());
     const currentEventDetails = getNewEventDetails(getState());
     const eventTemplate = {
       ...currentEventDetails,
       ...eventDetails,
-      datarun_id: datarun.id,
+      datarun: datarun.id,
       score: 0,
       tag: (eventDetails.tag && eventDetails.tag) || 'Untagged',
     };
@@ -334,38 +353,55 @@ export function loadEventsFromJsonAction(jsonFiles) {
   };
 }
 
+function updateDatarunEvents(events) {
+  return function (dispatch, getState) {
+    const currentDatarun: DatarunDataType = getDatarunDetails(getState());
+    const { id } = currentDatarun;
+    const selectedExperimentData = getSelectedExperimentData(getState());
+
+    const datarunIndex: number = selectedExperimentData.data.dataruns.findIndex((dataItem) => dataItem.id === id);
+    const action = {
+      type: UPDATE_DATARUN_EVENTS,
+      newDatarunEvents: events,
+      datarunIndex,
+    };
+    dispatch(action);
+  };
+}
+
 export function deleteEventAction() {
   return async function (dispatch, getState) {
-    const currentEventDetails = getCurrentEventDetails(getState());
-    const currentDatarun = getDatarunDetails(getState());
-    const remainingEvents = currentDatarun.events.filter((currentEvent) => currentEvent.id !== currentEventDetails.id);
-    const selectedExperimentData = getSelectedExperimentData(getState());
-    const datarunIndex = selectedExperimentData.data.dataruns.findIndex(
-      (dataItem) => dataItem.id === currentDatarun.id,
+    const currentEventDetails: EventDataType = getCurrentEventDetails(getState());
+    const currentDatarun: DatarunDataType = getDatarunDetails(getState());
+    const remainingEvents: EventDataType[] = currentDatarun.events.filter(
+      (currentEvent) => currentEvent.id !== currentEventDetails.id,
     );
-
     await API.events.delete(currentEventDetails.id).then(() => {
       dispatch({ type: SET_ACTIVE_EVENT_ID, activeEventID: null });
-      dispatch({
-        type: UPDATE_DATARUN_EVENTS,
-        newDatarunEvents: remainingEvents,
-        datarunIndex,
-      });
+      dispatch(updateDatarunEvents(remainingEvents));
     });
   };
 }
 
 export function filterEventsByTagAction(tags) {
   return function (dispatch) {
-    dispatch({ type: SET_FILTER_TAGS, filterTags: tags !== null ? tags : [] });
+    const action: SetFilterTagsType = { type: SET_FILTER_TAGS, filterTags: tags !== null ? tags : [] };
+    dispatch(action);
   };
 }
 
-export function recordCommentAction(recordState) {
+function setSpeechStatus(recordState: boolean) {
+  return function (dispatch) {
+    const action: RecordCommentType = { type: SPEECH_STATUS, isSpeechInProgress: recordState };
+    dispatch(action);
+  };
+}
+
+export function recordCommentAction(recordState: boolean) {
   return function (dispatch, getState) {
-    const updatedEventDetails = getUpdatedEventDetails(getState());
+    const updatedEventDetails: EventDataType = getUpdatedEventDetails(getState());
     const { commentsDraft } = updatedEventDetails;
-    dispatch({ type: 'SPEECH_STATUS', isSpeechInProgress: recordState });
+    dispatch(setSpeechStatus(recordState));
 
     const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
 
@@ -376,11 +412,11 @@ export function recordCommentAction(recordState) {
 
     recognition.start();
     recognition.onresult = function (event) {
-      const current = event.resultIndex;
+      const current: number = event.resultIndex;
       const { transcript } = event.results[current][0];
       const comments = commentsDraft ? `${commentsDraft} ${transcript}.` : transcript;
       dispatch(updateEventDetailsAction({ commentsDraft: comments }));
-      dispatch({ type: 'SPEECH_STATUS', isSpeechInProgress: false });
+      dispatch(setSpeechStatus(false));
     };
   };
 }

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { getCurrentEventDetails, getEventSortedHistory } from 'src/model/selectors/datarun';
+import { getCurrentEventDetails } from 'src/model/selectors/datarun';
+import { getIsEventDataLoading, getEventSortedHistory } from 'src/model/selectors/events';
 import Loader from 'src/components/Common/Loader';
 import { getCurrentEventHistoryAction } from 'src/model/actions/events';
 import { getUsersData, getIsUsersDataloading } from 'src/model/selectors/users';
@@ -48,6 +49,10 @@ class EventComments extends Component<Props> {
   static defaultProps = {
     isEventJumpVisible: true,
   };
+
+  componentDidMount() {
+    this.props.getEventHistory();
+  }
 
   componentDidUpdate() {
     const { eventDetails } = this.props;
@@ -145,24 +150,20 @@ class EventComments extends Component<Props> {
   }
 
   render() {
-    const { eventDetails, isUsersDataLoading, isEventJumpVisible, eventHistory, setActivePanel } = this.props;
-    const commentsActivity =
-      (eventDetails &&
-        eventDetails.eventComments &&
-        eventDetails.eventComments.comments &&
-        eventDetails.eventComments.comments.length) ||
-      0;
-
-    const historyActivity: number = eventHistory && eventHistory.length;
-    const maxActivity: number = Math.min(commentsActivity + historyActivity, MAX_EVENTS_ACTIVITY);
-
+    const {
+      eventDetails,
+      isUsersDataLoading,
+      isEventJumpVisible,
+      eventHistory,
+      setActivePanel,
+      isEventDataLoading,
+    } = this.props;
+    const maxActivity: number = Math.min(eventHistory && eventHistory.length, MAX_EVENTS_ACTIVITY);
     return (
       eventDetails && (
         <div className="event-data">
           <div className="event-comments scroll-style">
-            <Loader isLoading={eventDetails.isCommentsLoading || isUsersDataLoading}>
-              {this.renderEventHistory()}
-            </Loader>
+            <Loader isLoading={isEventDataLoading || isUsersDataLoading}>{this.renderEventHistory()}</Loader>
           </div>
           {isEventJumpVisible && (
             <div className="event-jump">
@@ -193,6 +194,7 @@ const mapState = (state: RootState) => ({
   usersData: getUsersData(state),
   isUsersDataLoading: getIsUsersDataloading(state),
   eventHistory: getEventSortedHistory(state),
+  isEventDataLoading: getIsEventDataLoading(state),
 });
 
 const mapDispatch = (dispatch: Function) => ({
