@@ -112,7 +112,7 @@ function SET_TRANSCRIPT_STATUS(nextState: EventState, action: SetTranscriptStatu
 function SPEECH_STATUS(nextState: EventState, { isSpeechInProgress }) {
   nextState.isSpeechInProgress = isSpeechInProgress;
 }
-export default createReducer(initialState, {
+export default createReducer<EventState>(initialState, {
   FETCH_EVENT_HISTORY_REQUEST,
   FETCH_EVENT_HISTORY_SUCCESS,
   FETCH_EVENT_HISTORY_FAILURE,

@@ -49,3 +49,10 @@ export type ExperimentDataType = {
 export type ExperimentsResponse = {
   experiments: ExperimentDataType[];
 };
+
+export type FetchExpActionType = {
+  type: typeof FETCH_EXPERIMENT_DATA;
+  promise: Promise<ExperimentDataType>;
+  result?: ExperimentDataType;
+  error?: string;
+};

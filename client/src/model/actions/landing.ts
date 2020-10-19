@@ -17,9 +17,8 @@ import {
   SelectExperimentAction,
   FETCH_DATARUNS_BY_EXPERIMENT_ID,
   FecthDatarunsByExperimentIDAction,
-  SELECT_DATARUN,
   FETCH_EXPERIMENT_DATA,
-  SET_TIMESERIES_PERIOD,
+  FetchExpActionType,
 } from '../types';
 import { getUsersDataAction } from './users';
 
@@ -69,7 +68,7 @@ export function fetchProjects() {
 
 export function fetchDatarunsByExperimentID() {
   return function (dispatch, getState) {
-    const experimentID = getSelectedExperiment(getState());
+    const experimentID: string = getSelectedExperiment(getState());
     const action: FecthDatarunsByExperimentIDAction = {
       type: FETCH_DATARUNS_BY_EXPERIMENT_ID,
       promise: API.dataruns.all({}, { experiment_id: experimentID }),
@@ -89,7 +88,7 @@ export function selectProject(activeProject: string) {
   };
 }
 
-export function selectPipeline(selectedPipelineName: string) {
+export function selectPipeline(selectedPipelineName: string | null) {
   return function (dispatch, getState) {
     const currentSelectedPipeline: string = getSelectedPipeline(getState());
     selectedPipelineName = selectedPipelineName !== currentSelectedPipeline ? selectedPipelineName : null;
@@ -101,36 +100,25 @@ export function selectPipeline(selectedPipelineName: string) {
   };
 }
 
+export function fetchExperimentData(experimentID: string) {
+  return function (dispatch) {
+    const fetchExpAction: FetchExpActionType = {
+      type: FETCH_EXPERIMENT_DATA,
+      promise: API.experiments.find(`${experimentID}/`),
+    };
+    dispatch(fetchExpAction);
+  };
+}
+
 export function selectExperiment(history: any, experimentID: string) {
-  return async function (dispatch) {
-    // @TODO - combine this action with fetchExpAction
-    const action: SelectExperimentAction = {
+  return function (dispatch) {
+    const selectExpAction: SelectExperimentAction = {
       type: SELECT_EXPERIMENT,
       selectedExperimentID: experimentID,
     };
 
-    dispatch(action);
-
-    const fetchExpAction = {
-      type: FETCH_EXPERIMENT_DATA,
-      promise: API.experiments.find(`${experimentID}/`),
-    };
-
-    dispatch(fetchExpAction);
-
-    dispatch({
-      type: SELECT_DATARUN,
-      datarunID: '',
-    });
-
-    dispatch({
-      type: SET_TIMESERIES_PERIOD,
-      selectedRange: {
-        eventRange: [0, 0],
-        timeStamp: [0, 0],
-        zoomValue: 1,
-      },
-    });
+    dispatch(selectExpAction);
+    dispatch(fetchExperimentData(experimentID));
     dispatch(getUsersDataAction());
     return dispatch(fetchDatarunsByExperimentID());
   };

@@ -48,7 +48,7 @@ function UPDATE_AGGREGATION_ZOOM(nextState: AggregationLevelsState, { zoomValue 
   nextState.aggZoomValue = zoomValue;
 }
 
-export default createReducer(initialState, {
+export default createReducer<AggregationLevelsState>(initialState, {
   TOGGLE_AGGREGATION_MODAL,
   SET_AGGREGATION_TIME_LEVEL,
   FETCH_SIGNAL_RAW_REQUEST,
