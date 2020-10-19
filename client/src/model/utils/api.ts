@@ -16,7 +16,7 @@ import {
   UsersResponse,
 } from '../types/index';
 import { PipelineDataType } from '../types/pipeline';
-import { EventDataType, EventInteractions } from '../types/event';
+import { EventDataType, EventInteractionsResponse } from '../types/event';
 import { CommentDataType } from '../types/comment';
 
 export class RestClient {
@@ -46,7 +46,7 @@ export class RestClient {
 
   public users: Resource<any, UsersResponse>;
 
-  public eventInteraction: Resource<any, EventInteractions>;
+  public eventInteraction: Resource<any, EventInteractionsResponse>;
 
   public signalraw: Resource<any, any>;
 

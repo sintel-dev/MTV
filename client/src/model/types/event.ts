@@ -20,7 +20,7 @@ export type UpdatedEventDetailsType = {
   stop_time?: number;
   tag?: string;
   commentsDraft?: string;
-};
+} | null;
 
 /**
  * The data fetched from server with RESTAPI
@@ -58,6 +58,7 @@ export type EventState = {
   eventUpdateStatus: null | string;
   isTranscriptSupported: boolean;
   isSpeechInProgress: boolean;
+  addingNewEvent: string;
 };
 
 export type EventsResponse = {
@@ -76,39 +77,49 @@ export type EventInteractions = {
   created_by: string | null;
 };
 
-export type FetchEventDetailsAction = {
+export type EventInteractionsResponse = {
+  records: EventInteractions[];
+};
+
+export type FetchEventDetailsActionType = {
   type: typeof FETCH_EVENT_DATA;
   promise: Promise<EventDataType>;
 };
 
-export type UpdateEventDetailsAction = {
+export type UpdateEventDetailsActionType = {
   type: typeof UPDATE_EVENT_DETAILS;
   eventDetails: EventDataType;
+};
+
+export type UpdateNewEventDetailsActionType = {
+  type: typeof NEW_EVENT_DETAILS;
+  newEventDetails: UpdatedEventDetailsType;
 };
 
 export type AddNewEventActionType = {
   type: typeof ADDING_NEW_EVENTS;
   isAddingEvent: boolean;
 };
-export type SetEventIDAction = {
+export type SetEventIDActionType = {
   type: typeof SET_ACTIVE_EVENT_ID;
   activeEventID: string | null;
 };
 
-export type SetEventStatusAction = {
+export type SetEventStatusActionType = {
   type: typeof EVENT_UPDATE_STATUS;
   eventUpdateStatus: string | null;
 };
 
-export type SetTranscriptAction = {
+export type SetTranscriptActionType = {
   type: typeof SET_TRANSCRIPT_STATUS;
   isTranscriptSupported: boolean;
 };
 
-export type FetchEventHistoryType = {
+export type FetchEventHistoryActionType = {
   type: typeof FETCH_EVENT_HISTORY;
-  promise: Promise<EventInteractions>;
-  response?: EventInteractions[];
+  promise: Promise<EventInteractionsResponse>;
+  result?: EventInteractionsResponse;
+  error?: string;
 };
 
 export type SetTranscriptStatusActionType = {
@@ -116,17 +127,22 @@ export type SetTranscriptStatusActionType = {
   isTranscriptSupported: boolean;
 };
 
-export type ToggleEventModeType = {
+export type ToggleEventModeActionType = {
   type: typeof TOGGLE_EVENT_MODE;
   isEventModeEnabled: boolean;
 };
 
-export type IsEditingEventRangeType = {
+export type IsEditingEventRangeActionType = {
   type: typeof IS_CHANGING_EVENT_RANGE;
   isEditingEventRange: boolean;
 };
 
-export type SetFilterTagsType = {
+export type SetFilterTagsActionType = {
   type: typeof SET_FILTER_TAGS;
   filterTags: string | Array<[]> | null;
+};
+
+export type AddNewEventResultActionType = {
+  type: typeof ADDING_NEW_EVENT_RESULT;
+  result: string;
 };

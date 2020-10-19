@@ -15,26 +15,28 @@ import {
   SET_FILTER_TAGS,
   SET_TRANSCRIPT_STATUS,
   TOGGLE_EVENT_MODE,
-  UpdateEventDetailsAction,
   UPDATE_DATARUN_EVENTS,
   UPDATE_EVENT_DETAILS,
   UPLOAD_JSON_EVENTS,
   SPEECH_STATUS,
   EVENT_UPDATE_STATUS,
+  UpdateEventDetailsActionType,
   AddNewEventActionType,
   SetTranscriptStatusActionType,
   EventDataType,
-  FetchEventDetailsAction,
-  FetchEventHistoryType,
+  FetchEventDetailsActionType,
+  FetchEventHistoryActionType,
   GetEventCommentsActionType,
-  SetEventIDAction,
-  SetEventStatusAction,
+  SetEventIDActionType,
+  SetEventStatusActionType,
   DatarunDataType,
-  ToggleEventModeType,
-  IsEditingEventRangeType,
+  ToggleEventModeActionType,
+  IsEditingEventRangeActionType,
   UpdatedEventDetailsType,
-  SetFilterTagsType,
+  SetFilterTagsActionType,
   RecordCommentType,
+  UpdateNewEventDetailsActionType,
+  AddNewEventResultActionType,
 } from '../types';
 import API from '../utils/api';
 import { AUTHENTICATED_USER_ID, AUTH_USER_DATA } from '../utils/constants';
@@ -60,7 +62,7 @@ export function getCurrentEventHistoryAction() {
     }
 
     const eventID: string = currentEvent.id;
-    const action: FetchEventHistoryType = {
+    const action: FetchEventHistoryActionType = {
       type: FETCH_EVENT_HISTORY,
       promise: API.eventInteraction.all({}, { event_id: eventID, action: 'TAG' }),
     };
@@ -77,7 +79,7 @@ export function cancelEventEditingAction() {
     const currentEventDetails: EventDataType = getCurrentEventDetails(getState());
 
     if (currentEventDetails) {
-      const fetchEventDetailsAction: FetchEventDetailsAction = {
+      const fetchEventDetailsAction: FetchEventDetailsActionType = {
         type: FETCH_EVENT_DATA,
         promise: API.events.find(`${currentEventDetails.id}/`),
       };
@@ -106,16 +108,16 @@ export function cancelEventEditingAction() {
 
 export function setActiveEventAction(eventID: string | null) {
   return function (dispatch, getState) {
-    if (eventID === null) {
-      return dispatch({ type: SET_ACTIVE_EVENT_ID, activeEventID: null });
-    }
-
-    const currentPanel: string = getCurrentActivePanel(getState());
-
-    const setEventIDAction: SetEventIDAction = {
+    const setEventIDAction: SetEventIDActionType = {
       type: SET_ACTIVE_EVENT_ID,
       activeEventID: eventID,
     };
+
+    if (eventID === null) {
+      return dispatch(setEventIDAction);
+    }
+
+    const currentPanel: string = getCurrentActivePanel(getState());
 
     dispatch(setEventIDAction);
     dispatch(toggleSimilarShapesAction(false));
@@ -142,7 +144,7 @@ export function getEventComments() {
 
 function eventUpdateStatusAction(newStatus: string | null) {
   return function (dispatch) {
-    const action: SetEventStatusAction = {
+    const action: SetEventStatusActionType = {
       type: EVENT_UPDATE_STATUS,
       eventUpdateStatus: newStatus,
     };
@@ -259,6 +261,15 @@ export function saveNewEventAction() {
       created_by: userData.name,
       source: newEventDetails.source ? newEventDetails.source : 'MANUALLY_CREATED',
     };
+
+    const updateAddEventResult = (result) => {
+      const addEventResultAction: AddNewEventResultActionType = {
+        type: ADDING_NEW_EVENT_RESULT,
+        result,
+      };
+      dispatch(addEventResultAction);
+    };
+
     await API.events
       .create(eventDetails)
       .then(async () => {
@@ -269,13 +280,13 @@ export function saveNewEventAction() {
           );
 
           dispatch(updateDatarunEvents(newDatarunEvents));
-          dispatch({ type: ADDING_NEW_EVENT_RESULT, result: 'success' });
+          updateAddEventResult('success');
           dispatch(addNewEventAction(false));
           dispatch({ type: NEW_EVENT_DETAILS, newEventDetails: {} });
           dispatch({ type: SET_ACTIVE_EVENT_ID, activeEventID: null });
         });
       })
-      .catch((err) => dispatch({ type: ADDING_NEW_EVENT_RESULT, result: err }));
+      .catch((err) => updateAddEventResult(err));
   };
 }
 
@@ -296,7 +307,7 @@ export function closeEventDetailsAction() {
 
 export function toggleEventModeAction(mode: boolean) {
   return function (dispatch) {
-    const action: ToggleEventModeType = { type: TOGGLE_EVENT_MODE, isEventModeEnabled: mode };
+    const action: ToggleEventModeActionType = { type: TOGGLE_EVENT_MODE, isEventModeEnabled: mode };
 
     dispatch(action);
   };
@@ -312,7 +323,7 @@ export function updateEventDetailsAction(updatedEventDetails: UpdatedEventDetail
     }
     const eventDetails = { ...currentEventDetails, ...updatedEventDetails };
 
-    const action: UpdateEventDetailsAction = {
+    const action: UpdateEventDetailsActionType = {
       type: UPDATE_EVENT_DETAILS,
       eventDetails,
     };
@@ -322,7 +333,7 @@ export function updateEventDetailsAction(updatedEventDetails: UpdatedEventDetail
 
 export function isEditingEventRangeAction(eventState: boolean) {
   return function (dispatch) {
-    const action: IsEditingEventRangeType = {
+    const action: IsEditingEventRangeActionType = {
       type: IS_CHANGING_EVENT_RANGE,
       isEditingEventRange: eventState,
     };
@@ -342,7 +353,9 @@ export function updateNewEventDetailsAction(eventDetails: UpdatedEventDetailsTyp
       tag: (eventDetails.tag && eventDetails.tag) || 'Untagged',
     };
 
-    dispatch({ type: NEW_EVENT_DETAILS, newEventDetails: eventTemplate });
+    const action: UpdateNewEventDetailsActionType = { type: NEW_EVENT_DETAILS, newEventDetails: eventTemplate };
+
+    dispatch(action);
   };
 }
 
@@ -385,7 +398,7 @@ export function deleteEventAction() {
 
 export function filterEventsByTagAction(tags) {
   return function (dispatch) {
-    const action: SetFilterTagsType = { type: SET_FILTER_TAGS, filterTags: tags !== null ? tags : [] };
+    const action: SetFilterTagsActionType = { type: SET_FILTER_TAGS, filterTags: tags !== null ? tags : [] };
     dispatch(action);
   };
 }
