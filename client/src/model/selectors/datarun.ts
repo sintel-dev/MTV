@@ -5,7 +5,6 @@ import { getSelectedExperimentData, getProcessedDataRuns } from './experiment';
 import { fromMonthToIndex, groupEventsByTimestamp } from '../utils/Utils';
 import {
   getActiveEventID,
-  getCurrentEventHistory,
   getIsAddingNewEvents,
   getIsEditingEventRange,
   getUpdatedEventDetails,
@@ -14,16 +13,16 @@ import {
 } from './events';
 import { getCurrentActivePanel } from './sidebar';
 
-export const isPredictionEnabled = (state) => state.datarun.isPredictionEnabled;
+export const isPredictionEnabled = (state: RootState) => state.datarun.isPredictionEnabled;
 export const isDatarunIDSelected = (state: RootState) => state.datarun.selectedDatarunID;
 export const getSelectedPeriodRange = (state: RootState) => state.datarun.selectedPeriodRange;
-export const getZoomOnClickDirection = (state) => state.datarun.zoomDirection;
-export const getZoomCounter = (state) => state.datarun.zoomCounter;
-export const getZoomMode = (state) => state.datarun.zoomMode;
+export const getZoomOnClickDirection = (state: RootState) => state.datarun.zoomDirection;
+export const getZoomCounter = (state: RootState) => state.datarun.zoomCounter;
+export const getZoomMode = (state: RootState) => state.datarun.zoomMode;
 export const getSelectedPeriodLevel = (state) => state.datarun.periodLevel;
-export const getIsTimeSyncModeEnabled = (state) => state.datarun.isTimeSyncModeEnabled;
-export const getScrollHistory = (state) => state.datarun.scrollHistory;
-export const getCurrentChartStyle = (state) => state.datarun.chartStyle;
+export const getIsTimeSyncModeEnabled = (state: RootState) => state.datarun.isTimeSyncModeEnabled;
+export const getScrollHistory = (state: RootState) => state.datarun.scrollHistory;
+export const getCurrentChartStyle = (state: RootState) => state.datarun.chartStyle;
 
 export const getSelectedDatarunID = createSelector(
   [getSelectedExperimentData, isDatarunIDSelected],

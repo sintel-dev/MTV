@@ -12,8 +12,8 @@ import {
   PipelinesResponse,
   EventsResponse,
   CommentsResponse,
-  DataResponse,
   UsersResponse,
+  SimilarShapesResponse,
 } from '../types/index';
 import { PipelineDataType } from '../types/pipeline';
 import { EventDataType, EventInteractionsResponse } from '../types/event';
@@ -42,7 +42,7 @@ export class RestClient {
 
   public comments: Resource<CommentDataType, CommentsResponse>;
 
-  public similar_windows: Resource<any, DataResponse>;
+  public similar_windows: Resource<any, SimilarShapesResponse>;
 
   public users: Resource<any, UsersResponse>;
 

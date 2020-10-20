@@ -143,3 +143,9 @@ export type SetChartStyleActionType = {
   type: typeof SWITCH_CHART_STYLE;
   chartStyle: string;
 };
+
+export type UpdateEventsActionType = {
+  type: typeof UPDATE_DATARUN_EVENTS;
+  newDatarunEvents: EventDataType[];
+  datarunIndex: number;
+};
