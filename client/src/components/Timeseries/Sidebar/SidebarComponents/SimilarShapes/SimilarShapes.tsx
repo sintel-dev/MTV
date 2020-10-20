@@ -30,7 +30,7 @@ import { timestampToDate } from 'src/components/Timeseries/AggregationLevels/Agg
 import { setActiveEventAction } from 'src/model/actions/events';
 import Dropdown from 'src/components/Common/Dropdown';
 import { colorSchemes } from 'src/components/Timeseries/FocusChart/Constants';
-import { RootState } from 'src/model/types';
+import { RootState, SimilarShapeType } from 'src/model/types';
 import { selectedOption } from '../EventDetailsView/eventUtils';
 import FilterShapes from './FilterShapes';
 
@@ -124,18 +124,15 @@ class SimilarShapes extends Component<Props, State> {
     return line(event);
   }
 
-  private getShapeDetails(shape: {
-    start: number;
-    end: number;
-    similarity: number;
-    source: string;
-  }): { startTime: ReactNode; stopTime: ReactNode; similarity: string; eventInterval: Array<[number, number]> } {
+  private getShapeDetails(
+    shape: SimilarShapeType,
+  ): { startTime: ReactNode; stopTime: ReactNode; similarity: string; eventInterval: Array<[number, number]> } {
     const { timeSeries } = this.props.dataRun;
     const { start, end, similarity } = shape;
-    const startTime = timeSeries[start][0];
-    const stopTime = timeSeries[end][0];
+    const startTime: number = timeSeries[start][0];
+    const stopTime: number = timeSeries[end][0];
 
-    const eventInterval = timeSeries.slice(start, end);
+    const eventInterval: Array<[number, number]> = timeSeries.slice(start, end);
     const format = d3.format('.2f');
     return {
       startTime: timestampToDate(startTime),
@@ -163,7 +160,7 @@ class SimilarShapes extends Component<Props, State> {
       currentEvent,
       activeShape,
       resetShapesTags,
-      isRsetBtnDisabled,
+      isResetBtnDisabled,
       resetSimilarShapes,
     } = this.props;
 
@@ -184,7 +181,7 @@ class SimilarShapes extends Component<Props, State> {
               type="button"
               className="clean delete"
               onClick={() => resetShapesTags()}
-              disabled={isRsetBtnDisabled}
+              disabled={isResetBtnDisabled}
             >
               Reset_Tags
             </button>
@@ -213,9 +210,9 @@ class SimilarShapes extends Component<Props, State> {
     }
     const currentEventShape: Array<[number, number]> = this.getCurrentEventShape();
 
-    return similarShapes.map((currentShape) => {
+    return similarShapes.map((currentShape: SimilarShapeType) => {
       const { startTime, stopTime, similarity, eventInterval } = this.getShapeDetails(currentShape);
-      const shapeClassName =
+      const shapeClassName: string =
         activeShape && activeShape.start === currentShape.start && activeShape.end === currentShape.end ? 'active' : '';
 
       return (
@@ -455,7 +452,7 @@ const mapState = (state: RootState) => ({
   activeShape: getActiveShape(state),
   activeMetric: getCurrentShapeMetrics(state),
   currentShapesTag: getCurrentShapesTag(state),
-  isRsetBtnDisabled: getIsResetSimilarDisabled(state),
+  isResetBtnDisabled: getIsResetSimilarDisabled(state),
   rawShapes: similarShapesResults(state),
 });
 

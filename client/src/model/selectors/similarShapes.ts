@@ -3,7 +3,7 @@ import { RootState } from '../types';
 
 import { getCurrentEventDetails, getDatarunDetails } from './datarun';
 
-export const getIsSimilarShapesActive = (state: RootState) => state.similarShapes.isShapesModalOpen;
+export const getIsSimilarShapesActive = (state: RootState) => state.similarShapes.isShapesOpen;
 export const getIsSimilarShapesLoading = (state: RootState) => state.similarShapes.isSimilarShapesLoading;
 export const similarShapesResults = (state: RootState) => state.similarShapes.similarShapes;
 export const getActiveShape = (state: RootState) => state.similarShapes.activeShape;
