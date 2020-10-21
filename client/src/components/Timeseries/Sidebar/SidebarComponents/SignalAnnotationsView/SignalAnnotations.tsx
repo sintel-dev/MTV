@@ -4,16 +4,20 @@ import { timestampToDate } from 'src/components/Timeseries/AggregationLevels/Agg
 import { colorSchemes } from 'src/components/Timeseries/FocusChart/Constants';
 import { TriangleDown, TriangleUp } from 'src/components/Common/icons';
 import { Collapse } from 'react-collapse';
-import { getSelectedDatarun, getCurrentEventDetails, getActiveEventID } from 'src/model/selectors/datarun';
-
-import { setActiveEventAction } from 'src/model/actions/datarun';
-
+import { getSelectedDatarun, getCurrentEventDetails } from 'src/model/selectors/datarun';
+import { getActiveEventID } from 'src/model/selectors/events';
+import { setActiveEventAction } from 'src/model/actions/events';
+import { RootState } from 'src/model/types';
 import EventComments from './EventComments';
-import './SignalAnnotations.scss';
 import CommentControl from './CommentControl';
+import './SignalAnnotations.scss';
 
-class SignalAnnotations extends Component {
-  renderEventDetails() {
+type StateProps = ReturnType<typeof mapState>;
+type DispatchProps = ReturnType<typeof mapDispatch>;
+type Props = StateProps & DispatchProps;
+
+class SignalAnnotations extends Component<Props> {
+  render() {
     const { dataRun, eventDetails, setActiveEvent, activeEvent } = this.props;
     const { events } = dataRun;
 
@@ -23,8 +27,9 @@ class SignalAnnotations extends Component {
       <div className="signals-wrapper scroll-style">
         {events.map((currentEvent) => {
           const { id, tag, start_time, stop_time } = currentEvent;
-          const color = currentEvent && currentEvent.tag ? colorSchemes[currentEvent.tag] : colorSchemes.Untagged;
-          const eventClassName = tag?.replace(/\s/g, '_').toLowerCase() || 'untagged';
+          const color: string =
+            currentEvent && currentEvent.tag ? colorSchemes[currentEvent.tag] : colorSchemes.Untagged;
+          const eventClassName: string = tag?.replace(/\s/g, '_').toLowerCase() || 'untagged';
 
           return (
             <div key={id} className="annotation-wrapper" id={`_${id}_details`}>
@@ -51,7 +56,7 @@ class SignalAnnotations extends Component {
               <div className="collapsible-wrapper">
                 <Collapse isOpened={eventDetails && eventDetails.id === id}>
                   <EventComments />
-                  <CommentControl eventDetails={currentEvent} />
+                  <CommentControl currentEvent={currentEvent} isChangeTagEnabled />
                 </Collapse>
               </div>
             </div>
@@ -64,19 +69,16 @@ class SignalAnnotations extends Component {
       </div>
     );
   }
-
-  render() {
-    return this.renderEventDetails();
-  }
 }
 
-export default connect(
-  (state) => ({
-    eventDetails: getCurrentEventDetails(state),
-    dataRun: getSelectedDatarun(state),
-    activeEvent: getActiveEventID(state),
-  }),
-  (dispatch) => ({
-    setActiveEvent: (eventID) => dispatch(setActiveEventAction(eventID)),
-  }),
-)(SignalAnnotations);
+const mapState = (state: RootState) => ({
+  eventDetails: getCurrentEventDetails(state),
+  dataRun: getSelectedDatarun(state),
+  activeEvent: getActiveEventID(state),
+});
+
+const mapDispatch = (dispatch: Function) => ({
+  setActiveEvent: (eventID) => dispatch(setActiveEventAction(eventID)),
+});
+
+export default connect<StateProps, DispatchProps, {}, RootState>(mapState, mapDispatch)(SignalAnnotations);

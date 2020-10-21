@@ -1,20 +1,43 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import {
-  getDatarunDetails,
-  getGrouppedDatarunEvents,
-  getIsTimeSyncModeEnabled,
-  getIsEventModeEnabled,
-  getIsEditingEventRange,
-} from 'src/model/selectors/datarun';
-import * as _ from 'lodash';
 import { setPeriodRangeAction } from 'src/model/actions/datarun';
+import { getDatarunDetails, getIsTimeSyncModeEnabled, getGrouppedDatarunEvents } from 'src/model/selectors/datarun';
+import { getIsEventModeEnabled, getIsEditingEventRange } from 'src/model/selectors/events';
+
+import * as _ from 'lodash';
 import { getIsRelativeScaleEnabled, getIsSummaryViewActive } from 'src/model/selectors/sidebar';
+import { RootState } from 'src/model/types';
 import { getWrapperSize, drawArc, getDataScale } from '../../SidebarUtils';
 
 import Header from '../Header';
 
-class PeriodicalView extends Component {
+type StateProps = ReturnType<typeof mapState>;
+type DispatchProps = ReturnType<typeof mapDispatch>;
+type Props = StateProps & DispatchProps;
+
+type PeriodicalViewState = {
+  width: number;
+  height: number;
+  radius: number;
+  colSpacing: number;
+  rowSpacing: number;
+  initialHeight: number;
+};
+
+interface PeriodLevel {
+  level: string;
+  name: number;
+  bins: Array<[number]>;
+  children: Array<[object]>;
+  parent?: {
+    name?: string;
+    parent?: {
+      name: string;
+    };
+  };
+}
+
+class PeriodicalView extends Component<Props, PeriodicalViewState> {
   constructor(props) {
     super(props);
     this.state = {
@@ -41,25 +64,27 @@ class PeriodicalView extends Component {
     );
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: Props) {
     if (this.props.dataRun.period !== prevProps.dataRun.period) {
       this.setGlyphRadius();
     }
   }
 
-  getFeatureCellCoords(currentPeriod, index) {
+  getFeatureCellCoords(currentPeriod: PeriodLevel, index: number): { horizontalShift: number; verticalShift: number } {
     const { width, colSpacing, rowSpacing, radius } = this.state;
-    const nCols = this.getColAmount();
-    const glyphCell = width / nCols;
-    const colIteration = index % nCols > 0 ? index % nCols : 0;
-    const rowIteration = Math.floor(index / nCols);
-    let horizontalShift = (glyphCell + colSpacing / nCols) * colIteration + radius + 3;
-    let verticalShift = (radius * 2 + rowSpacing) * rowIteration + radius + 3;
+    const nCols: number = this.getColAmount();
+    const glyphCell: number = width / nCols;
+    const colIteration: number = index % nCols > 0 ? index % nCols : 0;
+    const rowIteration: number = Math.floor(index / nCols);
+    let horizontalShift: number = (glyphCell + colSpacing / nCols) * colIteration + radius + 3;
+    let verticalShift: number = (radius * 2 + rowSpacing) * rowIteration + radius + 3;
 
     if (currentPeriod.level === 'day') {
-      let dayOffset = new Date(`${currentPeriod.parent.name} 1, ${currentPeriod.parent.parent.name} 00:00:00`).getDay();
-      const hShiftAddition = (index + dayOffset) % nCols;
-      const vShiftAddition = Math.floor((index + dayOffset) / nCols);
+      let dayOffset: number = new Date(
+        `${currentPeriod.parent.name} 1, ${currentPeriod.parent.parent.name} 00:00:00`,
+      ).getDay();
+      const hShiftAddition: number = (index + dayOffset) % nCols;
+      const vShiftAddition: number = Math.floor((index + dayOffset) / nCols);
 
       horizontalShift = hShiftAddition * glyphCell + radius + 2;
       verticalShift = vShiftAddition * (glyphCell + rowSpacing / 2) + radius + 2;
@@ -67,7 +92,7 @@ class PeriodicalView extends Component {
     return { horizontalShift, verticalShift };
   }
 
-  getPathData(periodRange, currentPeriodExtent) {
+  getPathData(periodRange: Array<[number, number]>, currentPeriodExtent: number[]): string {
     const { radius } = this.state;
     const { isRelativeScaleEnabled } = this.props;
 
@@ -80,10 +105,10 @@ class PeriodicalView extends Component {
     return area(periodRange);
   }
 
-  getWrapperHeight = () => {
+  getWrapperHeight(): number {
     const { dataRun, isSummaryViewActive } = this.props;
     const { initialHeight } = this.state;
-    let wrapperHeight = initialHeight;
+    let wrapperHeight: number = initialHeight;
 
     if (dataRun.period[0].level === 'day') {
       return isSummaryViewActive ? wrapperHeight - 198 : wrapperHeight - 81; // day names height calculus
@@ -92,29 +117,18 @@ class PeriodicalView extends Component {
       return wrapperHeight - 58;
     }
     return (wrapperHeight !== 0 && wrapperHeight - 175) || 0;
-  };
-
-  getColSpacing(period) {
-    const periodLevel = period[0];
-    let colSpacing = 3;
-
-    if (periodLevel === 'day') {
-      colSpacing = 2;
-    }
-
-    return { colSpacing };
   }
 
-  setGlyphRadius() {
+  setGlyphRadius(): void {
     const { width, rowSpacing } = this.state;
     const nCols = this.getColAmount();
     const { dataRun } = this.props;
     const { period } = dataRun;
-    const { colSpacing } = this.getColSpacing(period);
-    const glyphCellDiameter = width / nCols - 3; // offset for the arc
-    const radius = glyphCellDiameter / 2 - colSpacing; // / 2;
-    const nRows = Math.round(dataRun.period.length / nCols);
-    let height = nRows * (radius * 2 + rowSpacing);
+    const colSpacing: number = period[0].level === 'day' ? 2 : 3;
+    const glyphCellDiameter: number = width / nCols - 3; // offset for the arc
+    const radius: number = glyphCellDiameter / 2 - colSpacing; // / 2;
+    const nRows: number = Math.round(dataRun.period.length / nCols);
+    let height: number = nRows * (radius * 2 + rowSpacing);
 
     if (period[0].level === 'day') {
       height += radius * 3.4 + rowSpacing;
@@ -127,7 +141,7 @@ class PeriodicalView extends Component {
     });
   }
 
-  getColAmount() {
+  getColAmount(): number {
     const { dataRun } = this.props;
     const { period } = dataRun;
     const { level } = period[0];
@@ -145,10 +159,13 @@ class PeriodicalView extends Component {
   drawData() {
     const { width, radius } = this.state;
     const { setPeriodRange, dataRun, grouppedEvents, isEventModeEnabled } = this.props;
-    const currentPeriodExtent = [Number.MAX_SAFE_INTEGER, -Number.MAX_SAFE_INTEGER];
-    _.each(dataRun.period, (currentPeriod) => {
-      currentPeriodExtent[0] = Math.min(_.min(currentPeriod.bins), currentPeriodExtent[0]);
-      currentPeriodExtent[1] = Math.max(_.max(currentPeriod.bins), currentPeriodExtent[1]);
+    const currentPeriodExtent = [Number.MAX_SAFE_INTEGER, -Number.MAX_SAFE_INTEGER] as [number, number];
+    const { period } = dataRun;
+
+    period.forEach((currentPeriod) => {
+      const { bins } = currentPeriod;
+      currentPeriodExtent[0] = Math.min(_.min(bins), currentPeriodExtent[0]) as number;
+      currentPeriodExtent[1] = Math.max(_.max(bins), currentPeriodExtent[1]) as number;
     });
 
     return (
@@ -158,6 +175,7 @@ class PeriodicalView extends Component {
         const { horizontalShift, verticalShift } = this.getFeatureCellCoords(currentPeriod, periodIndex);
         const arcData = drawArc(currentPeriod, grouppedEvents, radius, periodIndex);
         const { name, bins, level } = currentPeriod;
+
         return (
           <g key={name}>
             <g
@@ -202,9 +220,9 @@ class PeriodicalView extends Component {
     const { dataRun } = this.props;
     const { period } = dataRun;
     const { width } = this.state;
-    const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const nCols = this.getColAmount();
-    const cellWidth = width / nCols;
+    const weekDays: Array<string> = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const nCols: number = this.getColAmount();
+    const cellWidth: number = width / nCols;
 
     return (
       period[0].level === 'day' && (
@@ -233,7 +251,6 @@ class PeriodicalView extends Component {
                 <radialGradient id="blueGradient">
                   <stop offset="0" stopColor="rgba(178, 193, 255, 0.7)" />
                   <stop offset="100" stopColor="rgba(178, 193, 255, 0.2)" />
-                  {/* <stop offset="100" stopColor="rgba(89, 93, 106, 0.2)" /> */}
                 </radialGradient>
               </defs>
             </svg>
@@ -244,17 +261,18 @@ class PeriodicalView extends Component {
   }
 }
 
-export default connect(
-  (state) => ({
-    dataRun: getDatarunDetails(state),
-    isEditingEventRange: getIsEditingEventRange(state),
-    grouppedEvents: getGrouppedDatarunEvents(state),
-    isTimeSyncEnabled: getIsTimeSyncModeEnabled(state),
-    isEventModeEnabled: getIsEventModeEnabled(state),
-    isRelativeScaleEnabled: getIsRelativeScaleEnabled(state),
-    isSummaryViewActive: getIsSummaryViewActive(state),
-  }),
-  (dispatch) => ({
-    setPeriodRange: (periodLevel) => dispatch(setPeriodRangeAction(periodLevel)),
-  }),
-)(PeriodicalView);
+const mapState = (state: RootState) => ({
+  dataRun: getDatarunDetails(state),
+  isEditingEventRange: getIsEditingEventRange(state),
+  grouppedEvents: getGrouppedDatarunEvents(state),
+  isTimeSyncEnabled: getIsTimeSyncModeEnabled(state),
+  isEventModeEnabled: getIsEventModeEnabled(state),
+  isRelativeScaleEnabled: getIsRelativeScaleEnabled(state),
+  isSummaryViewActive: getIsSummaryViewActive(state),
+});
+
+const mapDispatch = (dispatch: Function) => ({
+  setPeriodRange: (periodLevel) => dispatch(setPeriodRangeAction(periodLevel)),
+});
+
+export default connect<StateProps, DispatchProps, {}, RootState>(mapState, mapDispatch)(PeriodicalView);

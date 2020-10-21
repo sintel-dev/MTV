@@ -9,7 +9,6 @@ export type DataResponse = {
   datasets: DatasetDataType[];
   dataruns: DatarunDataType[];
   events: Array<EventDataType[]>;
-  windows: Array<object>;
   predictions: Array<{
     names: string[];
     data: Array<number[]>;
@@ -32,3 +31,4 @@ export * from './project';
 export * from './aggregation';
 export * from './similarshapes';
 export * from './users';
+export * from './sidebar';

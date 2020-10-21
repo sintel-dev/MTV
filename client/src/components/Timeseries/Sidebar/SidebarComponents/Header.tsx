@@ -1,26 +1,20 @@
-import React, { Component } from 'react';
+import React, { Component, ReactNode } from 'react';
 import { connect } from 'react-redux';
-import { toggleRelativeScaleAction, toggleEventSummaryAction } from 'src/model/actions/sidebar';
-import { getIsRelativeScaleEnabled, getIsSummaryViewActive } from 'src/model/selectors/sidebar';
-import EventSummary from './EventSummary';
+import { toggleRelativeScaleAction } from 'src/model/actions/sidebar';
+import { getIsRelativeScaleEnabled } from 'src/model/selectors/sidebar';
+import { setScrollHistoryAction, setReviewPeriodAction } from 'src/model/actions/datarun';
 import {
-  getDatarunDetails,
   getSelectedPeriodLevel,
-  getIsEditingEventRange,
-  getGrouppedDatarunEvents,
-  getIsEventModeEnabled,
   getIsTimeSyncModeEnabled,
   getFilteredPeriodRange,
   getScrollHistory,
-} from '../../../../model/selectors/datarun';
-import {
-  toggleEventModeAction,
-  setPeriodRangeAction,
-  setScrollHistoryAction,
-  setReviewPeriodAction,
-} from '../../../../model/actions/datarun';
+} from 'src/model/selectors/datarun';
+import { getIsEditingEventRange, getIsEventModeEnabled } from 'src/model/selectors/events';
+import { toggleEventModeAction } from 'src/model/actions/events';
+import { RootState } from 'src/model/types';
+import EventSummary from './EventSummary';
 
-const showPeriod = (periodRange) => {
+const showPeriod = (periodRange): ReactNode => {
   let periodString = (
     <p>
       <span>YY / MM</span>
@@ -49,8 +43,12 @@ const showPeriod = (periodRange) => {
   return <div className="period-info">{periodString}</div>;
 };
 
-class Header extends Component {
-  componentDidUpdate(prevProps) {
+type StateProps = ReturnType<typeof mapState>;
+type DispatchProps = ReturnType<typeof mapDispatch>;
+type Props = StateProps & DispatchProps;
+
+class Header extends Component<Props> {
+  componentDidUpdate(prevProps: Props) {
     const { isTimeSyncEnabled, filteredPeriodRange, setScrollHistory, scrollHistory } = this.props;
 
     if (!isTimeSyncEnabled) {
@@ -93,61 +91,39 @@ class Header extends Component {
     }
   }
 
-  render() {
-    const {
-      setReviewPeriod,
-      selectedPeriodLevel,
-      isEditingEventRange,
-      grouppedEvents,
-      filteredPeriodRange,
-      currentPeriod,
-      scrollHistory,
-      isTimeSyncEnabled,
-      isRelativeScaleEnabled,
-      toggleRelativeScale,
-      dataRun,
-      toggleEventSummaryState,
-      isSummaryViewActive,
-    } = this.props;
-
-    const getBtnProps = (button) => {
-      const getParentLevel = () => (button === 'day' ? 'month' : 'year');
-      const getIsActive = () => {
-        if (button === 'year') {
-          return isTimeSyncEnabled ? scrollHistory.level === 'year' : currentPeriod.level === null;
-        }
-        return isTimeSyncEnabled
-          ? scrollHistory.level === button
-          : currentPeriod.level === getParentLevel() || currentPeriod.level === getParentLevel();
-      };
-
-      const getIsDisabled = () => {
-        if (button === 'year') {
-          return false;
-        }
-        return isTimeSyncEnabled ? scrollHistory[getParentLevel()] === null : currentPeriod[getParentLevel()] === null;
-      };
-
-      return {
-        className: getIsActive() ? 'active' : '',
-        disabled: getIsDisabled(),
-        onClick: () =>
-          !isEditingEventRange && button === 'year' ? setReviewPeriod(null) : setReviewPeriod(getParentLevel()),
-      };
+  private getBtnProps(button: string): { className: string; disabled: boolean; onClick: () => void } {
+    const { setReviewPeriod, isEditingEventRange, currentPeriod, scrollHistory, isTimeSyncEnabled } = this.props;
+    const getParentLevel = (): string => (button === 'day' ? 'month' : 'year');
+    const getIsActive = (): string | boolean | null => {
+      if (button === 'year') {
+        return isTimeSyncEnabled ? scrollHistory.level === 'year' : currentPeriod.level === null;
+      }
+      return isTimeSyncEnabled
+        ? scrollHistory.level === button
+        : currentPeriod.level === getParentLevel() || currentPeriod.level === getParentLevel();
     };
+
+    const getIsDisabled = (): boolean => {
+      if (button === 'year') {
+        return false;
+      }
+      return isTimeSyncEnabled ? scrollHistory[getParentLevel()] === null : currentPeriod[getParentLevel()] === null;
+    };
+
+    return {
+      className: getIsActive() ? 'active' : '',
+      disabled: getIsDisabled(),
+      onClick: () =>
+        !isEditingEventRange && button === 'year' ? setReviewPeriod(null) : setReviewPeriod(getParentLevel()),
+    };
+  }
+
+  render() {
+    const { filteredPeriodRange, isRelativeScaleEnabled, toggleRelativeScale } = this.props;
 
     return (
       <div className="period-control">
-        <EventSummary
-          selectedPeriodLevel={selectedPeriodLevel}
-          grouppedEvents={grouppedEvents}
-          filteredPeriodRange={filteredPeriodRange}
-          signalName={dataRun.signal}
-          isTimeSyncEnabled={isTimeSyncEnabled}
-          showPeriod={showPeriod(filteredPeriodRange[0])}
-          toggleEventSummary={toggleEventSummaryState}
-          isSummaryViewActive={isSummaryViewActive}
-        />
+        <EventSummary />
         <div className="period-wrapper">
           <div className="sidechart-controls switch-control">
             <div className="row">
@@ -166,17 +142,17 @@ class Header extends Component {
           {showPeriod(filteredPeriodRange[0])}
           <ul className="period-filter">
             <li>
-              <button type="button" {...getBtnProps('year')}>
+              <button type="button" {...this.getBtnProps('year')}>
                 Year
               </button>
             </li>
             <li>
-              <button type="button" {...getBtnProps('month')}>
+              <button type="button" {...this.getBtnProps('month')}>
                 Month
               </button>
             </li>
             <li>
-              <button type="button" {...getBtnProps('day')}>
+              <button type="button" {...this.getBtnProps('day')}>
                 Day
               </button>
             </li>
@@ -207,26 +183,21 @@ class Header extends Component {
   }
 }
 
-export default connect(
-  (state) => ({
-    dataRun: getDatarunDetails(state),
-    selectedPeriodLevel: getSelectedPeriodLevel(state),
-    isEditingEventRange: getIsEditingEventRange(state),
-    grouppedEvents: getGrouppedDatarunEvents(state),
-    isEventModeEnabled: getIsEventModeEnabled(state),
-    isTimeSyncEnabled: getIsTimeSyncModeEnabled(state),
-    filteredPeriodRange: getFilteredPeriodRange(state),
-    currentPeriod: getSelectedPeriodLevel(state),
-    scrollHistory: getScrollHistory(state),
-    isRelativeScaleEnabled: getIsRelativeScaleEnabled(state),
-    isSummaryViewActive: getIsSummaryViewActive(state),
-  }),
-  (dispatch) => ({
-    setPeriodRange: (periodRange) => dispatch(setPeriodRangeAction(periodRange)),
-    toggleEventsMode: (mode) => dispatch(toggleEventModeAction(mode)),
-    setScrollHistory: (period) => dispatch(setScrollHistoryAction(period)),
-    setReviewPeriod: (period) => dispatch(setReviewPeriodAction(period)),
-    toggleRelativeScale: () => dispatch(toggleRelativeScaleAction()),
-    toggleEventSummaryState: () => dispatch(toggleEventSummaryAction()),
-  }),
-)(Header);
+const mapState = (state: RootState) => ({
+  isEditingEventRange: getIsEditingEventRange(state),
+  isEventModeEnabled: getIsEventModeEnabled(state),
+  isTimeSyncEnabled: getIsTimeSyncModeEnabled(state),
+  filteredPeriodRange: getFilteredPeriodRange(state),
+  currentPeriod: getSelectedPeriodLevel(state),
+  scrollHistory: getScrollHistory(state),
+  isRelativeScaleEnabled: getIsRelativeScaleEnabled(state),
+});
+
+const mapDispatch = (dispatch: Function) => ({
+  toggleEventsMode: (mode) => dispatch(toggleEventModeAction(mode)),
+  setScrollHistory: (period) => dispatch(setScrollHistoryAction(period)),
+  setReviewPeriod: (period) => dispatch(setReviewPeriodAction(period)),
+  toggleRelativeScale: () => dispatch(toggleRelativeScaleAction()),
+});
+
+export default connect<StateProps, DispatchProps, {}, RootState>(mapState, mapDispatch)(Header);

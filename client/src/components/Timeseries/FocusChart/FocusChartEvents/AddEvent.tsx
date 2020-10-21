@@ -1,29 +1,33 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { RootState } from 'src/model/types';
 import * as d3 from 'd3';
 import { setActivePanelAction } from 'src/model/actions/sidebar';
-import {
-  updateNewEventDetailsAction,
-  updateEventDetailsAction,
-  // openEventDetailsPopupAction,
-} from 'src/model/actions/datarun';
+import { updateNewEventDetailsAction, updateEventDetailsAction } from 'src/model/actions/events';
 
 import {
-  getIsAddingNewEvents,
   getDatarunDetails,
   getSelectedPeriodRange,
-  getIsEditingEventRange,
-  getCurrentEventDetails,
   getIsAggregationActive,
-  getNewEventDetails,
+  getCurrentEventDetails,
 } from 'src/model/selectors/datarun';
+import { getIsAddingNewEvents, getIsEditingEventRange, getNewEventDetails } from 'src/model/selectors/events';
 
 import { FocusChartConstants } from '../Constants';
 import { normalizeHanlers } from '../FocusChartUtils';
 
 const { CHART_MARGIN, TRANSLATE_LEFT, MIN_VALUE, MAX_VALUE } = FocusChartConstants;
 
-export class AddEvents extends Component {
+type StateProps = ReturnType<typeof mapState>;
+type DispatchProps = ReturnType<typeof mapDispatch>;
+type OwnProps = {
+  height: number;
+  width: number;
+};
+
+type Props = StateProps & DispatchProps & OwnProps;
+
+export class AddEvents extends Component<Props> {
   componentDidMount() {
     this.renderBrush();
     normalizeHanlers('brush-instance');
@@ -45,44 +49,25 @@ export class AddEvents extends Component {
   }
 
   getScale() {
-    const { width, height } = this.props;
-    const { dataRun } = this.props;
+    const { width, height, dataRun } = this.props;
     const { maxTimeSeries } = dataRun;
-    const [minTX, maxTX] = d3.extent(maxTimeSeries, (time) => time[0]);
-    const [minTY, maxTY] = d3.extent(maxTimeSeries, (time) => time[1]);
-    const drawableWidth = width - 2 * CHART_MARGIN - TRANSLATE_LEFT;
-    const drawableHeight = height - 3.5 * CHART_MARGIN;
-
+    const [minTX, maxTX] = d3.extent(maxTimeSeries, (time) => time[0]) as [number, number];
+    const [minTY, maxTY] = d3.extent(maxTimeSeries, (time) => time[1]) as [number, number];
+    const drawableWidth: number = width - 2 * CHART_MARGIN - TRANSLATE_LEFT;
+    const drawableHeight: number = height - 3.5 * CHART_MARGIN;
     const xCoord = d3.scaleTime().range([0, drawableWidth]);
     const yCoord = d3.scaleLinear().range([drawableHeight, 0]);
 
-    const minX = Math.min(MIN_VALUE, minTX);
-    const maxX = Math.max(MAX_VALUE, maxTX);
+    const minX: number = Math.min(MIN_VALUE, minTX);
+    const maxX: number = Math.max(MAX_VALUE, maxTX);
 
-    const minY = Math.min(MIN_VALUE, minTY);
-    const maxY = Math.max(MAX_VALUE, maxTY);
+    const minY: number = Math.min(MIN_VALUE, minTY);
+    const maxY: number = Math.max(MAX_VALUE, maxTY);
 
     xCoord.domain([minX, maxX]);
     yCoord.domain([minY, maxY]);
 
     return { xCoord, yCoord };
-  }
-
-  drawLine(data) {
-    const { periodRange } = this.props;
-    const { zoomValue } = periodRange;
-    const { xCoord, yCoord } = this.getScale();
-    const xCoordCopy = xCoord.copy();
-
-    if (zoomValue !== 1) {
-      xCoord.domain(zoomValue.rescaleX(xCoordCopy).domain());
-    }
-
-    const line = d3
-      .line()
-      .x((d) => xCoord(d[0]))
-      .y((d) => yCoord(d[1]));
-    return line(data);
   }
 
   getBrushCoords() {
@@ -148,10 +133,14 @@ export class AddEvents extends Component {
         normalizeHanlers('brush-instance');
 
         const { newEventDetails } = this.props;
-        const [selection_start, selection_end] = d3.event.selection;
-        const startIndex =
-          timeSeries.findIndex((element) => xCoord.invert(selection_start).getTime() - element[0] < 0) - 1;
-        const stopIndex = timeSeries.findIndex((element) => xCoord.invert(selection_end).getTime() - element[0] < 0);
+        const [selection_start, selection_end] = d3.event.selection as [number, number];
+
+        const startIndex: number =
+          timeSeries.findIndex((element: Array<number>) => xCoord.invert(selection_start).getTime() - element[0] < 0) -
+          1;
+        const stopIndex: number = timeSeries.findIndex(
+          (element: Array<number>) => xCoord.invert(selection_end).getTime() - element[0] < 0,
+        );
 
         if (startIndex !== -1 && stopIndex !== -1) {
           const eventDetails = {
@@ -187,20 +176,20 @@ export class AddEvents extends Component {
   }
 }
 
-export default connect(
-  (state) => ({
-    dataRun: getDatarunDetails(state),
-    isAddingNewEvent: getIsAddingNewEvents(state),
-    periodRange: getSelectedPeriodRange(state),
-    isEditingEventRange: getIsEditingEventRange(state),
-    currentEventDetails: getCurrentEventDetails(state),
-    isAggregationActive: getIsAggregationActive(state),
-    newEventDetails: getNewEventDetails(state),
-  }),
-  (dispatch) => ({
-    updateNewEventDetails: (eventDetails) => dispatch(updateNewEventDetailsAction(eventDetails)),
-    updateEventDetails: (eventDetails) => dispatch(updateEventDetailsAction(eventDetails)),
-    // openEventDetailsPopup: () => dispatch(openEventDetailsPopup()),
-    toggleActivePanel: () => dispatch(setActivePanelAction('eventView')),
-  }),
-)(AddEvents);
+const mapState = (state: RootState) => ({
+  dataRun: getDatarunDetails(state),
+  isAddingNewEvent: getIsAddingNewEvents(state),
+  periodRange: getSelectedPeriodRange(state),
+  isEditingEventRange: getIsEditingEventRange(state),
+  currentEventDetails: getCurrentEventDetails(state),
+  isAggregationActive: getIsAggregationActive(state),
+  newEventDetails: getNewEventDetails(state),
+});
+
+const mapDispatch = (dispatch: Function) => ({
+  updateNewEventDetails: (eventDetails) => dispatch(updateNewEventDetailsAction(eventDetails)),
+  updateEventDetails: (eventDetails) => dispatch(updateEventDetailsAction(eventDetails)),
+  toggleActivePanel: () => dispatch(setActivePanelAction('eventView')),
+});
+
+export default connect<StateProps, DispatchProps, {}, RootState>(mapState, mapDispatch)(AddEvents);

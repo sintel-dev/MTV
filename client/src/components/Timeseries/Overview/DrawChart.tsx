@@ -7,23 +7,21 @@ import {
   getSimilarShapesCoords,
 } from 'src/model/selectors/similarShapes';
 import { resetSimilarShapesAction } from 'src/model/actions/similarShapes';
-import { RootState, DatarunDataType } from '../../../model/types';
-import { formatDate } from '../../../model/utils/Utils';
-import { FocusChartConstants } from '../FocusChart/Constants';
+import { RootState, DatarunDataType, TimeSeriesRangeType } from 'src/model/types';
+import { formatDate } from 'src/model/utils/Utils';
+import { setTimeseriesPeriod, selectDatarun } from 'src/model/actions/datarun';
 import {
-  getCurrentEventDetails,
   getSelectedPeriodRange,
-  getIsEditingEventRange,
-  getIsAddingNewEvents,
-  getIsPopupOpen,
   getSelectedDatarunID,
   getCurrentChartStyle,
-} from '../../../model/selectors/datarun';
-import { setTimeseriesPeriod, selectDatarun } from '../../../model/actions/datarun';
+  getCurrentEventDetails,
+} from 'src/model/selectors/datarun';
+import { getIsEditingEventRange, getIsAddingNewEvents } from 'src/model/selectors/events';
+import { FocusChartConstants } from '../FocusChart/Constants';
 
 const { TRANSLATE_LEFT, CHART_MARGIN } = FocusChartConstants;
 
-type Props = {
+type OwnProps = {
   dataRun: DatarunDataType;
 };
 
@@ -41,7 +39,21 @@ type ChartState = {
 
 type StateProps = ReturnType<typeof mapState>;
 type DispatchProps = ReturnType<typeof mapDispatch>;
-type ChartProps = StateProps & DispatchProps & Props;
+type ChartProps = StateProps & DispatchProps & OwnProps;
+
+type ShapeType = {
+  end: number;
+  start: number;
+  similarity: number;
+  source: string;
+};
+
+type DateFormat = {
+  day: number;
+  month: string;
+  time: string;
+  year: number;
+};
 
 export class DrawChart extends Component<ChartProps, ChartState> {
   constructor(props) {
@@ -64,9 +76,9 @@ export class DrawChart extends Component<ChartProps, ChartState> {
     const height = 40;
     const { offset } = this.state;
 
-    const chartWidth = width - offset.infoWidth - 2 * offset.left;
-    const drawableWidth = chartWidth - 3;
-    const drawableHeight = height - 5;
+    const chartWidth: number = width - offset.infoWidth - 2 * offset.left;
+    const drawableWidth: number = chartWidth - 3;
+    const drawableHeight: number = height - 5;
     this.getRatio();
 
     this.setState(
@@ -82,7 +94,7 @@ export class DrawChart extends Component<ChartProps, ChartState> {
     );
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: ChartProps) {
     if (JSON.stringify(prevProps.selectedPeriod.eventRange) !== JSON.stringify(this.props.selectedPeriod.eventRange)) {
       this.updateBrushes();
     }
@@ -90,13 +102,13 @@ export class DrawChart extends Component<ChartProps, ChartState> {
 
   private brush: any;
 
-  getScale(width = this.state.width, height = this.state.height) {
+  private getScale(width: number = this.state.width, height: number = this.state.height) {
     const { timeSeries, maxTimeSeries } = this.props.dataRun;
 
-    let minValue = Number.MAX_SAFE_INTEGER;
-    let maxValue = Number.MIN_SAFE_INTEGER;
-    const timeSeriesMin = maxTimeSeries[0][0];
-    const timeSeriesMax = maxTimeSeries[maxTimeSeries.length - 1][0];
+    let minValue: number = Number.MAX_SAFE_INTEGER;
+    let maxValue: number = Number.MIN_SAFE_INTEGER;
+    const timeSeriesMin: number = maxTimeSeries[0][0];
+    const timeSeriesMax: number = maxTimeSeries[maxTimeSeries.length - 1][0];
     const xCoord = d3.scaleTime().range([0, width]);
     const yCoord = d3.scaleLinear().range([height, 0]);
 
@@ -109,21 +121,21 @@ export class DrawChart extends Component<ChartProps, ChartState> {
     return { xCoord, yCoord };
   }
 
-  drawLine(data) {
+  private drawLine(data: Array<[number, number]>) {
     const { drawableWidth, drawableHeight } = this.state;
     const { currentChartStyle } = this.props;
     const { xCoord, yCoord } = this.getScale(drawableWidth, drawableHeight);
 
     const line = d3
       .line()
-      .x((d) => xCoord(d[0]))
-      .y((d) => yCoord(d[1]));
+      .x((d: Array<number>) => xCoord(d[0]))
+      .y((d: Array<number>) => yCoord(d[1]));
 
     line.curve(currentChartStyle === 'linear' ? d3.curveLinear : d3.curveStepBefore);
     return line(data);
   }
 
-  initBrush() {
+  private initBrush() {
     const self = this;
     const { width } = this.state;
     const brushInstance = d3.selectAll('.overview-brush');
@@ -149,30 +161,26 @@ export class DrawChart extends Component<ChartProps, ChartState> {
     this.brush = brush;
   }
 
-  handleBrushDbClick(brushID) {
-    const { xCoord } = this.getScale();
-    d3.select(`#_${brushID}`).call(this.brush.move, xCoord.range());
-  }
-
-  getRatio() {
+  private getRatio() {
     const { width } = this.state;
-    const focusChartWidth =
+    const focusChartWidth: number =
       document.querySelector('#focusChartWrapper').clientWidth - TRANSLATE_LEFT - 2 * CHART_MARGIN;
-    const ratio = width / focusChartWidth;
+    const ratio: number = width / focusChartWidth;
     return { ratio };
   }
 
-  handleBrushSelection() {
+  private handleBrushSelection() {
     const { isEditingEvent, isAddingNewEvent } = this.props;
     const selection = d3.event.selection && d3.event.selection;
     if (selection === null || isEditingEvent || isAddingNewEvent || selection[0] === selection[1]) {
       return;
     }
+
     const { ratio } = this.getRatio();
-    const focusChartWidth = document.querySelector('#focusChartWrapper').clientWidth;
-    const focusWidth = focusChartWidth - TRANSLATE_LEFT - 2 * CHART_MARGIN;
-    const existingRange = this.props.selectedPeriod.eventRange;
-    const eventRange = [selection[0] / ratio, selection[1] / ratio];
+    const focusChartWidth: number = document.querySelector('#focusChartWrapper').clientWidth;
+    const focusWidth: number = focusChartWidth - TRANSLATE_LEFT - 2 * CHART_MARGIN;
+    const existingRange = this.props.selectedPeriod.eventRange as [number, number];
+    const eventRange = [selection[0] / ratio, selection[1] / ratio] as [number, number];
 
     // prevent infinite loop call
     if (JSON.stringify(existingRange) === JSON.stringify(eventRange)) {
@@ -184,8 +192,7 @@ export class DrawChart extends Component<ChartProps, ChartState> {
     const { xCoord } = this.getScale();
     const xCoordCopy = xCoord.copy();
     const timeStamp = zoomValue.rescaleX(xCoordCopy).domain();
-
-    const selectedRange = {
+    const selectedRange: TimeSeriesRangeType = {
       eventRange,
       zoomValue,
       timeStamp: [new Date(timeStamp[0]).getTime(), new Date(timeStamp[1]).getTime()],
@@ -199,86 +206,92 @@ export class DrawChart extends Component<ChartProps, ChartState> {
     selection && this.props.onChangePeriod(selectedRange);
   }
 
-  updateBrush() {
-    const { isEditingEvent, isAddingNewEvent } = this.props;
-    if (isEditingEvent || isAddingNewEvent) {
-      return;
-    }
-    const { ratio } = this.getRatio();
-    const activeBrush = d3.select('.time-row.active g.overview-brush');
-    const { eventRange } = this.props.selectedPeriod;
-
-    const brushRange = [eventRange[0] * ratio, eventRange[1] * ratio];
-    activeBrush.call(this.brush.move, brushRange);
-  }
-
-  getBrushRange(eventRange) {
+  private getBrushRange(eventRange: number[]) {
     const { ratio } = this.getRatio();
     const chartStart = eventRange[0] * ratio;
     const chartEnd = eventRange[1] * ratio;
     return { chartStart, chartEnd };
   }
 
-  updateBrushes() {
+  private updateBrushes() {
     const brushSelection = d3.selectAll('g.overview-brush');
     const { chartStart, chartEnd } = this.getBrushRange(this.props.selectedPeriod.eventRange);
     brushSelection.call(this.brush.move, [chartStart, chartEnd]);
   }
 
-  handleBrushClick(dataRunID) {
-    const { isEditingEvent, isAddingNewEvent, isPopupOpen, resetShapes } = this.props;
+  private handleBrushClick(dataRunID: string) {
+    const { isEditingEvent, isAddingNewEvent, resetShapes } = this.props;
     resetShapes();
-    !isEditingEvent && !isAddingNewEvent && !isPopupOpen && this.props.onSelectDatarun(dataRunID);
+    !isEditingEvent && !isAddingNewEvent && this.props.onSelectDatarun(dataRunID);
   }
 
-  drawEvent(event) {
+  private drawEvent(event: [number, number]) {
     const { timeSeries } = this.props.dataRun;
-    const eventData: Array<[number, number]> = timeSeries.slice(event[0], event[1] + 2);
-    return <path key={event[3]} className="wave-event" d={this.drawLine(eventData)} />;
+    const [start, end] = event;
+    const eventData: Array<[number, number]> = timeSeries.slice(start, end + 2);
+    return <path key={event[1]} className="wave-event" d={this.drawLine(eventData)} />;
   }
 
-  renderSimilarShapes(shape) {
-    const { start, end } = shape;
+  private renderEvents() {
+    const { dataRun } = this.props;
+    const { eventWindows } = dataRun;
 
-    return (
-      <g className="similar-shape" key={start}>
-        {this.drawEvent([start, end])}
-      </g>
-    );
+    if (!eventWindows.length) {
+      return null;
+    }
+
+    return eventWindows.map((currentEvent) => {
+      const [start, end] = currentEvent;
+      return this.drawEvent([start, end]);
+    });
   }
 
-  drawData() {
-    const { width, height, offset } = this.state;
+  private renderSimilarShapes() {
     const {
-      dataRun,
       isSimilarShapesLoading,
       isSimilarShapesActive,
       similarShapesCoords,
       selectedDatarunID,
+      dataRun,
     } = this.props;
-    const { eventWindows, timeSeries } = dataRun;
+
+    if (isSimilarShapesLoading || selectedDatarunID !== dataRun.id || !isSimilarShapesActive) {
+      return null;
+    }
+
+    return similarShapesCoords.map((currentShape: ShapeType) => {
+      const { start, end } = currentShape;
+      return (
+        <g className="similar-shape" key={start}>
+          {this.drawEvent([start, end])}
+        </g>
+      );
+    });
+  }
+
+  private drawData() {
+    const { width, height, offset } = this.state;
+    const { dataRun } = this.props;
+    const { timeSeries } = dataRun;
 
     return (
       width > 0 &&
       height > 0 && (
         <g className="event-wrapper" transform={`translate(${offset.left}, ${offset.top})`}>
           <path className="wave-data" d={this.drawLine(timeSeries)} />
-          {eventWindows.length > 0 && eventWindows.map((windowEvent) => this.drawEvent(windowEvent))}
-          {isSimilarShapesActive &&
-            !isSimilarShapesLoading &&
-            dataRun.id === selectedDatarunID &&
-            similarShapesCoords.map((currentShape) => this.renderSimilarShapes(currentShape))}
+          {this.renderEvents()}
+          {this.renderSimilarShapes()}
         </g>
       )
     );
   }
 
-  initTooltip() {
+  private initTooltip() {
     const { eventRange } = this.props.selectedPeriod;
-    const rootTooltip = document.getElementById('brushTooltip');
+    const rootTooltip: HTMLElement = document.getElementById('brushTooltip');
     const { xCoord } = this.getScale();
-    const startDate = formatDate(new Date(xCoord.invert(eventRange[0]).getTime()));
-    const endDate = formatDate(new Date(xCoord.invert(eventRange[1]).getTime()));
+    const startDate: DateFormat = formatDate(new Date(xCoord.invert(eventRange[0]).getTime()));
+    const endDate: DateFormat = formatDate(new Date(xCoord.invert(eventRange[1]).getTime()));
 
     const tooltipDOM = `
       <ul>
@@ -298,9 +311,9 @@ export class DrawChart extends Component<ChartProps, ChartState> {
     rootTooltip.innerHTML = tooltipDOM;
   }
 
-  handleTooltip() {
+  private handleTooltip() {
     const { eventRange } = this.props.selectedPeriod;
-    const isBrushCreated = eventRange[0] !== 0 || eventRange[1] !== 0;
+    const isBrushCreated: boolean = eventRange[0] !== 0 || eventRange[1] !== 0;
     if (!isBrushCreated) {
       return;
     }
@@ -313,17 +326,17 @@ export class DrawChart extends Component<ChartProps, ChartState> {
       .on('mousemove', () => this.updateTooltipCoords());
   }
 
-  updateTooltipCoords() {
+  private updateTooltipCoords() {
     const { clientX, clientY } = d3.event.sourceEvent ? d3.event.sourceEvent : d3.event;
 
-    const tooltip = document.getElementById('brushTooltip');
+    const tooltip: HTMLElement = document.getElementById('brushTooltip');
 
     if (clientX !== undefined && clientY !== undefined) {
       tooltip.setAttribute('style', `left: ${clientX + 10}px; top: ${clientY + 10}px`);
     }
   }
 
-  destroyTooltip() {
+  private destroyTooltip() {
     document.getElementById('brushTooltip').classList.remove('active');
     document.getElementById('brushTooltip').innerHTML = '';
   }
@@ -341,9 +354,7 @@ export class DrawChart extends Component<ChartProps, ChartState> {
             height={height}
             id={this.props.dataRun.id}
             onMouseOver={() => this.handleTooltip()}
-            onFocus={() => undefined}
             onMouseOut={() => this.destroyTooltip()}
-            onBlur={() => undefined}
             transform="translate(9,3)"
           />
         </svg>
@@ -357,7 +368,6 @@ const mapState = (state: RootState) => ({
   selectedPeriod: getSelectedPeriodRange(state),
   isEditingEvent: getIsEditingEventRange(state),
   isAddingNewEvent: getIsAddingNewEvents(state),
-  isPopupOpen: getIsPopupOpen(state),
   isSimilarShapesLoading: getIsSimilarShapesLoading(state),
   isSimilarShapesActive: getIsSimilarShapesActive(state),
   similarShapesCoords: getSimilarShapesCoords(state),

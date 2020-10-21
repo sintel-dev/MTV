@@ -1,30 +1,18 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 import * as d3 from 'd3';
 import * as _ from 'lodash';
-import { RootState, ExperimentDataType } from '../../../model/types';
+import { DatarunDataType } from 'src/model/types/datarun';
 import { fromIDtoTag, getTagColor } from '../utils';
-import { TagStats, Scale } from './types';
-import './Matrix.scss';
+import { MatrixOption, MatrixProps } from './types';
 import { getMatrixSize } from './MatrixUtils';
+import './Matrix.scss';
 
-// @TODO - gather `tagStats` from selectors/experiment
-// import { getProcessedMatrixData } from '../../../model/selectors/experiment'; - later use
-
-type ownProps = {
-  experiment: ExperimentDataType;
-  tagStats: TagStats;
-  scale: Scale;
-};
-type StateProps = ReturnType<typeof mapState>;
-type DispatchProps = ReturnType<typeof mapDispatch>;
-type Props = ownProps & StateProps & DispatchProps;
 interface LocalState {
   width: number;
   height: number;
 }
 
-export class Matrix extends Component<Props, LocalState> {
+export class Matrix extends Component<MatrixProps, LocalState> {
   constructor(props) {
     super(props);
     this.state = {
@@ -42,7 +30,7 @@ export class Matrix extends Component<Props, LocalState> {
     });
   }
 
-  private option = {
+  private option: MatrixOption = {
     height: 160, // min height
     width: 180, // min width
     margin: {
@@ -55,13 +43,12 @@ export class Matrix extends Component<Props, LocalState> {
     matrixWidth: 120,
   };
 
-  private drawScore(scale, dataruns) {
-    const self = this;
-    const currentMaxScore = Math.min(6, scale.maxScore);
-    let width = self.option.matrixWidth;
-    let height = self.option.height - self.option.matrixHeight;
-    let bins = new Array(10).fill(0);
-    let binNum = bins.length;
+  private drawScore(scale, dataruns: DatarunDataType[]) {
+    const currentMaxScore: number = Math.min(6, scale.maxScore);
+    let width: number = this.option.matrixWidth;
+    let height: number = this.option.height - this.option.matrixHeight;
+    let bins: Array<number> = new Array(10).fill(0);
+    let binNum: number = bins.length;
     let interval = -1;
     interval = currentMaxScore / binNum;
     let maxCount = 0;
@@ -79,12 +66,11 @@ export class Matrix extends Component<Props, LocalState> {
 
     dataruns.forEach((currentDatarun) => {
       const { events } = currentDatarun;
-
       events.forEach((currentEvent) => {
         if (currentEvent.score > currentMaxScore) {
           outerMaxNum += 1;
         } else {
-          let idx = Math.trunc(currentEvent.score / interval);
+          let idx: number = Math.trunc(currentEvent.score / interval);
           if (idx === currentEvent.score / interval) {
             idx -= 1;
           }
@@ -97,13 +83,13 @@ export class Matrix extends Component<Props, LocalState> {
     fx.domain([0, binNum]);
     fy.domain([0, maxCount]);
 
-    let points = _.map(_.range(binNum), (i) => [fx(i + 0.5), -fy(bins[i])]) as [number, number][];
+    let points: [number, number][] = _.map(_.range(binNum), (i) => [fx(i + 0.5), -fy(bins[i])]);
     points.unshift([0, 0]);
     points.push([fx(binNum), -fy(outerMaxNum)]);
 
     return (
       <g>
-        <g transform={`translate(${self.option.width - width}, ${height - 16})`}>
+        <g transform={`translate(${this.option.width - width}, ${height - 16})`}>
           <path className="area" d={area(points)} />
           <text transform="translate(-10, 12)" className="axis-text" textAnchor="text-anchor">
             0
@@ -117,11 +103,11 @@ export class Matrix extends Component<Props, LocalState> {
   }
 
   private drawAreaChart(scale) {
-    const self = this;
-    let width = self.option.matrixWidth;
+    const { height, matrixWidth, matrixHeight } = this.option;
+    let width: number = matrixWidth;
     let symbol = d3.symbol().size(36);
-    let cellWidth = self.option.width - self.option.matrixWidth;
-    let cellHeight = self.option.matrixHeight;
+    let cellWidth: number = this.option.width - matrixWidth;
+    let cellHeight: number = matrixHeight;
 
     let tScore = false;
     const { experiment } = this.props;
@@ -139,7 +125,7 @@ export class Matrix extends Component<Props, LocalState> {
 
     return (
       <g>
-        <g transform={`translate(${cellWidth}, ${self.option.height - cellHeight})`}>
+        <g transform={`translate(${cellWidth}, ${height - cellHeight})`}>
           <line className="sep-line" x1="0" y1="-14" x2={width} y2="-14" />
           <g transform="translate(4, -8)">
             <path d={symbol.type(d3.symbolTriangle)()} fill="#616365" />
@@ -183,11 +169,12 @@ export class Matrix extends Component<Props, LocalState> {
   }
 
   private drawMatrix(tagStats, scale) {
-    const self = this;
+    const { dataruns } = this.props.experiment;
+    const { margin, height } = this.option;
     scale.maxScore = Math.ceil(scale.maxScore);
     let sortedTagStats = _.sortBy(_.toPairs(tagStats), (tag) => +tag[0]);
-    let cellWidth = self.option.width - self.option.matrixWidth;
-    let cellHeight = self.option.matrixHeight;
+    let cellWidth = this.option.width - this.option.matrixWidth;
+    let cellHeight = this.option.matrixHeight;
 
     const rh = 7;
     const rm = 3;
@@ -217,8 +204,14 @@ export class Matrix extends Component<Props, LocalState> {
         return null;
       }
 
-      const [x0, y0, x1, y1] = [-fy(tag[1]) + 1 - rm, fx(tag[0]), -fy(tag[1]) + 1 - rm, fx(tag[0]) + fx.bandwidth()];
-      const [xm0, ym0, xm1, ym1] = [x0 - rh, y0, x1 - rh, y1];
+      const [x0, y0, x1, y1] = [
+        -fy(tag[1]) + 1 - rm,
+        fx(tag[0]),
+        -fy(tag[1]) + 1 - rm,
+        fx(tag[0]) + fx.bandwidth(),
+      ] as [number, number, number, number];
+
+      const [xm0, ym0, xm1, ym1] = [x0 - rh, y0, x1 - rh, y1] as [number, number, number, number];
 
       const path = curve([
         [x0, y0],
@@ -229,15 +222,14 @@ export class Matrix extends Component<Props, LocalState> {
       return path;
     };
 
-    const cells: [string, number][] = _.chain(self.props.experiment.dataruns)
-
-      .map((d) => [d.signal, d.events.length])
-      .sortBy((d) => d[0])
+    const cells: [string, number][] = _.chain(dataruns)
+      .map((currentDatarun) => [currentDatarun.signal, currentDatarun.events.length])
+      .sortBy((currentDatarun) => currentDatarun[0])
       .value() as [string, number][];
 
     return (
-      <g transform={`translate(${self.option.margin.left}, ${self.option.margin.top})`}>
-        <g transform={`translate(${cellWidth}, ${self.option.height - cellHeight})`}>
+      <g transform={`translate(${margin.left}, ${margin.top})`}>
+        <g transform={`translate(${cellWidth}, ${height - cellHeight})`}>
           {sortedTagStats.map((currentTag: Array<any>) => (
             <g key={Math.random()}>
               <rect
@@ -259,8 +251,8 @@ export class Matrix extends Component<Props, LocalState> {
           ))}
           <line className="sep-line" x1={0} y1={0} x2={0} y2={cellHeight} />
         </g>
-        <g transform={`translate(${cellWidth}, ${self.option.height - cellHeight})`}>
-          {cells && cells.map((cell, index) => this.drawCell(cell, index, scale))}
+        <g transform={`translate(${cellWidth}, ${height - cellHeight})`}>
+          {cells && cells.map((cell, index: number) => this.drawCell(cell, index, scale))}
         </g>
         {this.drawAreaChart(scale)}
       </g>
@@ -269,10 +261,10 @@ export class Matrix extends Component<Props, LocalState> {
 
   render() {
     const { width, height } = this.state;
-    const { tagStats, scale } = this.props;
+    const { tagStats, scale, experiment } = this.props;
 
     return (
-      <div data-eid={this.props.experiment.id} className="matrix">
+      <div data-eid={experiment.id} className="matrix">
         <svg width={width} height={height} className="matrix-svg">
           {this.drawMatrix(tagStats, scale)}
         </svg>
@@ -281,8 +273,4 @@ export class Matrix extends Component<Props, LocalState> {
   }
 }
 
-const mapState = () => ({});
-
-const mapDispatch = () => ({});
-
-export default connect<StateProps, DispatchProps, ownProps, RootState>(mapState, mapDispatch)(Matrix);
+export default Matrix;

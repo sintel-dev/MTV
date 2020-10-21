@@ -2,12 +2,6 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import * as d3 from 'd3';
 
-import {
-  getCurrentEventDetails,
-  getUpdatedEventDetails,
-  getIsAddingNewEvents,
-  getNewEventDetails,
-} from 'src/model/selectors/datarun';
 import { timestampToDate } from 'src/components/Timeseries/AggregationLevels/AggregationChart/Utils';
 import Dropdown from 'src/components/Common/Dropdown';
 import {
@@ -17,14 +11,21 @@ import {
   deleteEventAction,
   setActiveEventAction,
   cancelEventEditingAction,
-} from 'src/model/actions/datarun';
+} from 'src/model/actions/events';
+import { getCurrentEventDetails } from 'src/model/selectors/datarun';
+import { getUpdatedEventDetails, getIsAddingNewEvents, getNewEventDetails } from 'src/model/selectors/events';
 
+import { RootState } from 'src/model/types';
 import { selectedOption } from './eventUtils';
 import EventComments from '../SignalAnnotationsView/EventComments';
 import CommentControl from '../SignalAnnotationsView/CommentControl';
 import './EventDetails.scss';
 
-const getEventSource = (type) => {
+type StateProps = ReturnType<typeof mapState>;
+type DispatchProps = ReturnType<typeof mapDispatch>;
+type Props = StateProps & DispatchProps;
+
+const getEventSource = (type: string) => {
   switch (type) {
     case 'SHAPE_MATCHING':
       return 'Shape Matching';
@@ -35,7 +36,7 @@ const getEventSource = (type) => {
   }
 };
 
-class EventDetailsView extends Component {
+class EventDetailsView extends Component<Props> {
   noEventToRender() {
     return (
       <div className="no-event">
@@ -52,7 +53,7 @@ class EventDetailsView extends Component {
     const currentEvent = isAddingNewEvent ? newEventDetails : eventDetails;
     const { start_time, stop_time, score, tag, source } = currentEvent;
 
-    const scoreFormatter = d3.format('.3f');
+    const scoreFormatter = d3.format('.3f') as Function;
 
     return (
       <div className="evt-ops">
@@ -83,8 +84,7 @@ class EventDetailsView extends Component {
                   <p>Tag</p>
                   <Dropdown
                     value={selectedOption(tag)}
-                    onChange={(evtTag) => updateEventDetails({ tag: evtTag.label })}
-                    isGrouppedOptions
+                    onChange={(evtTag: { label: string }) => updateEventDetails({ tag: evtTag.label })}
                   />
                 </td>
                 <td width="29%">
@@ -140,7 +140,7 @@ class EventDetailsView extends Component {
         {!isAddingNewEvent && (
           <div className="evt-row evt-actions">
             <EventComments isEventJumpVisible={false} />
-            <CommentControl isChangeTagEnabled={false} eventDetails={eventDetails} />
+            <CommentControl isChangeTagEnabled={false} currentEvent={eventDetails} />
           </div>
         )}
         {this.renderEventFooter()}
@@ -162,19 +162,20 @@ class EventDetailsView extends Component {
   }
 }
 
-export default connect(
-  (state) => ({
-    eventDetails: getCurrentEventDetails(state),
-    updatedEventDetails: getUpdatedEventDetails(state),
-    isAddingNewEvent: getIsAddingNewEvents(state),
-    newEventDetails: getNewEventDetails(state),
-  }),
-  (dispatch) => ({
-    updateEventDetails: (eventDetails) => dispatch(updateEventDetailsAction(eventDetails)),
-    editEventRange: (eventState) => dispatch(isEditingEventRangeAction(eventState)),
-    saveEventDetails: () => dispatch(saveEventDetailsAction()),
-    deleteEvent: () => dispatch(deleteEventAction()),
-    setActiveEvent: (eventID) => dispatch(setActiveEventAction(eventID)),
-    cancelEventEditing: () => dispatch(cancelEventEditingAction()),
-  }),
-)(EventDetailsView);
+const mapState = (state: RootState) => ({
+  eventDetails: getCurrentEventDetails(state),
+  updatedEventDetails: getUpdatedEventDetails(state),
+  isAddingNewEvent: getIsAddingNewEvents(state),
+  newEventDetails: getNewEventDetails(state),
+});
+
+const mapDispatch = (dispatch: Function) => ({
+  updateEventDetails: (eventDetails) => dispatch(updateEventDetailsAction(eventDetails)),
+  editEventRange: (eventState) => dispatch(isEditingEventRangeAction(eventState)),
+  saveEventDetails: () => dispatch(saveEventDetailsAction()),
+  deleteEvent: () => dispatch(deleteEventAction()),
+  setActiveEvent: (eventID) => dispatch(setActiveEventAction(eventID)),
+  cancelEventEditing: () => dispatch(cancelEventEditingAction()),
+});
+
+export default connect<StateProps, DispatchProps, {}, RootState>(mapState, mapDispatch)(EventDetailsView);

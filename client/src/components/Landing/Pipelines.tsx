@@ -1,9 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { getPipelinesData, getSelectedPipeline } from 'src/model/selectors/projects';
+import { selectPipeline } from 'src/model/actions/landing';
+import { RootState, PipelineDataType } from 'src/model/types';
 import Loader from '../Common/Loader';
-import { getPipelinesData, getSelectedPipeline } from '../../model/selectors/projects';
-import { selectPipeline } from '../../model/actions/landing';
-import { RootState, PipelineDataType } from '../../model/types';
 
 type StateProps = ReturnType<typeof mapState>;
 type DispatchProps = ReturnType<typeof mapDispatch>;
@@ -32,28 +32,29 @@ const Pipelines: React.FC<Props> = (props) => {
 };
 
 let props: Props;
-type renderPipelineProps = {
+type PipelineProps = {
   pipeline: PipelineDataType;
   index: number;
   onSelectPipeline: typeof props.onSelectPipeline;
   selectedPipeline: typeof props.selectedPipeline;
 };
 
-export const RenderPipeline: React.FC<renderPipelineProps> = ({
+export const RenderPipeline: React.FC<PipelineProps> = ({
   pipeline,
   index,
   onSelectPipeline,
   selectedPipeline,
-}) => {
-  const activeClass = selectedPipeline === pipeline.name ? 'active' : '';
+}: PipelineProps) => {
+  const activeClass: string = selectedPipeline === pipeline.name ? 'active' : '';
+  const { name, insert_time, created_by } = pipeline;
 
   return (
-    <div className={`cell ${activeClass}`} key={index} onClick={() => onSelectPipeline(pipeline.name)}>
-      <h3>{pipeline.name}</h3>
+    <div className={`cell ${activeClass}`} key={index} onClick={() => onSelectPipeline(name)}>
+      <h3>{name}</h3>
       <div className="item-data">
         <ul>
-          <li>DC: {pipeline.insert_time.substring(0, 10)}</li>
-          <li>By: {pipeline.created_by || 'null'}</li>
+          <li>DC: {insert_time.substring(0, 10)}</li>
+          <li>By: {created_by || 'null'}</li>
         </ul>
       </div>
     </div>
@@ -66,7 +67,7 @@ const mapState = (state: RootState) => ({
 });
 
 const mapDispatch = (dispatch: Function) => ({
-  onSelectPipeline: (pipelineName) => dispatch(selectPipeline(pipelineName)),
+  onSelectPipeline: (pipelineName: string) => dispatch(selectPipeline(pipelineName)),
 });
 
 export default connect<StateProps, DispatchProps, {}, RootState>(mapState, mapDispatch)(Pipelines);

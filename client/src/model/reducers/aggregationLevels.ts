@@ -1,7 +1,7 @@
 import createReducer from '../store/createReducer';
-import { AggregationLevelsType } from '../types';
+import { AggregationLevelsState, GetSignalRawAction } from '../types';
 
-const initialState: AggregationLevelsType = {
+const initialState: AggregationLevelsState = {
   isAggregationModalOpen: false,
   aggregationTimeLevel: {
     selectedLevel: '30 hours',
@@ -15,40 +15,40 @@ const initialState: AggregationLevelsType = {
   aggZoomValue: 1,
 };
 
-function TOGGLE_AGGREGATION_MODAL(nextState, { isAggregationModalOpen }) {
+function TOGGLE_AGGREGATION_MODAL(nextState: AggregationLevelsState, { isAggregationModalOpen }) {
   nextState.isAggregationModalOpen = isAggregationModalOpen;
 }
 
-function SET_AGGREGATION_TIME_LEVEL(nextState, { aggregationTimeLevel }) {
+function SET_AGGREGATION_TIME_LEVEL(nextState: AggregationLevelsState, { aggregationTimeLevel }) {
   nextState.aggregationTimeLevel = aggregationTimeLevel;
 }
-function FETCH_SIGNAL_RAW_REQUEST(nextState) {
+function FETCH_SIGNAL_RAW_REQUEST(nextState: AggregationLevelsState) {
   nextState.isSignalRawLoading = true;
 }
 
-function FETCH_SIGNAL_RAW_SUCCESS(nextState, action) {
+function FETCH_SIGNAL_RAW_SUCCESS(nextState: AggregationLevelsState, action: GetSignalRawAction) {
   nextState.singalRawData = action.result.data;
   nextState.isSignalRawLoading = false;
 }
 
-function FETCH_SIGNAL_RAW_FAILURE(nextState) {
+function FETCH_SIGNAL_RAW_FAILURE(nextState: AggregationLevelsState) {
   nextState.singalRawData = [];
   nextState.isSignalRawLoading = false;
 }
 
-function SET_EVENT_INTERVAL(nextState, { eventInterval }) {
+function SET_EVENT_INTERVAL(nextState: AggregationLevelsState, { eventInterval }) {
   nextState.eventInterval = eventInterval;
 }
 
-function SET_CONTEXT_VALUE(nextState, { contextValue }) {
+function SET_CONTEXT_VALUE(nextState: AggregationLevelsState, { contextValue }) {
   nextState.contextValue = contextValue;
 }
 
-function UPDATE_AGGREGATION_ZOOM(nextState, { zoomValue }) {
+function UPDATE_AGGREGATION_ZOOM(nextState: AggregationLevelsState, { zoomValue }) {
   nextState.aggZoomValue = zoomValue;
 }
 
-export default createReducer(initialState, {
+export default createReducer<AggregationLevelsState>(initialState, {
   TOGGLE_AGGREGATION_MODAL,
   SET_AGGREGATION_TIME_LEVEL,
   FETCH_SIGNAL_RAW_REQUEST,

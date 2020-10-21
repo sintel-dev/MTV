@@ -1,5 +1,5 @@
 import createReducer from '../store/createReducer';
-import { ExperimentState, FetchExperimentsAction, SelectExperimentAction } from '../types';
+import { ExperimentState, FetchExpActionType, FetchExperimentsAction, SelectExperimentAction } from '../types';
 
 const initialState: ExperimentState = {
   isExperimentsLoading: true,
@@ -24,7 +24,7 @@ function FETCH_EXPERIMENTS_FAILURE(nextState: ExperimentState) {
   nextState.experimentsList = [];
 }
 
-function FETCH_EXPERIMENT_DATA_SUCCESS(nextState, action) {
+function FETCH_EXPERIMENT_DATA_SUCCESS(nextState, action: FetchExpActionType) {
   nextState.isExperimentDataLoading = false;
   nextState.experimentDetails = action.result;
 }

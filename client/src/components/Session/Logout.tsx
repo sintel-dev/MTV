@@ -3,14 +3,14 @@ import { connect } from 'react-redux';
 import { onUserLogoutAction } from 'src/model/actions/users';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { getLoginStatus } from 'src/model/selectors/users';
+import { RootState } from 'src/model/types';
 import Wrapper from './Wrapper';
 
-export interface LogoutProps {
-  userLogout: () => void;
-  loginStatus: 'loading' | 'success' | 'fail' | 'authenticated' | 'unauthenticated';
-}
+type StateProps = ReturnType<typeof mapState>;
+type DispatchProps = ReturnType<typeof mapDispatch>;
+type Props = StateProps & DispatchProps;
 
-class Logout extends Component<LogoutProps> {
+class Logout extends Component<Props> {
   componentDidMount() {
     this.props.userLogout();
     window.location.href = '/';
@@ -31,11 +31,12 @@ class Logout extends Component<LogoutProps> {
   }
 }
 
-export default connect(
-  (state) => ({
-    loginStatus: getLoginStatus(state),
-  }),
-  (dispatch: Function) => ({
-    userLogout: () => dispatch(onUserLogoutAction()),
-  }),
-)(Logout);
+const mapState = (state: RootState) => ({
+  loginStatus: getLoginStatus(state),
+});
+
+const mapDispatch = (dispatch: Function) => ({
+  userLogout: () => dispatch(onUserLogoutAction()),
+});
+
+export default connect<StateProps, DispatchProps, {}, RootState>(mapState, mapDispatch)(Logout);

@@ -1,12 +1,10 @@
 import * as d3 from 'd3';
 import { createSelector } from 'reselect';
 import * as _ from 'lodash';
-import { RootState, EventDataType } from '../types';
+import { RootState, EventDataType, EventWindowsType } from '../types';
 import { months } from '../utils/Utils';
-import { getFilteredExperiments } from './projects';
-import { fromTagToID } from '../../components/Landing/utils';
 
-export const getFilterTags = (state) => state.datarun.filterTags;
+export const getFilterTags = (state: RootState) => state.events.filterTags;
 export const getSelectedExperimentData = (state: RootState) => state.selectedExperimentData;
 
 export const filteringTags = createSelector(
@@ -190,6 +188,7 @@ const normalizePeriodData = (periodData) => {
       return newBin;
     });
 
+    // @TODO - first prio - address this for in for
     for (let monthIterator = 0; monthIterator < year.children.length; monthIterator += 1) {
       let countsM = year.children[monthIterator].counts;
       year.children[monthIterator].bins = _.map(year.children[monthIterator].bins, (bin, i) => {
@@ -237,12 +236,12 @@ export const getProcessedDataRuns = createSelector(
     )[0];
 
     return experimentData.data.dataruns.map((datarun) => {
-      const timeSeries = groupDataBy(datarun.prediction, 'y_raw');
-      const maxTimeSeries = groupDataBy(maxTimeSeriesData.prediction, 'y_raw');
-      const timeseriesPred = groupDataBy(datarun.prediction, 'y_raw_hat');
-      const timeseriesErr = groupDataBy(datarun.prediction, 'es_raw');
-      const period = groupDataByPeriod(datarun.raw);
-      const { events } = datarun;
+      const { prediction, events, raw } = datarun;
+      const timeSeries = groupDataBy(prediction, 'y_raw') as [number, number][];
+      const maxTimeSeries = groupDataBy(maxTimeSeriesData.prediction, 'y_raw') as [number, number][];
+      const timeseriesPred = groupDataBy(prediction, 'y_raw_hat') as [number, number][];
+      const timeseriesErr = groupDataBy(prediction, 'es_raw') as [number, number][];
+      const period = groupDataByPeriod(raw);
 
       normalizePeriodData(period);
 
@@ -255,7 +254,7 @@ export const getProcessedDataRuns = createSelector(
         .map((currentEvent) => currentEvent)
         .sort((current, next) => current.start_time - next.start_time);
 
-      const eventWindows = groupByEventWindows(
+      const eventWindows: EventWindowsType = groupByEventWindows(
         sortedEvents,
         timeSeries.map((series) => series[0]),
       );
@@ -277,45 +276,5 @@ export const getProcessedDataRuns = createSelector(
     });
   },
 );
-
-// @TODO - move logic from Experiment.tsx ove here
-export const getProcessedMatrixData = createSelector([getFilteredExperiments], (filteredExperiments) => {
-  let maxTagNum = Number.MIN_SAFE_INTEGER;
-  let maxEventNum = Number.MIN_SAFE_INTEGER;
-  let maxScore = Number.MIN_SAFE_INTEGER;
-  let tagStatsList = [];
-
-  filteredExperiments.forEach((currentExperiment) => {
-    const { dataruns } = currentExperiment;
-    let tagStats: { [index: string]: number } = {};
-    for (let i = 0; i < 7; i += 1) {
-      tagStats[String(i)] = 0;
-    }
-    dataruns.forEach((currentDatarun) => {
-      const { events } = currentDatarun;
-      events.forEach((currentEvent) => {
-        let tid = fromTagToID(currentEvent.tag);
-        tid = tid === 'Untagged' ? '0' : tid;
-        if (!_.has(tagStats, tid)) {
-          tagStats[tid] = 0;
-        }
-        tagStats[tid] += 1;
-        maxTagNum = maxTagNum < tagStats[tid] ? tagStats[tid] : maxTagNum;
-
-        maxScore = maxScore > currentEvent.score ? maxScore : currentEvent.score;
-        maxEventNum = maxEventNum < currentDatarun.events.length ? currentDatarun.events.length : maxEventNum;
-      });
-    });
-    tagStatsList.push(tagStats);
-  });
-
-  const scale = {
-    maxTagNum,
-    maxEventNum,
-    maxScore,
-  };
-
-  return { scale, tagStats: tagStatsList[0] };
-});
 
 export const getCurrentExperimentDetails = (state) => state.experiments.experimentDetails;

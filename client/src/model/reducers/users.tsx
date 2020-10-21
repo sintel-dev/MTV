@@ -27,7 +27,7 @@ function GOOGLE_USER_REGISTER(nextState: UsersState, { googleRegisterStatus }) {
   nextState.googleRegisterStatus = googleRegisterStatus;
 }
 
-function RESET_PASSWORD_STATUS(nextState, { passwordResetStatus }) {
+function RESET_PASSWORD_STATUS(nextState: UsersState, { passwordResetStatus }) {
   nextState.passwordResetStatus = passwordResetStatus;
 }
 
@@ -35,14 +35,14 @@ function GET_USERS_DATA_REQUEST(nextState: UsersState) {
   nextState.isUsersDataLoading = false;
 }
 
-function GET_USERS_DATA_SUCCESS(nextState, action) {
+function GET_USERS_DATA_SUCCESS(nextState: UsersState, action) {
   nextState.isUsersDataLoading = false;
   nextState.usersData = action.result.users;
 }
 
 function GET_USERS_DATA_FAILURE(nextState: UsersState) {
   nextState.isUsersDataLoading = false;
-  nextState.userData = [];
+  nextState.usersData = [];
 }
 
 export default createReducer(initialState, {

@@ -6,17 +6,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as fileDownload from 'react-file-download';
 import { faChevronRight, faChevronLeft, faCaretDown } from '@fortawesome/free-solid-svg-icons';
 import { getCurrentExperimentDetails, getSelectedExperimentData } from 'src/model/selectors/experiment';
-import { filterEventsByTagAction, toggleTimeSyncModeAction, switchChartStyleAction } from 'src/model/actions/datarun';
-import {
-  getIsTimeSyncModeEnabled,
-  getDatarunDetails,
-  getCurrentChartStyle,
-  getActiveEventID,
-} from 'src/model/selectors/datarun';
+import { toggleTimeSyncModeAction, switchChartStyleAction } from 'src/model/actions/datarun';
+import { filterEventsByTagAction } from 'src/model/actions/events';
+import { getIsTimeSyncModeEnabled, getDatarunDetails, getCurrentChartStyle } from 'src/model/selectors/datarun';
+import { getActiveEventID } from 'src/model/selectors/events';
 import { AUTH_USER_DATA } from 'src/model/utils/constants';
-import { getSelectedExperiment } from '../../model/selectors/projects';
-import { onUserLogoutAction } from '../../model/actions/users';
-import { RootState } from '../../model/types';
+import { getSelectedExperiment } from 'src/model/selectors/projects';
+import { onUserLogoutAction } from 'src/model/actions/users';
+import { RootState } from 'src/model/types';
 import { VerticalDots, DownloadIcon, UploadIcon, LineIcon, StepIcon, LogoutIcon } from '../Common/icons';
 import Dropdown from '../Common/Dropdown';
 import UploadEvents from '../Timeseries/UploadEvents';

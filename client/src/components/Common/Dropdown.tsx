@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Select from 'react-select';
 
 type DropdownOption = {
@@ -13,7 +13,7 @@ type FilterOptions = {
   isFixed?: boolean;
 };
 
-type Props = {
+interface Props {
   onChange: (tag) => any;
   isSearchable?: boolean;
   isMulti?: boolean;
@@ -23,7 +23,7 @@ type Props = {
   options?: FilterOptions[];
   formatLabel?: boolean;
   isDisabled?: boolean;
-};
+}
 
 const optionsKnown: DropdownOption[] = [
   { label: 'Investigate', icon: 'investigate' },
@@ -67,46 +67,29 @@ export const formatOptionLabel = (props: DropdownOption) => {
   );
 };
 
-export class Dropdown extends Component<Props> {
-  static defaultProps = {
-    placeholder: 'Select a tag',
-    isMulti: false,
-    isSearchable: false,
-    closeMenuOnSelect: true,
-    options: filterOptions,
-    formatLabel: true,
-    isDisabled: false,
-  };
-
-  render() {
-    const {
-      onChange,
-      isSearchable,
-      isMulti,
-      closeMenuOnSelect,
-      value,
-      placeholder,
-      options,
-      formatLabel,
-      isDisabled,
-    } = this.props;
-
-    return (
-      <Select
-        formatOptionLabel={formatLabel && formatOptionLabel}
-        options={options}
-        classNamePrefix="tag-options"
-        className="tag-select"
-        placeholder={placeholder}
-        onChange={onChange}
-        isSearchable={isSearchable}
-        isMulti={isMulti}
-        closeMenuOnSelect={closeMenuOnSelect}
-        value={value}
-        isDisabled={isDisabled}
-      />
-    );
-  }
-}
-
+const Dropdown: React.FC<Props> = ({
+  onChange,
+  isSearchable = false,
+  isMulti = false,
+  closeMenuOnSelect = true,
+  value,
+  placeholder = 'Select a tag',
+  options = filterOptions,
+  formatLabel = true,
+  isDisabled = false,
+}: Props) => (
+  <Select
+    formatOptionLabel={formatLabel && formatOptionLabel}
+    options={options}
+    classNamePrefix="tag-options"
+    className="tag-select"
+    placeholder={placeholder}
+    onChange={onChange}
+    isSearchable={isSearchable}
+    isMulti={isMulti}
+    closeMenuOnSelect={closeMenuOnSelect}
+    value={value}
+    isDisabled={isDisabled}
+  />
+);
 export default Dropdown;
