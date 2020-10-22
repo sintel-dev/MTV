@@ -22,6 +22,8 @@ import {
 import { getIsEditingEventRange, getActiveEventID } from 'src/model/selectors/events';
 import { RootState } from 'src/model/types';
 import { formatDate } from 'src/model/utils/Utils';
+import { getIsSigRawLoading, getSignalRawData } from 'src/model/selectors/aggregationLevels';
+import { getCurrentActivePanel } from 'src/model/selectors/sidebar';
 import { FocusChartConstants, colorSchemes } from './Constants';
 
 import AddEvent from './FocusChartEvents/AddEvent';
@@ -91,11 +93,16 @@ export class FocusChart extends Component<Props, State> {
       this.initZoom();
     }
 
+    if (
+      this.props.isSignalRawLoading !== prevProps.isSignalRawLoading ||
+      (this.props.isAggregationActive !== prevProps.isAggregationActive && this.props.isAggregationActive)
+    ) {
+      this.updateZoomOnEventSelection();
+    }
+    if (prevProps.periodRange.zoomValue !== this.props.periodRange.zoomValue) {
+      this.updateZoom();
+    }
     if (!this.props.isAggregationActive) {
-      if (prevProps.periodRange.zoomValue !== this.props.periodRange.zoomValue) {
-        this.updateZoom();
-      }
-
       if (prevProps.selectedPeriod !== this.props.selectedPeriod) {
         this.updateChartZoomOnSelectPeriod();
       }
@@ -406,7 +413,31 @@ export class FocusChart extends Component<Props, State> {
     }
   }
 
-  rangeToTimestamp(periodRange) {
+  private updateZoomOnEventSelection() {
+    const { isSignalRawLoading, isAggregationActive, signalRawData, setPeriodRange } = this.props;
+    if (!isAggregationActive || isSignalRawLoading) {
+      return;
+    }
+    const { width } = this.state;
+    const focusChartWidth: number = width - TRANSLATE_LEFT - 2 * CHART_MARGIN;
+    const { xCoord } = this.getScale();
+
+    const startDate = signalRawData[0][0];
+    const stopDate = signalRawData[signalRawData.length - 1][0];
+    const startRange = xCoord(startDate);
+    const stopRange = xCoord(stopDate);
+    const zoomValue = d3.zoomIdentity.scale(focusChartWidth / (stopRange - startRange)).translate(-startRange, 0);
+    const eventRange = xCoord.range().map(zoomValue.invertX, zoomValue);
+
+    const periodRange: object = {
+      eventRange: [eventRange[0] < 0 ? 0 : eventRange[0], eventRange[1]],
+      zoomValue,
+      timeStamp: [startDate, stopDate],
+    };
+    setPeriodRange(periodRange);
+  }
+
+  private rangeToTimestamp(periodRange) {
     const { zoomValue } = periodRange;
     const { maxDtXCood } = this.getScale();
     const xCoordCopy = maxDtXCood.copy();
@@ -467,7 +498,16 @@ export class FocusChart extends Component<Props, State> {
 
   private drawChartData() {
     const { width, height } = this.state;
-    const { dataRun, isPredictionVisible, isZoomEnabled, isSimilarShapesActive, similarShapesCoords } = this.props;
+    const {
+      dataRun,
+      isPredictionVisible,
+      isZoomEnabled,
+      isSimilarShapesActive,
+      similarShapesCoords,
+      signalRawData,
+      isAggregationActive,
+      isSignalRawLoading,
+    } = this.props;
     const { timeSeries, timeseriesPred } = dataRun;
     const focusChartWidth: number = width - TRANSLATE_LEFT - 2 * CHART_MARGIN;
 
@@ -489,6 +529,9 @@ export class FocusChart extends Component<Props, State> {
           <g className="chart-data" clipPath="url(#focusClip)">
             <g className="wawe-data">
               <path className="chart-wawes" d={this.drawLine(timeSeries)} />
+              {isAggregationActive && !isSignalRawLoading && (
+                <path className="chart-wawes aggregation-level" d={this.drawLine(signalRawData)} />
+              )}
               {isPredictionVisible && <path className="predictions" d={this.drawLine(timeseriesPred)} />}
             </g>
             <rect className="zoom" {...zoomProps} />
@@ -514,18 +557,18 @@ export class FocusChart extends Component<Props, State> {
       <div className="focus-chart" id="focusChartWrapper">
         {this.renderEventTooltip()}
         <ShowErrors />
-        {isAggregationActive ? (
+        {/* {isAggregationActive ? (
           <AggregationLevels width={width} height={height} toggleTooltip={() => this.toggleEventTooltip(false)} />
-        ) : (
-          <>
-            <svg width={width} height={height} id="focusChart">
-              {this.drawChartData()}
-            </svg>
-            <div className="zoomControlsHolder">
-              <ZoomControls />
-            </div>
-          </>
-        )}
+        ) : ( */}
+        <>
+          <svg width={width} height={height} id="focusChart">
+            {this.drawChartData()}
+          </svg>
+          <div className="zoomControlsHolder">
+            <ZoomControls />
+          </div>
+        </>
+        {/* )} */}
       </div>
     );
   }
@@ -549,6 +592,9 @@ const mapState = (state: RootState) => ({
   activeEventID: getActiveEventID(state),
   currentChartStyle: getCurrentChartStyle(state),
   isAggregationActive: getIsAggregationActive(state),
+  signalRawData: getSignalRawData(state),
+  isSignalRawLoading: getIsSigRawLoading(state),
+  currentPanel: getCurrentActivePanel(state),
 });
 
 const mapDispatch = (dispatch: Function) => ({
