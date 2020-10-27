@@ -1,3 +1,4 @@
+import { any } from 'prop-types';
 import React from 'react';
 import Select from 'react-select';
 
@@ -7,7 +8,7 @@ type DropdownOption = {
 };
 
 type FilterOptions = {
-  value: string;
+  value: string | number;
   label: string;
   icon?: string;
   isFixed?: boolean;

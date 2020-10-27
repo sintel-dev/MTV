@@ -12,6 +12,7 @@ import {
   isEventCommentsLoading,
 } from './events';
 import { getCurrentActivePanel } from './sidebar';
+import { getSignalRawData } from './aggregationLevels';
 
 export const isPredictionEnabled = (state: RootState) => state.datarun.isPredictionEnabled;
 export const isDatarunIDSelected = (state: RootState) => state.datarun.selectedDatarunID;
@@ -23,6 +24,29 @@ export const getSelectedPeriodLevel = (state) => state.datarun.periodLevel;
 export const getIsTimeSyncModeEnabled = (state: RootState) => state.datarun.isTimeSyncModeEnabled;
 export const getScrollHistory = (state: RootState) => state.datarun.scrollHistory;
 export const getCurrentChartStyle = (state: RootState) => state.datarun.chartStyle;
+
+export const getIsAggregationActive = createSelector(
+  [getActiveEventID, getCurrentActivePanel, getIsEditingEventRange, getIsAddingNewEvents],
+  (eventID, activePanel, isEditingEventRange, isAddingNewEvent) =>
+    eventID !== null && activePanel === 'eventView' && !isEditingEventRange && !isAddingNewEvent,
+);
+
+const splitTimeSeries = (timeSeries, signalRaw) => {
+  if (!signalRaw) {
+    return timeSeries;
+  }
+
+  const startIndex = timeSeries.findIndex((current) => current[0] >= signalRaw[0][0]);
+  const stopIndex = timeSeries.findIndex((current) => current[0] >= signalRaw[signalRaw.length - 1][0]);
+
+  let seriesLeft = timeSeries.slice(0, startIndex + 1);
+  let seriesRight = timeSeries.slice(stopIndex, timeSeries.length);
+
+  // @TODO - contextual info graph is decalated with timeseries
+  // seriesLeft[seriesLeft.length - 1][1] = signalRaw[0][1];
+  // seriesRight[0][1] = signalRaw[signalRaw.length - 1][1];
+  return [seriesLeft, seriesRight];
+};
 
 export const getSelectedDatarunID = createSelector(
   [getSelectedExperimentData, isDatarunIDSelected],
@@ -137,20 +161,37 @@ export const getDatarunDetails = createSelector(
     getFilteredPeriodRange,
     getIsTimeSyncModeEnabled,
     getFilterDatarunPeriod,
+    getIsAggregationActive,
+    getSignalRawData,
   ],
-  (dataRun, updatedEventDetails, filteredRange, isTimeSyncEnabled, filteredDatarunPeriod) => {
+  (
+    dataRun,
+    updatedEventDetails,
+    filteredRange,
+    isTimeSyncEnabled,
+    filteredDatarunPeriod,
+    isAggregationActive,
+    signalRaw,
+  ) => {
     if (dataRun === null) {
       return null;
     }
     let { events, eventWindows, timeSeries } = dataRun;
     let currentEventIndex = events.findIndex((windowEvent) => windowEvent.id === updatedEventDetails.id);
 
+    let splittedTimeSeries = [];
+    if (isAggregationActive) {
+      splittedTimeSeries = splitTimeSeries(timeSeries, signalRaw);
+    }
+
     if (currentEventIndex !== -1) {
       updateEventDetails(updatedEventDetails, timeSeries, currentEventIndex, eventWindows);
     }
+
     const selectedPeriod = isTimeSyncEnabled ? filteredRange : filteredDatarunPeriod;
 
-    const datarunDetails = { ...dataRun, period: selectedPeriod };
+    const datarunDetails = { ...dataRun, splittedTimeSeries, period: selectedPeriod };
+
     return datarunDetails;
   },
 );
@@ -220,10 +261,4 @@ export const getCurrentEventDetails = createSelector(
     };
     return eventDetails;
   },
-);
-
-export const getIsAggregationActive = createSelector(
-  [getActiveEventID, getCurrentActivePanel, getIsEditingEventRange, getIsAddingNewEvents],
-  (eventID, activePanel, isEditingEventRange, isAddingNewEvent) =>
-    eventID !== null && activePanel === 'eventView' && !isEditingEventRange && !isAddingNewEvent,
 );
