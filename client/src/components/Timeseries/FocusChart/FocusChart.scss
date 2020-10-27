@@ -5,11 +5,56 @@
     overflow: hidden;
     position: relative;
 
+    .aggregation-controls {
+        width: 96%;
+        margin: 0 auto;
+        padding-top: 10px;
+
+        label {
+            margin-right: 16px;
+            display: inline-block;
+        }
+
+        .tag-select {
+            .tag-options__control {
+                height: 30px;
+                font-size: 14px;
+            }
+
+            .tag-options__placeholder {
+                font-size: 14px;
+            }
+
+            .tag-options__menu {
+                min-width: unset;
+            }
+        }
+
+        .context-interval {
+            .tag-options__control {
+                width: 75px;
+                min-width: unset;
+            }
+        }
+        .aggregation-interval {
+            .tag-options__control {
+                width: 120px;
+                min-width: unset;
+            }
+        }
+    }
+
     .chart-data path,
     .line-highlight,
     .zoom {
         fill: transparent;
     }
+
+    // .chart-data {
+    //     .aggregation-level {
+    //         stroke: red;
+    //     }
+    // }
 
     .axis {
         font-size: 14px;
@@ -211,4 +256,9 @@
             stroke-dasharray: (3, 5);
         }
     }
+}
+
+.aggregation-controls {
+    display: flex;
+    justify-content: space-between;
 }

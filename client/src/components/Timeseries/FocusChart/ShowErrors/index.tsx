@@ -123,8 +123,9 @@ class ShowErrors extends Component<StateProps, LocalState> {
 
   private updateZoom() {
     const { height } = this.state;
-    const { dataRun, periodRange, isAggregationActive, aggZoomValue, isPredictionVisible } = this.props;
-    const zoomValue = isAggregationActive ? aggZoomValue : periodRange.zoomValue;
+    const { dataRun, periodRange, isPredictionVisible } = this.props;
+    const { zoomValue } = periodRange;
+
     const { timeseriesErr } = dataRun;
     const { xCoord } = this.getScale();
     const xCoordCopy = xCoord.copy();
@@ -136,7 +137,8 @@ class ShowErrors extends Component<StateProps, LocalState> {
       .y0((data) => -yRange(data[1]) / 2)
       .y1((data) => yRange(data[1]) / 2);
 
-    if (isPredictionVisible) {
+    // @TODO - zoom is being desincronized when aggregation level is active
+    if (isPredictionVisible && zoomValue !== 1) {
       xCoord.domain(zoomValue.rescaleX(xCoordCopy).domain());
       yRange.domain(d3.extent(timeseriesErr, (tmsData) => tmsData[1]));
 
