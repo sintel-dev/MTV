@@ -223,3 +223,67 @@ export const FillTriangleDownIcon = () => (
     <path fillRule="evenodd" clipRule="evenodd" d="M0 0H10L5 5L0 0Z" fill="white" />
   </svg>
 );
+
+export const ShapeTriangleDown = () => (
+  <>
+    <g filter="url(#filter0_d)">
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M5.70711 2.70711C5.07714 2.07714 5.52331 1 6.41421 1H17.5858C18.4767 1 18.9229 2.07714 18.2929 2.70711L12.7071 8.29289C12.3166 8.68342 11.6834 8.68342 11.2929 8.29289L5.70711 2.70711Z"
+        fill="#EEF1F6"
+      />
+    </g>
+    <defs>
+      <filter
+        id="filter0_d"
+        x="0.412109"
+        y="0"
+        width="23.1756"
+        height="17.5858"
+        filterUnits="userSpaceOnUse"
+        colorInterpolationFilters="sRGB"
+      >
+        <feFlood floodOpacity="0" result="BackgroundImageFix" />
+        <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" />
+        <feOffset dy="4" />
+        <feGaussianBlur stdDeviation="2.5" />
+        <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0" />
+        <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow" />
+        <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape" />
+      </filter>
+    </defs>
+  </>
+);
+
+export const ShapeTriangleUp = () => (
+  <>
+    <g filter="url(#filter1_d)">
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M5.70711 7.29289C5.07714 7.92286 5.52331 9 6.41421 9H17.5858C18.4767 9 18.9229 7.92286 18.2929 7.29289L12.7071 1.70711C12.3166 1.31658 11.6834 1.31658 11.2929 1.70711L5.70711 7.29289Z"
+        fill="#EEF1F6"
+      />
+    </g>
+    <defs>
+      <filter
+        id="filter1_d"
+        x="0.412109"
+        y="0.414185"
+        width="23.1756"
+        height="17.5858"
+        filterUnits="userSpaceOnUse"
+        colorInterpolationFilters="sRGB"
+      >
+        <feFlood floodOpacity="0" result="BackgroundImageFix" />
+        <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" />
+        <feOffset dy="4" />
+        <feGaussianBlur stdDeviation="2.5" />
+        <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0" />
+        <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow" />
+        <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape" />
+      </filter>
+    </defs>
+  </>
+);

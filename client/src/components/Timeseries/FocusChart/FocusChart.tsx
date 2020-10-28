@@ -30,13 +30,14 @@ import {
   updateAggregationZoomAction,
 } from 'src/model/actions/aggregationLevels';
 import Dropdown from 'src/components/Common/Dropdown';
+import { ShapeTriangleDown, ShapeTriangleUp } from 'src/components/Common/icons';
 import { FocusChartConstants, colorSchemes } from './Constants';
 
 import AddEvent from './FocusChartEvents/AddEvent';
 import ShowErrors from './ShowErrors';
 import { getWrapperSize, getSelectedRange, timeIntervals } from './FocusChartUtils';
 import ZoomControls from './ZoomControls';
-import AggregationLevels from '../AggregationLevels/AggregationLevels';
+// import AggregationLevels from '../AggregationLevels/AggregationLevels';
 
 import './FocusChart.scss';
 
@@ -296,7 +297,6 @@ export class FocusChart extends Component<Props, State> {
 
     const { xCoord } = this.getScale();
     const xCoordCopy = xCoord.copy();
-    const commentHeight = height - 3.5 * CHART_MARGIN;
 
     let startIndex = Math.max(currentEvent[0], 0);
     let stopIndex = Math.max(currentEvent[1], 0);
@@ -306,9 +306,10 @@ export class FocusChart extends Component<Props, State> {
       xCoord.domain((periodRange.zoomValue as any).rescaleX(xCoordCopy).domain());
     }
 
-    let commentWidth: number = Math.max(xCoord(timeSeries[stopIndex][0]) - xCoord(timeSeries[startIndex][0]));
+    const eventHeigth: number = height - 4 * CHART_MARGIN;
+    const eventWidth: number = Math.max(xCoord(timeSeries[stopIndex][0]) - xCoord(timeSeries[startIndex][0]));
 
-    const translateComment: number = xCoord(timeSeries[startIndex][0]);
+    const translateEvent: number = xCoord(timeSeries[startIndex][0]);
     const tagColor: string = colorSchemes[currentEvent[4]] || colorSchemes.Untagged;
 
     const startDate: object = new Date(timeSeries[startIndex][0]);
@@ -336,16 +337,32 @@ export class FocusChart extends Component<Props, State> {
         }}
         onMouseLeave={() => this.toggleEventTooltip(false)}
       >
+        <defs>
+          <clipPath id={`__${currentEvent[3]}`}>
+            <rect width={eventWidth} height={5} x={translateEvent} y="10" />
+          </clipPath>
+        </defs>
+
         <path className={`evt-highlight ${pathClassName}`} d={this.drawLine(event)} />
+
         <g className="event-comment">
           <rect
             className={`evt-area ${activeClass}`}
-            width={commentWidth}
-            height={commentHeight}
-            y={0}
-            x={translateComment}
+            width={eventWidth}
+            height={eventHeigth - 8}
+            y={13}
+            x={translateEvent}
           />
-          <rect className="evt-comment" height="10" width={commentWidth} y="0" x={translateComment} fill={tagColor} />
+          <rect
+            className="evt-comment"
+            height="8"
+            width={eventWidth}
+            y="10"
+            x={translateEvent}
+            fill={tagColor}
+            rx="5"
+            clipPath={`url(#__${currentEvent[3]})`}
+          />
         </g>
       </g>
     );
@@ -461,7 +478,8 @@ export class FocusChart extends Component<Props, State> {
   }
 
   private updateZoomOnEventSelection() {
-    const { isSignalRawLoading, isAggregationActive, signalRawData, setPeriodRange } = this.props;
+    const { isSignalRawLoading, isAggregationActive, setPeriodRange, dataRun } = this.props;
+    const { splittedTimeSeries } = dataRun;
     if (!isAggregationActive || isSignalRawLoading) {
       return;
     }
@@ -469,17 +487,17 @@ export class FocusChart extends Component<Props, State> {
     const focusChartWidth: number = width - TRANSLATE_LEFT - 2 * CHART_MARGIN;
     const { xCoord } = this.getScale();
 
-    const startDate = signalRawData[0][0];
-    const stopDate = signalRawData[signalRawData.length - 1][0];
-    const startRange = xCoord(startDate);
-    const stopRange = xCoord(stopDate);
-    const zoomValue = d3.zoomIdentity.scale(focusChartWidth / (stopRange - startRange)).translate(-startRange, 0);
-    const eventRange = xCoord.range().map(zoomValue.invertX, zoomValue);
+    const startDate: number = splittedTimeSeries[0][splittedTimeSeries[0].length - 5][0];
+    const stopDate: number = splittedTimeSeries[1][2][0];
 
+    const startRange: number = xCoord(startDate);
+    const stopRange: number = xCoord(stopDate);
+    const zoomValue = d3.zoomIdentity.scale(focusChartWidth / (stopRange - startRange)).translate(-startRange, 0);
+    const eventRange: Array<number> = xCoord.range().map(zoomValue.invertX, zoomValue);
     const periodRange: object = {
       eventRange: [eventRange[0] < 0 ? 0 : eventRange[0], eventRange[1]],
       zoomValue,
-      timeStamp: [startDate, stopDate],
+      timeStamp: [startDate, stopDate] as [number, number],
     };
     setPeriodRange(periodRange);
   }
@@ -558,21 +576,65 @@ export class FocusChart extends Component<Props, State> {
   }
 
   private renderSignalRaw() {
-    const { signalRawData, activeEventID, dataRun } = this.props;
+    const { height } = this.state;
+    const { signalRawData, activeEventID, dataRun, periodRange } = this.props;
     const { eventWindows, timeSeries } = dataRun;
-    let signalCopy = [...signalRawData];
-    const eventCoords = eventWindows.findIndex((current) => current[3] === activeEventID);
-    const activeEvent = eventWindows[eventCoords];
+    let signalCopy: Array<[number, number]> = [...signalRawData];
+    const { xCoord } = this.getScale();
 
-    const timeStampStart = timeSeries[activeEvent[0]];
-    const timeStampEnd = timeSeries[activeEvent[1]];
+    const eventIndex: number = eventWindows.findIndex((current) => current[3] === activeEventID);
+    const activeEvent = eventWindows[eventIndex];
+    const timeStampStart: [number, number] = timeSeries[activeEvent[0]];
+    const timeStampEnd: [number, number] = timeSeries[activeEvent[1]];
 
-    const signalStartIndex = signalRawData.findIndex((current) => current[0] >= timeStampStart[0]);
-    const signalStopIndex = signalRawData.findIndex((current) => current[0] >= timeStampEnd[0]);
+    const xCoordCopy = xCoord.copy();
+    if (periodRange.zoomValue !== 1) {
+      xCoord.domain((periodRange.zoomValue as any).rescaleX(xCoordCopy).domain());
+    }
+
+    const signalStartIndex: number = signalRawData.findIndex((current) => current[0] >= timeStampStart[0]);
+    const signalStopIndex: number = signalRawData.findIndex((current) => current[0] >= timeStampEnd[0]);
 
     signalCopy.splice(signalStartIndex, 0, timeStampStart);
     signalCopy.splice(signalStopIndex + 1, 0, timeStampEnd);
-    return <path className="chart-wawes aggregation-level" d={this.drawLine(signalCopy)} />;
+
+    const signalHeight: number = height - 3.5 * CHART_MARGIN;
+
+    const startIndex: number = timeSeries.findIndex((current) => current[0] >= signalCopy[0][0]);
+    const stopIndex: number = timeSeries.findIndex((current) => current[0] >= signalCopy[signalCopy.length - 1][0]);
+
+    const signalWidth: number = Math.max(xCoord(timeSeries[stopIndex][0]) - xCoord(timeSeries[startIndex][0]));
+
+    const translateArea: number = xCoord(timeSeries[startIndex][0]);
+    const translateEnd: number = xCoord(timeSeries[stopIndex][0]);
+
+    return (
+      <>
+        <path className="chart-wawes aggregation-level" d={this.drawLine(signalCopy)} />
+        <defs>
+          <clipPath id="contextData">
+            <rect width={signalWidth} height={height - 35} x={translateArea} />
+          </clipPath>
+        </defs>
+        <g className="arrows">
+          <g transform={`translate(${translateArea - 13}, 0)`}>
+            <ShapeTriangleDown />
+          </g>
+          <g transform={`translate(${translateArea - 13}, ${height - 36})`}>
+            <ShapeTriangleUp />
+          </g>
+          <g transform={`translate(${translateEnd - 13}, 0)`}>
+            <ShapeTriangleDown />
+          </g>
+          <g transform={`translate(${translateEnd - 13}, ${height - 36})`}>
+            <ShapeTriangleUp />
+          </g>
+        </g>
+        <g clipPath="url(#contextData)">
+          <rect className="contextual-data" width={signalWidth} height={signalHeight} y={10} x={translateArea} />
+        </g>
+      </>
+    );
   }
 
   private drawChartData() {
