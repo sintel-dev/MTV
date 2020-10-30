@@ -4,8 +4,8 @@ import { AggregationLevelsState, GetSignalRawAction } from '../types';
 const initialState: AggregationLevelsState = {
   isAggregationModalOpen: false,
   aggregationTimeLevel: {
-    selectedLevel: '30 hours',
-    timeInMiliseconds: 108000000,
+    selectedLevel: '30 days',
+    timeInMiliseconds: 2592000,
   },
   periodLevel: 1,
   isSignalRawLoading: true,
