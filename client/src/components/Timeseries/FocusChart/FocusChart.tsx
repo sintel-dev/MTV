@@ -19,6 +19,7 @@ import {
   getIsAggregationActive,
   getCurrentEventDetails,
   getAggregationWrapperCoords,
+  getSplittedTimeSeries,
 } from 'src/model/selectors/datarun';
 import { getIsEditingEventRange, getActiveEventID } from 'src/model/selectors/events';
 import { RootState } from 'src/model/types';
@@ -562,9 +563,10 @@ export class FocusChart extends Component<Props, State> {
   }
 
   private renderChartWawes() {
-    const { isAggregationActive, dataRun, isSignalRawLoading } = this.props;
-    const { timeSeries, splittedTimeSeries } = dataRun;
-    if (isAggregationActive && !isSignalRawLoading) {
+    const { isAggregationActive, dataRun, isSignalRawLoading, splittedTimeSeries } = this.props;
+
+    const { timeSeries } = dataRun;
+    if (isAggregationActive && !isSignalRawLoading && splittedTimeSeries !== null) {
       return (
         <>
           <path className="chart-wawes" d={this.drawLine(splittedTimeSeries[0])} />
@@ -577,12 +579,22 @@ export class FocusChart extends Component<Props, State> {
 
   private renderSignalRaw() {
     const { height } = this.state;
-    const { dataRun, periodRange, signalRawData, aggregationCoords } = this.props;
+    const {
+      dataRun,
+      periodRange,
+      isSignalRawLoading,
+      signalRawData,
+      aggregationCoords,
+      splittedTimeSeries,
+    } = this.props;
     const { timeSeries } = dataRun;
 
-    if (aggregationCoords === null) {
+    if (aggregationCoords === null || isSignalRawLoading) {
       return null;
     }
+
+    signalRawData.push(splittedTimeSeries[1][0]);
+    signalRawData.unshift(splittedTimeSeries[0][Math.max(splittedTimeSeries[0].length - 1, 0)]);
 
     const { xCoord } = this.getScale();
 
@@ -783,6 +795,7 @@ const mapState = (state: RootState) => ({
   currentPanel: getCurrentActivePanel(state),
   currentAggregationLevel: getAggregationTimeLevel(state),
   aggregationCoords: getAggregationWrapperCoords(state),
+  splittedTimeSeries: getSplittedTimeSeries(state),
 });
 
 const mapDispatch = (dispatch: Function) => ({
