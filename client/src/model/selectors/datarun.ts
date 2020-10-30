@@ -12,7 +12,7 @@ import {
   isEventCommentsLoading,
 } from './events';
 import { getCurrentActivePanel } from './sidebar';
-import { getSignalRawData } from './aggregationLevels';
+import { getContextInfoValue, getIsSigRawLoading, getSignalRawData } from './aggregationLevels';
 
 export const isPredictionEnabled = (state: RootState) => state.datarun.isPredictionEnabled;
 export const isDatarunIDSelected = (state: RootState) => state.datarun.selectedDatarunID;
@@ -163,6 +163,7 @@ export const getDatarunDetails = createSelector(
     getFilterDatarunPeriod,
     getIsAggregationActive,
     getSignalRawData,
+    getIsSigRawLoading,
   ],
   (
     dataRun,
@@ -172,6 +173,7 @@ export const getDatarunDetails = createSelector(
     filteredDatarunPeriod,
     isAggregationActive,
     signalRaw,
+    isSignalRawLoading,
   ) => {
     if (dataRun === null) {
       return null;
@@ -180,8 +182,11 @@ export const getDatarunDetails = createSelector(
     let currentEventIndex = events.findIndex((windowEvent) => windowEvent.id === updatedEventDetails.id);
 
     let splittedTimeSeries = [];
-    if (isAggregationActive) {
+    if (isAggregationActive && !isSignalRawLoading) {
       splittedTimeSeries = splitTimeSeries(timeSeries, signalRaw);
+
+      // signalRaw.unshift(splittedTimeSeries[0][splittedTimeSeries[0].length - 1]);
+      // signalRaw.push(splittedTimeSeries[1][0]);
     }
 
     if (currentEventIndex !== -1) {
@@ -231,8 +236,8 @@ export const getCurrentEventDetails = createSelector(
       return null;
     }
 
-    const start_time = datarun.timeSeries[eventIndex[0]][0];
-    const stop_time = datarun.timeSeries[eventIndex[1]][0];
+    const start_time = timeSeries[eventIndex[0]][0];
+    const stop_time = timeSeries[eventIndex[1]][0];
     const score = eventIndex[2];
     const eventTag = eventIndex[4];
     const { source } = eventInfo;
@@ -260,5 +265,25 @@ export const getCurrentEventDetails = createSelector(
       signalrunID,
     };
     return eventDetails;
+  },
+);
+
+export const getAggregationWrapperCoords = createSelector(
+  [getActiveEventID, getDatarunDetails, getContextInfoValue],
+  (activeEventID, dataRunDetails, contextInfo) => {
+    const { eventWindows, timeSeries } = dataRunDetails;
+    const eventData = eventWindows.filter((windowEvent) => windowEvent[3] === activeEventID)[0];
+    if (!activeEventID || eventData === undefined) {
+      return null;
+    }
+
+    const eventRange = (eventData[1] - eventData[0]) * contextInfo;
+    const eventLeftShift = Math.max(eventData[0] - eventRange, 0);
+    const eventRightShift = Math.min(eventData[1] + eventRange, timeSeries.length - 1);
+
+    const wrapperStart = timeSeries[eventLeftShift][0];
+    const wrapperEnd = timeSeries[eventRightShift][0];
+
+    return { wrapperStart, wrapperEnd, eventLeftShift, eventRightShift, eventData };
   },
 );

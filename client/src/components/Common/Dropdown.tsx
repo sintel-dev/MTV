@@ -1,4 +1,3 @@
-import { any } from 'prop-types';
 import React from 'react';
 import Select from 'react-select';
 
