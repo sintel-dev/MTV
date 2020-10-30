@@ -166,7 +166,7 @@ export class FocusChart extends Component<Props, State> {
   }
 
   private drawLine(data: Array<[number, number]>) {
-    if (data === null) {
+    if (data === null || !data.length) {
       return null;
     }
     const { periodRange, currentChartStyle } = this.props;
@@ -289,7 +289,15 @@ export class FocusChart extends Component<Props, State> {
   }
 
   private renderEventArea(currentEvent: Array<any>) {
-    const { dataRun, periodRange, setActiveEvent, activeEventID, isAggregationActive, isSignalRawLoading } = this.props;
+    const {
+      dataRun,
+      periodRange,
+      setActiveEvent,
+      activeEventID,
+      isAggregationActive,
+      isSignalRawLoading,
+      aggregationCoords,
+    } = this.props;
 
     if (isAggregationActive && isSignalRawLoading) {
       return null;
@@ -303,7 +311,30 @@ export class FocusChart extends Component<Props, State> {
 
     let startIndex: number = Math.max(currentEvent[0], 0);
     let stopIndex: number = Math.max(currentEvent[1], 0);
-    const event: Array<[number, number]> = timeSeries.slice(startIndex, stopIndex);
+
+    let event: Array<[number, number]> = timeSeries.slice(startIndex, stopIndex);
+    let drawData: Array<[number, number]> = timeSeries.slice(startIndex, stopIndex);
+
+    if (isAggregationActive) {
+      const { wrapperStart, wrapperEnd } = aggregationCoords;
+
+      const isEventContained = () => {
+        const eventStart = event[0][0];
+        const eventEnd = event[event.length - 1][0];
+        const isCurrentEvent = currentEvent[3] === activeEventID;
+        const isEventWrapped = wrapperStart <= eventStart && wrapperEnd >= eventEnd;
+
+        let timeStamp = [];
+        event.forEach((current) => timeStamp.push(current[0]));
+        const isEventTouched = timeStamp.includes(wrapperStart) || timeStamp.includes(wrapperEnd);
+        return isCurrentEvent || isEventWrapped || isEventTouched;
+      };
+
+      const isEventWrapped = isEventContained();
+      if (isEventWrapped) {
+        drawData = null;
+      }
+    }
 
     if (periodRange.zoomValue !== 1) {
       xCoord.domain((periodRange.zoomValue as any).rescaleX(xCoordCopy).domain());
@@ -346,7 +377,7 @@ export class FocusChart extends Component<Props, State> {
           </clipPath>
         </defs>
 
-        <path className={`evt-highlight ${pathClassName}`} d={this.drawLine(event)} />
+        <path className={`evt-highlight ${pathClassName}`} d={this.drawLine(drawData)} />
 
         <g className="event-comment">
           <rect
@@ -593,8 +624,9 @@ export class FocusChart extends Component<Props, State> {
       return null;
     }
 
-    signalRawData.push(splittedTimeSeries[1][0]);
-    signalRawData.unshift(splittedTimeSeries[0][Math.max(splittedTimeSeries[0].length - 1, 0)]);
+    splittedTimeSeries[1][0] && signalRawData.push(splittedTimeSeries[1][0]);
+    splittedTimeSeries[0].length - 1 &&
+      signalRawData.unshift(splittedTimeSeries[0][Math.max(splittedTimeSeries[0].length - 1, 0)]);
 
     const { xCoord } = this.getScale();
 
