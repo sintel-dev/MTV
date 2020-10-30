@@ -287,3 +287,21 @@ export const ShapeTriangleUp = () => (
     </defs>
   </>
 );
+
+export const SmallTriangleDown = () => (
+  <path
+    fillRule="evenodd"
+    clipRule="evenodd"
+    d="M0.707106 1.70711C0.077141 1.07714 0.523309 0 1.41421 0H4.58579C5.47669 0 5.92286 1.07714 5.29289 1.70711L3.70711 3.29289C3.31658 3.68342 2.68342 3.68342 2.29289 3.29289L0.707106 1.70711Z"
+    fill="#EEF1F6"
+  />
+);
+
+export const SmallTriangleUp = () => (
+  <path
+    fillRule="evenodd"
+    clipRule="evenodd"
+    d="M0.707106 2.29289C0.077141 2.92286 0.523309 4 1.41421 4H4.58579C5.47669 4 5.92286 2.92286 5.29289 2.29289L3.70711 0.707106C3.31658 0.316582 2.68342 0.316582 2.29289 0.707107L0.707106 2.29289Z"
+    fill="#EEF1F6"
+  />
+);

@@ -33,8 +33,9 @@ export const getEventInterval = createSelector(
     if (isSignalRawLoading) {
       return null;
     }
-    return signalRawData.filter(
-      (current) => current[0] >= eventInterval[0][0] && current[0] <= eventInterval[eventInterval.length - 1][0],
-    );
+    return eventInterval;
+    // return signalRawData.filter(
+    //   (current) => current[0] >= eventInterval[0][0] && current[0] <= eventInterval[eventInterval.length - 1][0],
+    // );
   },
 );

@@ -77,6 +77,16 @@
     .wave-chart {
         width: 100%;
         height: 50px;
+        .event-higlight {
+            stroke: rgba(#fff, 0.6);
+            fill: transparent;
+        }
+        .context-info {
+            stroke: #fff;
+            stroke-dasharray: 3;
+            fill: transparent;
+            height: 40px;
+        }
     }
 
     .wave-data,
@@ -87,10 +97,7 @@
 
     .wave-data {
         stroke: $path-color;
-    }
-
-    .wave-event {
-        stroke: #ffcd00;
+        stroke-width: 2;
     }
 
     .single-ctx-chart {

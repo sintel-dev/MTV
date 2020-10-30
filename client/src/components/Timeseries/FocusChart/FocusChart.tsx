@@ -18,6 +18,8 @@ import {
   getCurrentChartStyle,
   getIsAggregationActive,
   getCurrentEventDetails,
+  getAggregationWrapperCoords,
+  getSplittedTimeSeries,
 } from 'src/model/selectors/datarun';
 import { getIsEditingEventRange, getActiveEventID } from 'src/model/selectors/events';
 import { RootState } from 'src/model/types';
@@ -164,7 +166,7 @@ export class FocusChart extends Component<Props, State> {
   }
 
   private drawLine(data: Array<[number, number]>) {
-    if (data === null) {
+    if (data === null || !data.length) {
       return null;
     }
     const { periodRange, currentChartStyle } = this.props;
@@ -253,6 +255,7 @@ export class FocusChart extends Component<Props, State> {
     });
   }
 
+  // @TODO - for later use, event drawings is yet to be decided.
   private getEventInterval(currentEvent) {
     const { dataRun, signalRawData, isAggregationActive, isSignalRawLoading, activeEventID } = this.props;
     const { timeSeries } = dataRun;
@@ -286,7 +289,15 @@ export class FocusChart extends Component<Props, State> {
   }
 
   private renderEventArea(currentEvent: Array<any>) {
-    const { dataRun, periodRange, setActiveEvent, activeEventID, isAggregationActive, isSignalRawLoading } = this.props;
+    const {
+      dataRun,
+      periodRange,
+      setActiveEvent,
+      activeEventID,
+      isAggregationActive,
+      isSignalRawLoading,
+      aggregationCoords,
+    } = this.props;
 
     if (isAggregationActive && isSignalRawLoading) {
       return null;
@@ -298,16 +309,39 @@ export class FocusChart extends Component<Props, State> {
     const { xCoord } = this.getScale();
     const xCoordCopy = xCoord.copy();
 
-    let startIndex = Math.max(currentEvent[0], 0);
-    let stopIndex = Math.max(currentEvent[1], 0);
-    const event = this.getEventInterval(currentEvent);
+    let startIndex: number = Math.max(currentEvent[0], 0);
+    let stopIndex: number = Math.max(currentEvent[1], 0);
+
+    let event: Array<[number, number]> = timeSeries.slice(startIndex, stopIndex);
+    let drawData: Array<[number, number]> = timeSeries.slice(startIndex, stopIndex);
+
+    if (isAggregationActive) {
+      const { wrapperStart, wrapperEnd } = aggregationCoords;
+
+      const isEventContained = () => {
+        const eventStart = event[0][0];
+        const eventEnd = event[event.length - 1][0];
+        const isCurrentEvent = currentEvent[3] === activeEventID;
+        const isEventWrapped = wrapperStart <= eventStart && wrapperEnd >= eventEnd;
+
+        let timeStamp = [];
+        event.forEach((current) => timeStamp.push(current[0]));
+        const isEventTouched = timeStamp.includes(wrapperStart) || timeStamp.includes(wrapperEnd);
+        return isCurrentEvent || isEventWrapped || isEventTouched;
+      };
+
+      const isEventWrapped = isEventContained();
+      if (isEventWrapped) {
+        drawData = null;
+      }
+    }
 
     if (periodRange.zoomValue !== 1) {
       xCoord.domain((periodRange.zoomValue as any).rescaleX(xCoordCopy).domain());
     }
 
     const eventHeigth: number = height - 4 * CHART_MARGIN;
-    const eventWidth: number = Math.max(xCoord(timeSeries[stopIndex][0]) - xCoord(timeSeries[startIndex][0]));
+    const eventWidth: number = Math.max(xCoord(event[event.length - 1][0]) - xCoord(event[0][0]));
 
     const translateEvent: number = xCoord(timeSeries[startIndex][0]);
     const tagColor: string = colorSchemes[currentEvent[4]] || colorSchemes.Untagged;
@@ -343,7 +377,7 @@ export class FocusChart extends Component<Props, State> {
           </clipPath>
         </defs>
 
-        <path className={`evt-highlight ${pathClassName}`} d={this.drawLine(event)} />
+        <path className={`evt-highlight ${pathClassName}`} d={this.drawLine(drawData)} />
 
         <g className="event-comment">
           <rect
@@ -478,8 +512,8 @@ export class FocusChart extends Component<Props, State> {
   }
 
   private updateZoomOnEventSelection() {
-    const { isSignalRawLoading, isAggregationActive, setPeriodRange, dataRun } = this.props;
-    const { splittedTimeSeries } = dataRun;
+    const { isSignalRawLoading, isAggregationActive, setPeriodRange, aggregationCoords } = this.props;
+
     if (!isAggregationActive || isSignalRawLoading) {
       return;
     }
@@ -487,17 +521,15 @@ export class FocusChart extends Component<Props, State> {
     const focusChartWidth: number = width - TRANSLATE_LEFT - 2 * CHART_MARGIN;
     const { xCoord } = this.getScale();
 
-    const startDate: number = splittedTimeSeries[0][splittedTimeSeries[0].length - 5][0];
-    const stopDate: number = splittedTimeSeries[1][2][0];
-
-    const startRange: number = xCoord(startDate);
-    const stopRange: number = xCoord(stopDate);
+    const { wrapperStart, wrapperEnd } = aggregationCoords;
+    const startRange: number = xCoord(wrapperStart);
+    const stopRange: number = xCoord(wrapperEnd);
     const zoomValue = d3.zoomIdentity.scale(focusChartWidth / (stopRange - startRange)).translate(-startRange, 0);
     const eventRange: Array<number> = xCoord.range().map(zoomValue.invertX, zoomValue);
     const periodRange: object = {
       eventRange: [eventRange[0] < 0 ? 0 : eventRange[0], eventRange[1]],
       zoomValue,
-      timeStamp: [startDate, stopDate] as [number, number],
+      timeStamp: [wrapperStart, wrapperEnd] as [number, number],
     };
     setPeriodRange(periodRange);
   }
@@ -562,9 +594,10 @@ export class FocusChart extends Component<Props, State> {
   }
 
   private renderChartWawes() {
-    const { isAggregationActive, dataRun, isSignalRawLoading } = this.props;
-    const { timeSeries, splittedTimeSeries } = dataRun;
-    if (isAggregationActive && !isSignalRawLoading) {
+    const { isAggregationActive, dataRun, isSignalRawLoading, splittedTimeSeries } = this.props;
+
+    const { timeSeries } = dataRun;
+    if (isAggregationActive && !isSignalRawLoading && splittedTimeSeries !== null) {
       return (
         <>
           <path className="chart-wawes" d={this.drawLine(splittedTimeSeries[0])} />
@@ -577,61 +610,62 @@ export class FocusChart extends Component<Props, State> {
 
   private renderSignalRaw() {
     const { height } = this.state;
-    const { signalRawData, activeEventID, dataRun, periodRange } = this.props;
-    const { eventWindows, timeSeries } = dataRun;
-    let signalCopy: Array<[number, number]> = [...signalRawData];
-    const { xCoord } = this.getScale();
+    const {
+      dataRun,
+      periodRange,
+      isSignalRawLoading,
+      signalRawData,
+      aggregationCoords,
+      splittedTimeSeries,
+    } = this.props;
+    const { timeSeries } = dataRun;
 
-    const eventIndex: number = eventWindows.findIndex((current) => current[3] === activeEventID);
-    const activeEvent = eventWindows[eventIndex];
-    const timeStampStart: [number, number] = timeSeries[activeEvent[0]];
-    const timeStampEnd: [number, number] = timeSeries[activeEvent[1]];
+    if (aggregationCoords === null || isSignalRawLoading) {
+      return null;
+    }
+
+    splittedTimeSeries[1][0] && signalRawData.push(splittedTimeSeries[1][0]);
+    splittedTimeSeries[0].length - 1 &&
+      signalRawData.unshift(splittedTimeSeries[0][Math.max(splittedTimeSeries[0].length - 1, 0)]);
+
+    const { xCoord } = this.getScale();
 
     const xCoordCopy = xCoord.copy();
     if (periodRange.zoomValue !== 1) {
       xCoord.domain((periodRange.zoomValue as any).rescaleX(xCoordCopy).domain());
     }
 
-    const signalStartIndex: number = signalRawData.findIndex((current) => current[0] >= timeStampStart[0]);
-    const signalStopIndex: number = signalRawData.findIndex((current) => current[0] >= timeStampEnd[0]);
+    const { wrapperStart, wrapperEnd, eventLeftShift, eventRightShift } = aggregationCoords;
 
-    signalCopy.splice(signalStartIndex, 0, timeStampStart);
-    signalCopy.splice(signalStopIndex + 1, 0, timeStampEnd);
-
-    const signalHeight: number = height - 3.5 * CHART_MARGIN;
-
-    const startIndex: number = timeSeries.findIndex((current) => current[0] >= signalCopy[0][0]);
-    const stopIndex: number = timeSeries.findIndex((current) => current[0] >= signalCopy[signalCopy.length - 1][0]);
-
-    const signalWidth: number = Math.max(xCoord(timeSeries[stopIndex][0]) - xCoord(timeSeries[startIndex][0]));
-
-    const translateArea: number = xCoord(timeSeries[startIndex][0]);
-    const translateEnd: number = xCoord(timeSeries[stopIndex][0]);
+    const wrapperWidth: number = Math.max(xCoord(wrapperEnd) - xCoord(wrapperStart));
+    const wrapperHeight: number = height - 3.5 * CHART_MARGIN;
+    const translateWrapper: number = xCoord(timeSeries[eventLeftShift][0]);
+    const wrapperEndCoord: number = xCoord(timeSeries[eventRightShift][0]);
 
     return (
       <>
-        <path className="chart-wawes aggregation-level" d={this.drawLine(signalCopy)} />
+        <path className="chart-wawes aggregation-level" d={this.drawLine(signalRawData)} />
         <defs>
           <clipPath id="contextData">
-            <rect width={signalWidth} height={height - 35} x={translateArea} />
+            <rect width={wrapperWidth} height={height - 35} x={translateWrapper} />
           </clipPath>
         </defs>
         <g className="arrows">
-          <g transform={`translate(${translateArea - 13}, 0)`}>
+          <g transform={`translate(${translateWrapper - 12}, 0)`}>
             <ShapeTriangleDown />
           </g>
-          <g transform={`translate(${translateArea - 13}, ${height - 36})`}>
+          <g transform={`translate(${translateWrapper - 12}, ${height - 36})`}>
             <ShapeTriangleUp />
           </g>
-          <g transform={`translate(${translateEnd - 13}, 0)`}>
+          <g transform={`translate(${wrapperEndCoord - 13}, 0)`}>
             <ShapeTriangleDown />
           </g>
-          <g transform={`translate(${translateEnd - 13}, ${height - 36})`}>
+          <g transform={`translate(${wrapperEndCoord - 13}, ${height - 36})`}>
             <ShapeTriangleUp />
           </g>
         </g>
         <g clipPath="url(#contextData)">
-          <rect className="contextual-data" width={signalWidth} height={signalHeight} y={10} x={translateArea} />
+          <rect className="contextual-data" width={wrapperWidth} height={wrapperHeight} y={10} x={translateWrapper} />
         </g>
       </>
     );
@@ -792,6 +826,8 @@ const mapState = (state: RootState) => ({
   isSignalRawLoading: getIsSigRawLoading(state),
   currentPanel: getCurrentActivePanel(state),
   currentAggregationLevel: getAggregationTimeLevel(state),
+  aggregationCoords: getAggregationWrapperCoords(state),
+  splittedTimeSeries: getSplittedTimeSeries(state),
 });
 
 const mapDispatch = (dispatch: Function) => ({
