@@ -315,7 +315,7 @@ export class FocusChart extends Component<Props, State> {
     let event: Array<[number, number]> = timeSeries.slice(startIndex, stopIndex);
     let drawData: Array<[number, number]> = timeSeries.slice(startIndex, stopIndex);
 
-    if (isAggregationActive) {
+    if (isAggregationActive && aggregationCoords) {
       const { wrapperStart, wrapperEnd } = aggregationCoords;
 
       const isEventContained = () => {
