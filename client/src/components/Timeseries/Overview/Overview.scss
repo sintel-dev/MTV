@@ -91,13 +91,14 @@
 
     .wave-data,
     .wave-event {
+        stroke: #ffcd00;
         stroke-width: 1;
         fill: transparent;
     }
 
     .wave-data {
         stroke: $path-color;
-        stroke-width: 2;
+        stroke-width: 1;
     }
 
     .single-ctx-chart {
