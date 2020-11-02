@@ -278,10 +278,11 @@ export class DrawChart extends Component<ChartProps, ChartState> {
     const { timeSeries } = this.props.dataRun;
     const start: number = event[0];
     const end: number = event[1];
-    const tag: string = event[4];
+    // const tag: string = event[4];
     const eventInterval: Array<[number, number]> = timeSeries.slice(start, end + 2);
 
-    return <path key={event[1]} d={this.drawLine(eventInterval)} className={`wave-event ${fromTagToClassName(tag)}`} />;
+    // return <path key={event[1]} d={this.drawLine(eventInterval)} className={`wave-event ${fromTagToClassName(tag)}`} />;
+    return <path key={event[1]} d={this.drawLine(eventInterval)} className="wave-event" />;
   }
 
   private renderEvents() {
