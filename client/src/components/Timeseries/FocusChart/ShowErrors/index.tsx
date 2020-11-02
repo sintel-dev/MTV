@@ -13,6 +13,7 @@ import {
   getDatarunDetails,
   isPredictionEnabled,
   getIsAggregationActive,
+  getAggregationWrapperCoords,
 } from 'src/model/selectors/datarun';
 import { RootState } from 'src/model/types';
 import { getWrapperSize } from '../FocusChartUtils';
@@ -42,39 +43,17 @@ class ShowErrors extends Component<StateProps, LocalState> {
     this.setState({ width });
   }
 
-  componentDidUpdate(prevProps: StateProps) {
-    if (this.props.isAggregationActive) {
-      const { aggZoomValue, isSignalRawLoading } = this.props;
-      if (aggZoomValue !== prevProps.aggZoomValue && !isSignalRawLoading) {
-        this.updateZoom();
-      }
-    }
-    if (prevProps.periodRange.zoomValue !== this.props.periodRange.zoomValue) {
-      if (typeof this.props.periodRange.zoomValue !== 'number') {
-        this.updateZoom();
-      }
-    }
-  }
-
-  private getTimeSeriesinterval(): Array<[number, number]> {
-    const { isAggregationActive, dataRun, signalRawData } = this.props;
-    const { maxTimeSeries } = dataRun;
-
-    if (isAggregationActive && signalRawData) {
-      return signalRawData;
-    }
-    return maxTimeSeries;
-  }
 
   private getScale() {
     const { dataRun } = this.props;
     const { maxTimeSeries } = dataRun;
     const { width, height } = this.state;
 
-    const [minTX, maxTX] = d3.extent(this.getTimeSeriesinterval(), (time: Array<number>) => time[0]) as [
+    const [minTX, maxTX] = d3.extent( maxTimeSeries, (time: Array<number>) => time[0]) as [
       number,
       number,
     ];
+
     const [minTY, maxTY] = d3.extent(maxTimeSeries, (time: Array<number>) => time[1]) as [number, number];
     const drawableWidth: number = width - 2 * CHART_MARGIN - TRANSLATE_LEFT;
     const drawableHeight: number = height - 3.5 * CHART_MARGIN;
@@ -95,29 +74,25 @@ class ShowErrors extends Component<StateProps, LocalState> {
 
   private getArea() {
     const { height } = this.state;
-    const { dataRun, isSignalRawLoading, isAggregationActive, signalRawData } = this.props;
+    const { dataRun, periodRange } = this.props;
+    const { zoomValue } = periodRange;
     const { timeseriesErr } = dataRun;
     const { xCoord } = this.getScale();
+
     const yRange = d3.scaleLinear().range([0, height - 10]);
     yRange.domain(d3.extent(timeseriesErr, (tmsData) => tmsData[1]));
+    const xCoordCopy = xCoord.copy();
+    
+    if(zoomValue !== 1){
+      xCoord.domain((zoomValue as any).rescaleX(xCoordCopy).domain());
+
+    }
 
     const area = d3
       .area()
       .x((d) => xCoord(d[0]))
       .y0((d) => -yRange(d[1]) / 2)
       .y1((d) => yRange(d[1]) / 2);
-
-    // @TODO - refactor with aggregation levels
-    if (isAggregationActive) {
-      if (isSignalRawLoading) {
-        return null;
-      }
-
-      const startIndex: number = timeseriesErr.findIndex((current) => signalRawData[0][0] - current[0] < 0) - 1;
-      const stopIndex: number = timeseriesErr.findIndex((current) => signalRawData[0] - current[0][0] < 0);
-
-      return area(timeseriesErr.slice(startIndex, stopIndex));
-    }
     return area(timeseriesErr);
   }
 
@@ -138,12 +113,38 @@ class ShowErrors extends Component<StateProps, LocalState> {
       .y1((data) => yRange(data[1]) / 2);
 
     // @TODO - zoom is being desincronized when aggregation level is active
-    if (isPredictionVisible && zoomValue !== 1) {
+    if (zoomValue !== 1) {
       xCoord.domain(zoomValue.rescaleX(xCoordCopy).domain());
       yRange.domain(d3.extent(timeseriesErr, (tmsData) => tmsData[1]));
 
       d3.select('.err-data').datum(timeseriesErr).attr('d', area);
     }
+  }
+
+  renderEventWrapper(){
+    const {dataRun, aggergationCoords, isAggregationActive, periodRange} = this.props;
+    
+    if(!isAggregationActive || !aggergationCoords){
+      return null;
+    }
+    const {zoomValue} = periodRange;
+    const {xCoord} = this.getScale();
+    const xCoordCopy = xCoord.copy();
+
+    if(zoomValue !== 1){
+      xCoord.domain((zoomValue as any).rescaleX(xCoordCopy).domain());
+    }
+    
+    const { timeseriesErr } = dataRun;
+    const { eventData } = aggergationCoords;
+    
+
+    const evtHighlight = Math.max((xCoord(timeseriesErr[eventData[1]][0]) - xCoord(timeseriesErr[eventData[0]][0])))
+    const translateHiglight: number = xCoord(timeseriesErr[eventData[0]][0]) + TRANSLATE_LEFT;
+
+    return(
+        <rect className="event-highlight" width={evtHighlight} height={84} transform={`translate(${translateHiglight}, 3)`} rx="2" />
+    )
   }
 
   public render() {
@@ -158,6 +159,7 @@ class ShowErrors extends Component<StateProps, LocalState> {
               <rect width={width} height={height} />
             </clipPath>
             <g clipPath="url(#prectionClip)">
+              {this.renderEventWrapper()}
               <path
                 d={this.getArea()}
                 className="err-data"
@@ -180,5 +182,6 @@ const mapState = (state: RootState) => ({
   isSignalRawLoading: getIsSigRawLoading(state),
   signalRawData: getSignalRawData(state),
   aggZoomValue: getAggregationZoomValue(state),
+  aggergationCoords: getAggregationWrapperCoords(state)
 });
 export default connect<StateProps, {}, {}, RootState>(mapState, null)(ShowErrors);

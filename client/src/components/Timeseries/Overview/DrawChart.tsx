@@ -18,7 +18,7 @@ import {
   getAggregationWrapperCoords,
 } from 'src/model/selectors/datarun';
 import { getIsEditingEventRange, getIsAddingNewEvents, getActiveEventID } from 'src/model/selectors/events';
-import { getContextInfoValue, getIsSigRawLoading, getSignalRawData } from 'src/model/selectors/aggregationLevels';
+import { getIsSigRawLoading, getSignalRawData } from 'src/model/selectors/aggregationLevels';
 import { SmallTriangleDown, SmallTriangleUp } from 'src/components/Common/icons';
 import { fromTagToClassName } from 'src/components/Landing/utils';
 import { FocusChartConstants } from '../FocusChart/Constants';
@@ -426,7 +426,6 @@ const mapState = (state: RootState) => ({
   activeEventID: getActiveEventID(state),
   signalRawData: getSignalRawData(state),
   isSignalRawLoading: getIsSigRawLoading(state),
-  contextInfo: getContextInfoValue(state),
   aggregationCoords: getAggregationWrapperCoords(state),
 });
 

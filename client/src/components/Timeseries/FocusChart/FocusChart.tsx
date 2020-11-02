@@ -258,7 +258,7 @@ export class FocusChart extends Component<Props, State> {
     const { dataRun, periodRange, activeShape, setActiveShape } = this.props;
     const { timeSeries } = dataRun;
     const { height } = this.state;
-    const { xCoord } = this.getScale();
+    const { xCoord } = this.getDrawableArea();
     const xCoordCopy = xCoord.copy();
     const { start, end } = shape;
 
@@ -266,17 +266,17 @@ export class FocusChart extends Component<Props, State> {
       xCoord.domain(periodRange.zoomValue.rescaleX(xCoordCopy).domain());
     }
 
-    const shapeWidth = Math.max(xCoord(timeSeries[end][0]) - xCoord(timeSeries[start][0]));
-    const shapeHeight = height - 3.5 * CHART_MARGIN;
+    const shapeWidth: number = Math.max(xCoord(timeSeries[end][0]) - xCoord(timeSeries[start][0]));
+    const shapeHeight: number = height - 3.5 * CHART_MARGIN - TRANSLATE_DRAWABLE_AREA;
     const translateShape = xCoord(timeSeries[start][0]);
-    const tagColor = colorSchemes[shape.tag] || colorSchemes.Untagged;
-    const isShapeActive =
+    const tagColor: string = colorSchemes[shape.tag] || colorSchemes.Untagged;
+    const activeClassName: string =
       activeShape && activeShape.start === shape.start && activeShape.end === shape.end ? 'active' : '';
 
     return (
-      <g className={`similar-shape ${isShapeActive}`} key={start} onClick={() => setActiveShape(shape)}>
-        <rect className="evt-area" width={shapeWidth} height={shapeHeight} y={0} x={translateShape} />
-        <rect className="evt-comment" width={shapeWidth} height="10" y={1} x={translateShape} fill={tagColor} />
+      <g className={`similar-shape ${activeClassName}`} key={start} onClick={() => setActiveShape(shape)}>
+        <rect className="evt-area" width={shapeWidth} height={shapeHeight} y={18} x={translateShape} />
+        <rect className="evt-comment" width={shapeWidth} height="10" y={13} x={translateShape} fill={tagColor} />
       </g>
     );
   }
