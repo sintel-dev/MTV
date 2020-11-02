@@ -43,16 +43,12 @@ class ShowErrors extends Component<StateProps, LocalState> {
     this.setState({ width });
   }
 
-
   private getScale() {
     const { dataRun } = this.props;
     const { maxTimeSeries } = dataRun;
     const { width, height } = this.state;
 
-    const [minTX, maxTX] = d3.extent( maxTimeSeries, (time: Array<number>) => time[0]) as [
-      number,
-      number,
-    ];
+    const [minTX, maxTX] = d3.extent(maxTimeSeries, (time: Array<number>) => time[0]) as [number, number];
 
     const [minTY, maxTY] = d3.extent(maxTimeSeries, (time: Array<number>) => time[1]) as [number, number];
     const drawableWidth: number = width - 2 * CHART_MARGIN - TRANSLATE_LEFT;
@@ -82,10 +78,9 @@ class ShowErrors extends Component<StateProps, LocalState> {
     const yRange = d3.scaleLinear().range([0, height - 10]);
     yRange.domain(d3.extent(timeseriesErr, (tmsData) => tmsData[1]));
     const xCoordCopy = xCoord.copy();
-    
-    if(zoomValue !== 1){
-      xCoord.domain((zoomValue as any).rescaleX(xCoordCopy).domain());
 
+    if (zoomValue !== 1) {
+      xCoord.domain((zoomValue as any).rescaleX(xCoordCopy).domain());
     }
 
     const area = d3
@@ -121,30 +116,35 @@ class ShowErrors extends Component<StateProps, LocalState> {
     }
   }
 
-  renderEventWrapper(){
-    const {dataRun, aggergationCoords, isAggregationActive, periodRange} = this.props;
-    
-    if(!isAggregationActive || !aggergationCoords){
+  renderEventWrapper() {
+    const { dataRun, aggergationCoords, isAggregationActive, periodRange } = this.props;
+
+    if (!isAggregationActive || !aggergationCoords) {
       return null;
     }
-    const {zoomValue} = periodRange;
-    const {xCoord} = this.getScale();
+    const { zoomValue } = periodRange;
+    const { xCoord } = this.getScale();
     const xCoordCopy = xCoord.copy();
 
-    if(zoomValue !== 1){
+    if (zoomValue !== 1) {
       xCoord.domain((zoomValue as any).rescaleX(xCoordCopy).domain());
     }
-    
+
     const { timeseriesErr } = dataRun;
     const { eventData } = aggergationCoords;
-    
 
-    const evtHighlight = Math.max((xCoord(timeseriesErr[eventData[1]][0]) - xCoord(timeseriesErr[eventData[0]][0])))
+    const evtHighlight = Math.max(xCoord(timeseriesErr[eventData[1]][0]) - xCoord(timeseriesErr[eventData[0]][0]));
     const translateHiglight: number = xCoord(timeseriesErr[eventData[0]][0]) + TRANSLATE_LEFT;
 
-    return(
-        <rect className="event-highlight" width={evtHighlight} height={84} transform={`translate(${translateHiglight}, 3)`} rx="2" />
-    )
+    return (
+      <rect
+        className="event-highlight"
+        width={evtHighlight}
+        height={84}
+        transform={`translate(${translateHiglight}, 3)`}
+        rx="2"
+      />
+    );
   }
 
   public render() {
@@ -182,6 +182,6 @@ const mapState = (state: RootState) => ({
   isSignalRawLoading: getIsSigRawLoading(state),
   signalRawData: getSignalRawData(state),
   aggZoomValue: getAggregationZoomValue(state),
-  aggergationCoords: getAggregationWrapperCoords(state)
+  aggergationCoords: getAggregationWrapperCoords(state),
 });
 export default connect<StateProps, {}, {}, RootState>(mapState, null)(ShowErrors);
