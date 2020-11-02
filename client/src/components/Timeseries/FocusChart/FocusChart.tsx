@@ -43,7 +43,14 @@ import ZoomControls from './ZoomControls';
 
 import './FocusChart.scss';
 
-const { TRANSLATE_LEFT, CHART_MARGIN, MIN_VALUE, MAX_VALUE, TRANSLATE_TOP } = FocusChartConstants;
+const {
+  TRANSLATE_LEFT,
+  CHART_MARGIN,
+  MIN_VALUE,
+  MAX_VALUE,
+  TRANSLATE_TOP,
+  TRANSLATE_DRAWABLE_AREA,
+} = FocusChartConstants;
 
 type StateProps = ReturnType<typeof mapState>;
 type DispatchProps = ReturnType<typeof mapDispatch>;
@@ -165,13 +172,38 @@ export class FocusChart extends Component<Props, State> {
     return { xCoord, yCoord, maxDtXCood };
   }
 
+  private getDrawableArea() {
+    const { width, height } = this.state;
+    const { dataRun } = this.props;
+
+    const { maxTimeSeries, timeSeries } = dataRun;
+    const [minTX, maxTX] = d3.extent(maxTimeSeries, (time: Array<number>) => time[0]) as [number, number];
+    const [minTY, maxTY] = d3.extent(timeSeries, (time: Array<number>) => time[1]) as [number, number];
+    const drawableWidth: number = width - 2 * CHART_MARGIN - TRANSLATE_LEFT;
+    const drawableHeight: number = height - 3.5 * CHART_MARGIN - TRANSLATE_DRAWABLE_AREA;
+
+    const xCoord = d3.scaleTime().range([0, drawableWidth]);
+    const yCoord = d3.scaleLinear().range([drawableHeight, 0]);
+
+    const minX: number = Math.min(MIN_VALUE, minTX);
+    const maxX: number = Math.max(MAX_VALUE, maxTX);
+
+    const minY: number = Math.min(MIN_VALUE, minTY);
+    const maxY: number = Math.max(MAX_VALUE, maxTY);
+
+    xCoord.domain([minX, maxX]);
+    yCoord.domain([minY, maxY]);
+
+    return { xCoord, yCoord };
+  }
+
   private drawLine(data: Array<[number, number]>) {
     if (data === null || !data.length) {
       return null;
     }
     const { periodRange, currentChartStyle } = this.props;
     const { zoomValue } = periodRange;
-    const { xCoord, yCoord } = this.getScale();
+    const { xCoord, yCoord } = this.getDrawableArea();
     const xCoordCopy = xCoord.copy();
     if (zoomValue !== 1) {
       xCoord.domain((zoomValue as any).rescaleX(xCoordCopy).domain());
@@ -340,7 +372,7 @@ export class FocusChart extends Component<Props, State> {
       xCoord.domain((periodRange.zoomValue as any).rescaleX(xCoordCopy).domain());
     }
 
-    const eventHeigth: number = height - 4 * CHART_MARGIN;
+    const eventHeigth: number = height - 3.5 * CHART_MARGIN;
     const eventWidth: number = Math.max(xCoord(event[event.length - 1][0]) - xCoord(event[0][0]));
 
     const translateEvent: number = xCoord(timeSeries[startIndex][0]);
@@ -373,28 +405,34 @@ export class FocusChart extends Component<Props, State> {
       >
         <defs>
           <clipPath id={`__${currentEvent[3]}`}>
-            <rect width={eventWidth} height={5} x={translateEvent} y="10" />
+            <rect width={eventWidth} height={8} x={translateEvent} y="10" />
           </clipPath>
         </defs>
 
-        <path className={`evt-highlight ${pathClassName}`} d={this.drawLine(drawData)} />
+        <path
+          className={`evt-highlight ${pathClassName}`}
+          d={this.drawLine(drawData)}
+          transform={`translate(0, ${TRANSLATE_DRAWABLE_AREA})`}
+        />
 
         <g className="event-comment">
+          {/* event rect  */}
           <rect
             className={`evt-area ${activeClass}`}
             width={eventWidth}
-            height={eventHeigth - 8}
-            y={13}
+            height={eventHeigth - 18}
+            y="18"
             x={translateEvent}
           />
+          {/* event tag */}
           <rect
             className="evt-comment"
-            height="8"
+            height="12"
             width={eventWidth}
-            y="10"
+            y="13"
             x={translateEvent}
             fill={tagColor}
-            rx="5"
+            rx="3"
             clipPath={`url(#__${currentEvent[3]})`}
           />
         </g>
@@ -419,7 +457,7 @@ export class FocusChart extends Component<Props, State> {
 
   private renderChartAxis() {
     const { periodRange } = this.props;
-    const { xCoord, yCoord } = this.getScale();
+    const { xCoord, yCoord } = this.getDrawableArea();
     const xCoordCopy = xCoord.copy();
 
     // if there's a zoom level
@@ -438,11 +476,13 @@ export class FocusChart extends Component<Props, State> {
   }
 
   private renderChartGrid() {
-    const { yCoord } = this.getScale();
+    const { yCoord } = this.getDrawableArea();
     const { width } = this.state;
     const chartWidth: number = width - TRANSLATE_LEFT - 2 * CHART_MARGIN;
     const drawGridLines = () => d3.axisLeft(yCoord).ticks(5);
-    d3.select('#gridLines').call(drawGridLines().tickSize(-chartWidth));
+    d3.select('#gridLines')
+      .call(drawGridLines().tickSize(-chartWidth))
+      .attr('transform', `translate(0, ${TRANSLATE_DRAWABLE_AREA})`);
   }
 
   private initZoom() {
@@ -628,7 +668,7 @@ export class FocusChart extends Component<Props, State> {
     splittedTimeSeries[0].length - 1 &&
       signalRawData.unshift(splittedTimeSeries[0][Math.max(splittedTimeSeries[0].length - 1, 0)]);
 
-    const { xCoord } = this.getScale();
+    const { xCoord } = this.getDrawableArea();
 
     const xCoordCopy = xCoord.copy();
     if (periodRange.zoomValue !== 1) {
@@ -638,36 +678,41 @@ export class FocusChart extends Component<Props, State> {
     const { wrapperStart, wrapperEnd, eventLeftShift, eventRightShift } = aggregationCoords;
 
     const wrapperWidth: number = Math.max(xCoord(wrapperEnd) - xCoord(wrapperStart));
-    const wrapperHeight: number = height - 3.5 * CHART_MARGIN;
+    const iconSize = 12;
+    const wrapperHeight: number = height - 3.5 * CHART_MARGIN - iconSize;
     const translateWrapper: number = xCoord(timeSeries[eventLeftShift][0]);
     const wrapperEndCoord: number = xCoord(timeSeries[eventRightShift][0]);
 
     return (
-      <>
-        <path className="chart-wawes aggregation-level" d={this.drawLine(signalRawData)} />
+      <g transform={`translate(0, -${TRANSLATE_DRAWABLE_AREA - iconSize})`}>
+        <path
+          className="chart-wawes aggregation-level"
+          d={this.drawLine(signalRawData)}
+          transform={`translate(0, ${TRANSLATE_DRAWABLE_AREA - iconSize})`}
+        />
         <defs>
           <clipPath id="contextData">
-            <rect width={wrapperWidth} height={height - 35} x={translateWrapper} />
+            <rect width={wrapperWidth} height={height - 38} x={translateWrapper} />
           </clipPath>
         </defs>
         <g className="arrows">
-          <g transform={`translate(${translateWrapper - 12}, 0)`}>
+          <g transform={`translate(${translateWrapper - iconSize}, -${iconSize})`}>
             <ShapeTriangleDown />
           </g>
-          <g transform={`translate(${translateWrapper - 12}, ${height - 36})`}>
+          <g transform={`translate(${translateWrapper - iconSize}, ${height - 45})`}>
             <ShapeTriangleUp />
           </g>
-          <g transform={`translate(${wrapperEndCoord - 13}, 0)`}>
+          <g transform={`translate(${wrapperEndCoord - iconSize}, -${iconSize})`}>
             <ShapeTriangleDown />
           </g>
-          <g transform={`translate(${wrapperEndCoord - 13}, ${height - 36})`}>
+          <g transform={`translate(${wrapperEndCoord - iconSize}, ${height - 45})`}>
             <ShapeTriangleUp />
           </g>
         </g>
         <g clipPath="url(#contextData)">
-          <rect className="contextual-data" width={wrapperWidth} height={wrapperHeight} y={10} x={translateWrapper} />
+          <rect className="contextual-data" width={wrapperWidth} height={wrapperHeight} y={0} x={translateWrapper} />
         </g>
-      </>
+      </g>
     );
   }
 
@@ -701,7 +746,7 @@ export class FocusChart extends Component<Props, State> {
           </defs>
           <g id="gridLines" className="grid-lines" />
           <g className="chart-data" clipPath="url(#focusClip)">
-            <g className="wawe-data">
+            <g className="wawe-data" transform={`translate(0, ${TRANSLATE_DRAWABLE_AREA})`}>
               {this.renderChartWawes()}
               {isAggregationActive && !isSignalRawLoading && this.renderSignalRaw()}
               {isPredictionVisible && <path className="predictions" d={this.drawLine(timeseriesPred)} />}
@@ -712,8 +757,11 @@ export class FocusChart extends Component<Props, State> {
               similarShapesCoords !== null &&
               similarShapesCoords.map((currentShapeCoords) => this.renderSimilarShapes(currentShapeCoords))}
           </g>
-          <g className="chart-axis">
-            <g className="axis axis--x" transform={`translate(0, ${height - 3.5 * CHART_MARGIN})`} />
+          <g className="chart-axis" transform={`translate(0, ${TRANSLATE_DRAWABLE_AREA})`}>
+            <g
+              className="axis axis--x"
+              transform={`translate(0, ${height - (3.5 * CHART_MARGIN + TRANSLATE_DRAWABLE_AREA)})`}
+            />
             <g className="axis axis--y" />
           </g>
           <AddEvent width={width} height={height} />
