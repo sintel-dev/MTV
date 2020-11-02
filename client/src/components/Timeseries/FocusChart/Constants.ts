@@ -9,6 +9,7 @@ export const FocusChartConstants = {
   CHART_MARGIN: 10,
   TIME_INTERVALS_HEIGHT: 65,
   TRANSLATE_DRAWABLE_AREA: 20,
+  ANOMALIES_HEIGHT: 90,
 };
 
 export const colorSchemes = {
