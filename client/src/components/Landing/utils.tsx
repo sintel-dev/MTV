@@ -22,10 +22,10 @@ export const tagSeq: Array<string> = [
 ];
 const tagClassNames: Array<string> = [
   'investigate',
-  'not_investigate',
+  'do_not_investigate',
   'postpone',
   'problem',
-  'seen',
+  'previously_seen',
   'normal',
   'untagged',
 ];

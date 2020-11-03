@@ -12,6 +12,7 @@ import {
   isEventCommentsLoading,
 } from './events';
 import { getCurrentActivePanel } from './sidebar';
+import { getContextInfoValue, getIsSigRawLoading, getSignalRawData } from './aggregationLevels';
 
 export const isPredictionEnabled = (state: RootState) => state.datarun.isPredictionEnabled;
 export const isDatarunIDSelected = (state: RootState) => state.datarun.selectedDatarunID;
@@ -23,6 +24,12 @@ export const getSelectedPeriodLevel = (state) => state.datarun.periodLevel;
 export const getIsTimeSyncModeEnabled = (state: RootState) => state.datarun.isTimeSyncModeEnabled;
 export const getScrollHistory = (state: RootState) => state.datarun.scrollHistory;
 export const getCurrentChartStyle = (state: RootState) => state.datarun.chartStyle;
+
+export const getIsAggregationActive = createSelector(
+  [getActiveEventID, getCurrentActivePanel, getIsEditingEventRange, getIsAddingNewEvents],
+  (eventID, activePanel, isEditingEventRange, isAddingNewEvent) =>
+    eventID !== null && activePanel === 'eventView' && !isEditingEventRange && !isAddingNewEvent,
+);
 
 export const getSelectedDatarunID = createSelector(
   [getSelectedExperimentData, isDatarunIDSelected],
@@ -137,6 +144,9 @@ export const getDatarunDetails = createSelector(
     getFilteredPeriodRange,
     getIsTimeSyncModeEnabled,
     getFilterDatarunPeriod,
+    getIsAggregationActive,
+    getSignalRawData,
+    getIsSigRawLoading,
   ],
   (dataRun, updatedEventDetails, filteredRange, isTimeSyncEnabled, filteredDatarunPeriod) => {
     if (dataRun === null) {
@@ -148,9 +158,11 @@ export const getDatarunDetails = createSelector(
     if (currentEventIndex !== -1) {
       updateEventDetails(updatedEventDetails, timeSeries, currentEventIndex, eventWindows);
     }
+
     const selectedPeriod = isTimeSyncEnabled ? filteredRange : filteredDatarunPeriod;
 
     const datarunDetails = { ...dataRun, period: selectedPeriod };
+
     return datarunDetails;
   },
 );
@@ -190,8 +202,8 @@ export const getCurrentEventDetails = createSelector(
       return null;
     }
 
-    const start_time = datarun.timeSeries[eventIndex[0]][0];
-    const stop_time = datarun.timeSeries[eventIndex[1]][0];
+    const start_time = timeSeries[eventIndex[0]][0];
+    const stop_time = timeSeries[eventIndex[1]][0];
     const score = eventIndex[2];
     const eventTag = eventIndex[4];
     const { source } = eventInfo;
@@ -222,8 +234,40 @@ export const getCurrentEventDetails = createSelector(
   },
 );
 
-export const getIsAggregationActive = createSelector(
-  [getActiveEventID, getCurrentActivePanel, getIsEditingEventRange, getIsAddingNewEvents],
-  (eventID, activePanel, isEditingEventRange, isAddingNewEvent) =>
-    eventID !== null && activePanel === 'eventView' && !isEditingEventRange && !isAddingNewEvent,
+export const getAggregationWrapperCoords = createSelector(
+  [getActiveEventID, getDatarunDetails, getContextInfoValue],
+  (activeEventID, dataRunDetails, contextInfo) => {
+    const { eventWindows, timeSeries } = dataRunDetails;
+    const eventData = eventWindows.filter((windowEvent) => windowEvent[3] === activeEventID)[0];
+    if (!activeEventID || eventData === undefined) {
+      return null;
+    }
+
+    const eventRange = (eventData[1] - eventData[0]) * contextInfo;
+    const eventLeftShift = Math.max(eventData[0] - eventRange, 0);
+    const eventRightShift = Math.min(eventData[1] + eventRange, timeSeries.length - 1);
+
+    const wrapperStart = timeSeries[eventLeftShift][0];
+    const wrapperEnd = timeSeries[eventRightShift][0];
+
+    return { wrapperStart, wrapperEnd, eventLeftShift, eventRightShift, eventData };
+  },
+);
+
+export const getSplittedTimeSeries = createSelector(
+  [getIsAggregationActive, getIsSigRawLoading, getDatarunDetails, getAggregationWrapperCoords],
+  (isAggregationActive, isSignalRawLoading, dataRun, aggregationCoords) => {
+    const { timeSeries } = dataRun;
+    if (!isAggregationActive || isSignalRawLoading || aggregationCoords === null) {
+      return null;
+    }
+    const { wrapperStart, wrapperEnd } = aggregationCoords;
+    const startIndex = timeSeries.findIndex((current) => current[0] >= wrapperStart);
+    const stopIndex = timeSeries.findIndex((current) => current[0] >= wrapperEnd);
+
+    let seriesLeft = timeSeries.slice(0, startIndex + 1);
+    let seriesRight = timeSeries.slice(stopIndex, timeSeries.length - 1);
+
+    return [seriesLeft, seriesRight];
+  },
 );

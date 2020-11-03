@@ -5,10 +5,65 @@
     overflow: hidden;
     position: relative;
 
+    .aggregation-controls {
+        width: 96%;
+        margin: 0 auto;
+        padding-top: 10px;
+
+        label {
+            margin-right: 16px;
+            display: inline-block;
+        }
+
+        .tag-select {
+            .tag-options__control {
+                height: 30px;
+                font-size: 14px;
+            }
+
+            .tag-options__placeholder {
+                font-size: 14px;
+            }
+
+            .tag-options__menu {
+                min-width: unset;
+            }
+        }
+
+        .context-interval {
+            .tag-options__control {
+                width: 75px;
+                min-width: unset;
+            }
+        }
+        .aggregation-interval {
+            .tag-options__control {
+                width: 120px;
+                min-width: unset;
+            }
+        }
+    }
+
     .chart-data path,
     .line-highlight,
     .zoom {
         fill: transparent;
+    }
+
+    .chart-data {
+        .arrows {
+            path {
+                fill: #fff;
+                stroke: transparent;
+                stroke-linecap: round;
+            }
+        }
+    }
+
+    .contextual-data {
+        fill: transparent;
+        stroke: #eef1f6;
+        stroke-dasharray: 2, 3, 0;
     }
 
     .axis {
@@ -24,42 +79,6 @@
     path {
         stroke-width: 1;
         stroke: $path-color;
-    }
-    path,
-    rect {
-        &.evt-highlight {
-            stroke: $yellow-color;
-        }
-        &.predictions {
-            stroke: #b9782d;
-            fill: none;
-        }
-
-        &.investigate {
-            stroke: #ff9100;
-        }
-
-        &.do_not_investigate {
-            stroke: #4684ff;
-        }
-
-        &.postpone {
-            stroke: #8446c2;
-        }
-        &.problem {
-            stroke: #c24d4d;
-        }
-        &.previously_seen {
-            stroke: #f2ff00;
-        }
-
-        &.normal {
-            stroke: #6bc969;
-        }
-
-        &.untagged {
-            stroke: #d5d5d5;
-        }
     }
 
     .zoom {
@@ -210,5 +229,47 @@
             shape-rendering: crispEdges;
             stroke-dasharray: (3, 5);
         }
+    }
+}
+
+.aggregation-controls {
+    display: flex;
+    justify-content: space-between;
+}
+
+path,
+rect {
+    &.evt-highlight {
+        stroke: $yellow-color;
+    }
+    &.predictions {
+        stroke: #b9782d;
+        fill: none;
+    }
+
+    &.investigate {
+        stroke: #ff9100;
+    }
+
+    &.do_not_investigate {
+        stroke: #4684ff;
+    }
+
+    &.postpone {
+        stroke: #8446c2;
+    }
+    &.problem {
+        stroke: #c24d4d;
+    }
+    &.previously_seen {
+        stroke: #f2ff00;
+    }
+
+    &.normal {
+        stroke: #6bc969;
+    }
+
+    &.untagged {
+        stroke: #d5d5d5;
     }
 }

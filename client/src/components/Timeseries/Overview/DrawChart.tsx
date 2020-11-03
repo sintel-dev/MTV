@@ -15,8 +15,12 @@ import {
   getSelectedDatarunID,
   getCurrentChartStyle,
   getCurrentEventDetails,
+  getAggregationWrapperCoords,
 } from 'src/model/selectors/datarun';
-import { getIsEditingEventRange, getIsAddingNewEvents } from 'src/model/selectors/events';
+import { getIsEditingEventRange, getIsAddingNewEvents, getActiveEventID } from 'src/model/selectors/events';
+import { getIsSigRawLoading, getSignalRawData } from 'src/model/selectors/aggregationLevels';
+import { SmallTriangleDown, SmallTriangleUp } from 'src/components/Common/icons';
+import { fromTagToClassName } from 'src/components/Landing/utils';
 import { FocusChartConstants } from '../FocusChart/Constants';
 
 const { TRANSLATE_LEFT, CHART_MARGIN } = FocusChartConstants;
@@ -135,6 +139,51 @@ export class DrawChart extends Component<ChartProps, ChartState> {
     return line(data);
   }
 
+  private renderEventWrapper() {
+    const { dataRun, aggregationCoords, selectedDatarunID } = this.props;
+
+    if (aggregationCoords === null || selectedDatarunID !== dataRun.id) {
+      return null;
+    }
+
+    const { timeSeries } = dataRun;
+    const { drawableWidth, drawableHeight } = this.state;
+    const { xCoord } = this.getScale(drawableWidth, drawableHeight);
+
+    const { wrapperStart, wrapperEnd, eventData } = aggregationCoords;
+
+    const evtHighlight: number = Math.max(xCoord(timeSeries[eventData[1]][0]) - xCoord(timeSeries[eventData[0]][0]));
+    const translateHiglight: number = xCoord(timeSeries[eventData[0]][0]);
+    const contextWrapper: number = Math.max(xCoord(wrapperEnd) - xCoord(wrapperStart));
+    const translateContext: number = xCoord(wrapperStart);
+
+    return (
+      <g>
+        <g transform={`translate(${translateContext - 2}, -4)`}>
+          <SmallTriangleDown />
+        </g>
+        <g transform={`translate(${translateContext + contextWrapper - 4}, -4)`}>
+          <SmallTriangleDown />
+        </g>
+
+        <g transform={`translate(${translateContext - 2}, 40)`}>
+          <SmallTriangleUp />
+        </g>
+        <g transform={`translate(${translateContext + contextWrapper - 4}, 40)`}>
+          <SmallTriangleUp />
+        </g>
+        <rect className="context-info" width={contextWrapper} x={translateContext} />
+        <rect
+          className="event-higlight"
+          width={evtHighlight}
+          height="40"
+          transform={`translate(${translateHiglight}, 0)`}
+          rx="3"
+        />
+      </g>
+    );
+  }
+
   private initBrush() {
     const self = this;
     const { width } = this.state;
@@ -225,11 +274,15 @@ export class DrawChart extends Component<ChartProps, ChartState> {
     !isEditingEvent && !isAddingNewEvent && this.props.onSelectDatarun(dataRunID);
   }
 
-  private drawEvent(event: [number, number]) {
+  private drawEvent(event) {
     const { timeSeries } = this.props.dataRun;
-    const [start, end] = event;
-    const eventData: Array<[number, number]> = timeSeries.slice(start, end + 2);
-    return <path key={event[1]} className="wave-event" d={this.drawLine(eventData)} />;
+    const start: number = event[0];
+    const end: number = event[1];
+    // const tag: string = event[4];
+    const eventInterval: Array<[number, number]> = timeSeries.slice(start, end + 2);
+
+    // return <path key={event[1]} d={this.drawLine(eventInterval)} className={`wave-event ${fromTagToClassName(tag)}`} />;
+    return <path key={event[1]} d={this.drawLine(eventInterval)} className="wave-event" />;
   }
 
   private renderEvents() {
@@ -240,10 +293,7 @@ export class DrawChart extends Component<ChartProps, ChartState> {
       return null;
     }
 
-    return eventWindows.map((currentEvent) => {
-      const [start, end] = currentEvent;
-      return this.drawEvent([start, end]);
-    });
+    return eventWindows.map((currentEvent) => this.drawEvent(currentEvent));
   }
 
   private renderSimilarShapes() {
@@ -279,6 +329,7 @@ export class DrawChart extends Component<ChartProps, ChartState> {
       height > 0 && (
         <g className="event-wrapper" transform={`translate(${offset.left}, ${offset.top})`}>
           <path className="wave-data" d={this.drawLine(timeSeries)} />
+          {this.renderEventWrapper()}
           {this.renderEvents()}
           {this.renderSimilarShapes()}
         </g>
@@ -373,6 +424,10 @@ const mapState = (state: RootState) => ({
   similarShapesCoords: getSimilarShapesCoords(state),
   selectedDatarunID: getSelectedDatarunID(state),
   currentChartStyle: getCurrentChartStyle(state),
+  activeEventID: getActiveEventID(state),
+  signalRawData: getSignalRawData(state),
+  isSignalRawLoading: getIsSigRawLoading(state),
+  aggregationCoords: getAggregationWrapperCoords(state),
 });
 
 const mapDispatch = (dispatch: Function) => ({

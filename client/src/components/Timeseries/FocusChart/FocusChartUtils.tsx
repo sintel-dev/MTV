@@ -2,6 +2,7 @@ import * as d3 from 'd3';
 import { FocusChartConstants } from './Constants';
 import { fromMonthToIndex, maxDaysInMonth, toTimestamp } from '../../../model/utils/Utils';
 
+export const timeIntervals = ['30 days', '21 days', '14 days', '7 days', '5 days', '3 days', '2 days', '1 day'];
 const { TRANSLATE_TOP } = FocusChartConstants;
 
 export const getWrapperSize = () => {

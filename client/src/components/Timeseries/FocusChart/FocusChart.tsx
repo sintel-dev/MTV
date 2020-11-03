@@ -18,20 +18,38 @@ import {
   getCurrentChartStyle,
   getIsAggregationActive,
   getCurrentEventDetails,
+  getAggregationWrapperCoords,
+  getSplittedTimeSeries,
 } from 'src/model/selectors/datarun';
 import { getIsEditingEventRange, getActiveEventID } from 'src/model/selectors/events';
 import { RootState } from 'src/model/types';
 import { formatDate } from 'src/model/utils/Utils';
+import { getIsSigRawLoading, getSignalRawData } from 'src/model/selectors/aggregationLevels';
+import { getCurrentActivePanel } from 'src/model/selectors/sidebar';
+import {
+  setAggregationLevelAction,
+  setContextValueAction,
+  updateAggregationZoomAction,
+} from 'src/model/actions/aggregationLevels';
+import Dropdown from 'src/components/Common/Dropdown';
+import { ShapeTriangleDown, ShapeTriangleUp } from 'src/components/Common/icons';
 import { FocusChartConstants, colorSchemes } from './Constants';
 
 import AddEvent from './FocusChartEvents/AddEvent';
 import ShowErrors from './ShowErrors';
-import { getWrapperSize, getSelectedRange } from './FocusChartUtils';
+import { getWrapperSize, getSelectedRange, timeIntervals } from './FocusChartUtils';
 import ZoomControls from './ZoomControls';
-import AggregationLevels from '../AggregationLevels/AggregationLevels';
+
 import './FocusChart.scss';
 
-const { TRANSLATE_LEFT, CHART_MARGIN, MIN_VALUE, MAX_VALUE, TRANSLATE_TOP } = FocusChartConstants;
+const {
+  TRANSLATE_LEFT,
+  CHART_MARGIN,
+  MIN_VALUE,
+  MAX_VALUE,
+  TRANSLATE_TOP,
+  TRANSLATE_DRAWABLE_AREA,
+} = FocusChartConstants;
 
 type StateProps = ReturnType<typeof mapState>;
 type DispatchProps = ReturnType<typeof mapDispatch>;
@@ -91,22 +109,28 @@ export class FocusChart extends Component<Props, State> {
       this.initZoom();
     }
 
-    if (!this.props.isAggregationActive) {
-      if (prevProps.periodRange.zoomValue !== this.props.periodRange.zoomValue) {
-        this.updateZoom();
-      }
-
-      if (prevProps.selectedPeriod !== this.props.selectedPeriod) {
-        this.updateChartZoomOnSelectPeriod();
-      }
-      if (prevProps.zoomCounter !== this.props.zoomCounter) {
-        this.updateZoomOnClick();
-      }
-
-      if (prevProps.isEditingRange !== this.props.isEditingRange) {
-        this.toggleZoom();
-      }
+    if (
+      (this.props.isAggregationActive !== prevProps.isAggregationActive && this.props.isAggregationActive) ||
+      prevProps.activeEventID !== this.props.activeEventID
+    ) {
+      this.updateZoomOnEventSelection();
     }
+
+    if (prevProps.periodRange.zoomValue !== this.props.periodRange.zoomValue) {
+      this.updateZoom();
+    }
+
+    if (prevProps.selectedPeriod !== this.props.selectedPeriod) {
+      this.updateChartZoomOnSelectPeriod();
+    }
+    if (prevProps.zoomCounter !== this.props.zoomCounter) {
+      this.updateZoomOnClick();
+    }
+
+    if (prevProps.isEditingRange !== this.props.isEditingRange) {
+      this.toggleZoom();
+    }
+
     if (prevProps.isPredictionVisible !== this.props.isPredictionVisible) {
       this.setChartHeight();
     }
@@ -147,10 +171,38 @@ export class FocusChart extends Component<Props, State> {
     return { xCoord, yCoord, maxDtXCood };
   }
 
+  private getDrawableArea() {
+    const { width, height } = this.state;
+    const { dataRun } = this.props;
+
+    const { maxTimeSeries, timeSeries } = dataRun;
+    const [minTX, maxTX] = d3.extent(maxTimeSeries, (time: Array<number>) => time[0]) as [number, number];
+    const [minTY, maxTY] = d3.extent(timeSeries, (time: Array<number>) => time[1]) as [number, number];
+    const drawableWidth: number = width - 2 * CHART_MARGIN - TRANSLATE_LEFT;
+    const drawableHeight: number = height - 3.5 * CHART_MARGIN - TRANSLATE_DRAWABLE_AREA;
+
+    const xCoord = d3.scaleTime().range([0, drawableWidth]);
+    const yCoord = d3.scaleLinear().range([drawableHeight, 0]);
+
+    const minX: number = Math.min(MIN_VALUE, minTX);
+    const maxX: number = Math.max(MAX_VALUE, maxTX);
+
+    const minY: number = Math.min(MIN_VALUE, minTY);
+    const maxY: number = Math.max(MAX_VALUE, maxTY);
+
+    xCoord.domain([minX, maxX]);
+    yCoord.domain([minY, maxY]);
+
+    return { xCoord, yCoord };
+  }
+
   private drawLine(data: Array<[number, number]>) {
+    if (data === null || !data.length) {
+      return null;
+    }
     const { periodRange, currentChartStyle } = this.props;
     const { zoomValue } = periodRange;
-    const { xCoord, yCoord } = this.getScale();
+    const { xCoord, yCoord } = this.getDrawableArea();
     const xCoordCopy = xCoord.copy();
     if (zoomValue !== 1) {
       xCoord.domain((zoomValue as any).rescaleX(xCoordCopy).domain());
@@ -205,7 +257,7 @@ export class FocusChart extends Component<Props, State> {
     const { dataRun, periodRange, activeShape, setActiveShape } = this.props;
     const { timeSeries } = dataRun;
     const { height } = this.state;
-    const { xCoord } = this.getScale();
+    const { xCoord } = this.getDrawableArea();
     const xCoordCopy = xCoord.copy();
     const { start, end } = shape;
 
@@ -213,17 +265,17 @@ export class FocusChart extends Component<Props, State> {
       xCoord.domain(periodRange.zoomValue.rescaleX(xCoordCopy).domain());
     }
 
-    const shapeWidth = Math.max(xCoord(timeSeries[end][0]) - xCoord(timeSeries[start][0]));
-    const shapeHeight = height - 3.5 * CHART_MARGIN;
+    const shapeWidth: number = Math.max(xCoord(timeSeries[end][0]) - xCoord(timeSeries[start][0]));
+    const shapeHeight: number = height - 3.5 * CHART_MARGIN - TRANSLATE_DRAWABLE_AREA;
     const translateShape = xCoord(timeSeries[start][0]);
-    const tagColor = colorSchemes[shape.tag] || colorSchemes.Untagged;
-    const isShapeActive =
+    const tagColor: string = colorSchemes[shape.tag] || colorSchemes.Untagged;
+    const activeClassName: string =
       activeShape && activeShape.start === shape.start && activeShape.end === shape.end ? 'active' : '';
 
     return (
-      <g className={`similar-shape ${isShapeActive}`} key={start} onClick={() => setActiveShape(shape)}>
-        <rect className="evt-area" width={shapeWidth} height={shapeHeight} y={0} x={translateShape} />
-        <rect className="evt-comment" width={shapeWidth} height="10" y={1} x={translateShape} fill={tagColor} />
+      <g className={`similar-shape ${activeClassName}`} key={start} onClick={() => setActiveShape(shape)}>
+        <rect className="evt-area" width={shapeWidth} height={shapeHeight} y={18} x={translateShape} />
+        <rect className="evt-comment" width={shapeWidth} height="10" y={13} x={translateShape} fill={tagColor} />
       </g>
     );
   }
@@ -234,27 +286,95 @@ export class FocusChart extends Component<Props, State> {
     });
   }
 
+  // @TODO - for later use, event drawings is yet to be decided.
+  private getEventInterval(currentEvent) {
+    const { dataRun, signalRawData, isAggregationActive, isSignalRawLoading, activeEventID } = this.props;
+    const { timeSeries } = dataRun;
+    const startIndex = Math.max(currentEvent[0], 0);
+    const stopIndex = Math.max(currentEvent[1], 0);
+    const startTime = timeSeries[startIndex][0];
+    const stopTime = timeSeries[stopIndex][0];
+
+    if (!isAggregationActive) {
+      return timeSeries.slice(startIndex, stopIndex + 1) as Array<[number, number]>;
+    }
+
+    if (isSignalRawLoading && isAggregationActive) {
+      return null;
+    }
+
+    // @TODO - envet area graph is not being drawn for now
+    if (isAggregationActive && activeEventID !== currentEvent[3]) {
+      return null;
+    }
+
+    let signalCopy = [...signalRawData];
+    const eventStartIndex = signalCopy.findIndex((current) => current[0] >= startTime);
+    const eventStopIndex = signalCopy.findIndex((current) => current[0] >= stopTime);
+    const event = signalCopy.slice(eventStartIndex, eventStopIndex);
+
+    event.push(timeSeries[stopIndex]);
+    event.unshift(timeSeries[startIndex]);
+
+    return event;
+  }
+
   private renderEventArea(currentEvent: Array<any>) {
-    const { dataRun, periodRange, setActiveEvent, activeEventID } = this.props;
+    const {
+      dataRun,
+      periodRange,
+      setActiveEvent,
+      activeEventID,
+      isAggregationActive,
+      isSignalRawLoading,
+      aggregationCoords,
+    } = this.props;
+
+    if (isAggregationActive && isSignalRawLoading) {
+      return null;
+    }
+
     const { timeSeries } = dataRun;
     const { height } = this.state;
 
     const { xCoord } = this.getScale();
     const xCoordCopy = xCoord.copy();
-    const commentHeight = height - 3.5 * CHART_MARGIN;
 
-    let startIndex = Math.max(currentEvent[0], 0);
-    let stopIndex = Math.max(currentEvent[1], 0);
+    let startIndex: number = Math.max(currentEvent[0], 0);
+    let stopIndex: number = Math.max(currentEvent[1], 0);
 
-    const event = timeSeries.slice(startIndex, stopIndex + 1) as Array<[number, number]>;
+    let event: Array<[number, number]> = timeSeries.slice(startIndex, stopIndex);
+    let drawData: Array<[number, number]> = timeSeries.slice(startIndex, stopIndex);
 
-    // if there's a zoom level
+    if (isAggregationActive && aggregationCoords) {
+      const { wrapperStart, wrapperEnd } = aggregationCoords;
+
+      const isEventContained = () => {
+        const eventStart = event[0][0];
+        const eventEnd = event[event.length - 1][0];
+        const isCurrentEvent = currentEvent[3] === activeEventID;
+        const isEventWrapped = wrapperStart <= eventStart && wrapperEnd >= eventEnd;
+
+        let timeStamp = [];
+        event.forEach((current) => timeStamp.push(current[0]));
+        const isEventTouched = timeStamp.includes(wrapperStart) || timeStamp.includes(wrapperEnd);
+        return isCurrentEvent || isEventWrapped || isEventTouched;
+      };
+
+      const isEventWrapped = isEventContained();
+      if (isEventWrapped) {
+        drawData = null;
+      }
+    }
+
     if (periodRange.zoomValue !== 1) {
       xCoord.domain((periodRange.zoomValue as any).rescaleX(xCoordCopy).domain());
     }
 
-    const commentWidth: number = Math.max(xCoord(timeSeries[stopIndex][0]) - xCoord(timeSeries[startIndex][0]));
-    const translateComment: number = xCoord(timeSeries[startIndex][0]);
+    const eventHeigth: number = height - 3.5 * CHART_MARGIN;
+    const eventWidth: number = Math.max(xCoord(event[event.length - 1][0]) - xCoord(event[0][0]));
+
+    const translateEvent: number = xCoord(timeSeries[startIndex][0]);
     const tagColor: string = colorSchemes[currentEvent[4]] || colorSchemes.Untagged;
 
     const startDate: object = new Date(timeSeries[startIndex][0]);
@@ -282,16 +402,38 @@ export class FocusChart extends Component<Props, State> {
         }}
         onMouseLeave={() => this.toggleEventTooltip(false)}
       >
-        <path className={`evt-highlight ${pathClassName}`} d={this.drawLine(event)} />
+        <defs>
+          <clipPath id={`__${currentEvent[3]}`}>
+            <rect width={eventWidth} height={8} x={translateEvent} y="10" />
+          </clipPath>
+        </defs>
+
+        <path
+          className={`evt-highlight ${pathClassName}`}
+          d={this.drawLine(drawData)}
+          transform={`translate(0, ${TRANSLATE_DRAWABLE_AREA})`}
+        />
+
         <g className="event-comment">
+          {/* event rect  */}
           <rect
             className={`evt-area ${activeClass}`}
-            width={commentWidth}
-            height={commentHeight}
-            y={0}
-            x={translateComment}
+            width={eventWidth}
+            height={eventHeigth - 18}
+            y="18"
+            x={translateEvent}
           />
-          <rect className="evt-comment" height="10" width={commentWidth} y="0" x={translateComment} fill={tagColor} />
+          {/* event tag */}
+          <rect
+            className="evt-comment"
+            height="12"
+            width={eventWidth}
+            y="13"
+            x={translateEvent}
+            fill={tagColor}
+            rx="3"
+            clipPath={`url(#__${currentEvent[3]})`}
+          />
         </g>
       </g>
     );
@@ -314,7 +456,7 @@ export class FocusChart extends Component<Props, State> {
 
   private renderChartAxis() {
     const { periodRange } = this.props;
-    const { xCoord, yCoord } = this.getScale();
+    const { xCoord, yCoord } = this.getDrawableArea();
     const xCoordCopy = xCoord.copy();
 
     // if there's a zoom level
@@ -333,11 +475,13 @@ export class FocusChart extends Component<Props, State> {
   }
 
   private renderChartGrid() {
-    const { yCoord } = this.getScale();
+    const { yCoord } = this.getDrawableArea();
     const { width } = this.state;
     const chartWidth: number = width - TRANSLATE_LEFT - 2 * CHART_MARGIN;
     const drawGridLines = () => d3.axisLeft(yCoord).ticks(5);
-    d3.select('#gridLines').call(drawGridLines().tickSize(-chartWidth));
+    d3.select('#gridLines')
+      .call(drawGridLines().tickSize(-chartWidth))
+      .attr('transform', `translate(0, ${TRANSLATE_DRAWABLE_AREA})`);
   }
 
   private initZoom() {
@@ -365,8 +509,8 @@ export class FocusChart extends Component<Props, State> {
     const { periodRange } = this.props;
     const zoomKvalue: number = Math.min(Math.floor(periodRange.zoomValue.k), 3);
     d3.select('.zoom').call(this.zoom.transform, periodRange.zoomValue);
-    d3.select('.focus-chart path.chart-wawes').style('stroke-width', zoomKvalue);
-    d3.select('.focus-chart path.predictions').style('stroke-width', zoomKvalue);
+    d3.selectAll('.focus-chart path.chart-wawes').style('stroke-width', zoomKvalue);
+    d3.selectAll('.focus-chart path.predictions').style('stroke-width', zoomKvalue);
     d3.selectAll('.focus-chart path.evt-highlight').style('stroke-width', zoomKvalue);
     this.renderChartAxis();
   }
@@ -406,7 +550,30 @@ export class FocusChart extends Component<Props, State> {
     }
   }
 
-  rangeToTimestamp(periodRange) {
+  private updateZoomOnEventSelection() {
+    const { isAggregationActive, setPeriodRange, aggregationCoords } = this.props;
+
+    if (!isAggregationActive) {
+      return;
+    }
+    const { width } = this.state;
+    const focusChartWidth: number = width - TRANSLATE_LEFT - 2 * CHART_MARGIN;
+    const { xCoord } = this.getScale();
+
+    const { wrapperStart, wrapperEnd } = aggregationCoords;
+    const startRange: number = xCoord(wrapperStart);
+    const stopRange: number = xCoord(wrapperEnd);
+    const zoomValue = d3.zoomIdentity.scale(focusChartWidth / (stopRange - startRange)).translate(-startRange, 0);
+    const eventRange: Array<number> = xCoord.range().map(zoomValue.invertX, zoomValue);
+    const periodRange: object = {
+      eventRange: [eventRange[0] < 0 ? 0 : eventRange[0], eventRange[1]],
+      zoomValue,
+      timeStamp: [wrapperStart, wrapperEnd] as [number, number],
+    };
+    setPeriodRange(periodRange);
+  }
+
+  private rangeToTimestamp(periodRange) {
     const { zoomValue } = periodRange;
     const { maxDtXCood } = this.getScale();
     const xCoordCopy = maxDtXCood.copy();
@@ -465,10 +632,101 @@ export class FocusChart extends Component<Props, State> {
     );
   }
 
+  private renderChartWawes() {
+    const { isAggregationActive, dataRun, isSignalRawLoading, splittedTimeSeries } = this.props;
+
+    const { timeSeries } = dataRun;
+    if (isAggregationActive && !isSignalRawLoading && splittedTimeSeries !== null) {
+      return (
+        <>
+          <path className="chart-wawes" d={this.drawLine(splittedTimeSeries[0])} />
+          <path className="chart-wawes" d={this.drawLine(splittedTimeSeries[1])} />
+        </>
+      );
+    }
+    return <path className="chart-wawes" d={this.drawLine(timeSeries)} />;
+  }
+
+  private renderSignalRaw() {
+    const { height } = this.state;
+    const {
+      dataRun,
+      periodRange,
+      isSignalRawLoading,
+      signalRawData,
+      aggregationCoords,
+      splittedTimeSeries,
+    } = this.props;
+    const { timeSeries } = dataRun;
+
+    if (aggregationCoords === null || isSignalRawLoading) {
+      return null;
+    }
+
+    splittedTimeSeries[1][0] && signalRawData.push(splittedTimeSeries[1][0]);
+    splittedTimeSeries[0].length - 1 &&
+      signalRawData.unshift(splittedTimeSeries[0][Math.max(splittedTimeSeries[0].length - 1, 0)]);
+
+    const { xCoord } = this.getDrawableArea();
+
+    const xCoordCopy = xCoord.copy();
+    if (periodRange.zoomValue !== 1) {
+      xCoord.domain((periodRange.zoomValue as any).rescaleX(xCoordCopy).domain());
+    }
+
+    const { wrapperStart, wrapperEnd, eventLeftShift, eventRightShift } = aggregationCoords;
+
+    const wrapperWidth: number = Math.max(xCoord(wrapperEnd) - xCoord(wrapperStart));
+    const iconSize = 12;
+    const wrapperHeight: number = height - 3.5 * CHART_MARGIN - iconSize;
+    const translateWrapper: number = xCoord(timeSeries[eventLeftShift][0]);
+    const wrapperEndCoord: number = xCoord(timeSeries[eventRightShift][0]);
+
+    return (
+      <g transform={`translate(0, -${TRANSLATE_DRAWABLE_AREA - iconSize})`}>
+        <path
+          className="chart-wawes aggregation-level"
+          d={this.drawLine(signalRawData)}
+          transform={`translate(0, ${TRANSLATE_DRAWABLE_AREA - iconSize})`}
+        />
+        <defs>
+          <clipPath id="contextData">
+            <rect width={wrapperWidth} height={height - 38} x={translateWrapper} />
+          </clipPath>
+        </defs>
+        <g className="arrows">
+          <g transform={`translate(${translateWrapper - iconSize}, -${iconSize})`}>
+            <ShapeTriangleDown />
+          </g>
+          <g transform={`translate(${translateWrapper - iconSize}, ${height - 45})`}>
+            <ShapeTriangleUp />
+          </g>
+          <g transform={`translate(${wrapperEndCoord - iconSize}, -${iconSize})`}>
+            <ShapeTriangleDown />
+          </g>
+          <g transform={`translate(${wrapperEndCoord - iconSize}, ${height - 45})`}>
+            <ShapeTriangleUp />
+          </g>
+        </g>
+        <g clipPath="url(#contextData)">
+          <rect className="contextual-data" width={wrapperWidth} height={wrapperHeight} y={0} x={translateWrapper} />
+        </g>
+      </g>
+    );
+  }
+
   private drawChartData() {
     const { width, height } = this.state;
-    const { dataRun, isPredictionVisible, isZoomEnabled, isSimilarShapesActive, similarShapesCoords } = this.props;
-    const { timeSeries, timeseriesPred } = dataRun;
+    const {
+      dataRun,
+      isPredictionVisible,
+      isZoomEnabled,
+      isSimilarShapesActive,
+      similarShapesCoords,
+      isAggregationActive,
+      isSignalRawLoading,
+    } = this.props;
+    const { timeseriesPred } = dataRun;
     const focusChartWidth: number = width - TRANSLATE_LEFT - 2 * CHART_MARGIN;
 
     const zoomProps = {
@@ -487,8 +745,9 @@ export class FocusChart extends Component<Props, State> {
           </defs>
           <g id="gridLines" className="grid-lines" />
           <g className="chart-data" clipPath="url(#focusClip)">
-            <g className="wawe-data">
-              <path className="chart-wawes" d={this.drawLine(timeSeries)} />
+            <g className="wawe-data" transform={`translate(0, ${TRANSLATE_DRAWABLE_AREA})`}>
+              {this.renderChartWawes()}
+              {isAggregationActive && !isSignalRawLoading && this.renderSignalRaw()}
               {isPredictionVisible && <path className="predictions" d={this.drawLine(timeseriesPred)} />}
             </g>
             <rect className="zoom" {...zoomProps} />
@@ -497,8 +756,11 @@ export class FocusChart extends Component<Props, State> {
               similarShapesCoords !== null &&
               similarShapesCoords.map((currentShapeCoords) => this.renderSimilarShapes(currentShapeCoords))}
           </g>
-          <g className="chart-axis">
-            <g className="axis axis--x" transform={`translate(0, ${height - 3.5 * CHART_MARGIN})`} />
+          <g className="chart-axis" transform={`translate(0, ${TRANSLATE_DRAWABLE_AREA})`}>
+            <g
+              className="axis axis--x"
+              transform={`translate(0, ${height - (3.5 * CHART_MARGIN + TRANSLATE_DRAWABLE_AREA)})`}
+            />
             <g className="axis axis--y" />
           </g>
           <AddEvent width={width} height={height} />
@@ -507,25 +769,83 @@ export class FocusChart extends Component<Props, State> {
     );
   }
 
-  public render() {
+  private renderContextualInfo() {
+    const { updateAggZoom, setContextInfo } = this.props;
+    const contextInfoValues = [
+      { value: 1, label: '1x' },
+      { value: 2, label: '2x' },
+      { value: 3, label: '3x' },
+    ];
+
+    const dropDownProps = {
+      isMulti: false,
+      closeMenuOnSelect: true,
+      onChange: (event) => {
+        setContextInfo(event.value);
+        updateAggZoom(1);
+      },
+      placeholder: '1x',
+      options: contextInfoValues,
+      formatLabel: false,
+    };
+    return (
+      <div className="context-interval">
+        <label htmlFor="context">Context info</label>
+        <Dropdown {...dropDownProps} />
+      </div>
+    );
+  }
+
+  private renderTimeIntervals() {
+    const { setAggregationLevel } = this.props;
+    const options = timeIntervals.map((interval) => ({ value: interval, label: `${interval}` }));
+
+    const dropdownOptions = {
+      isMulti: false,
+      closeMenuOnSelect: true,
+      options,
+      onChange: (event) => setAggregationLevel(event.value),
+      placeholder: options[0].value,
+      formatLabel: false,
+    };
+
+    return (
+      <div className="aggregation-interval">
+        <label htmlFor="aggregation">Aggregation</label>
+        <Dropdown {...dropdownOptions} />
+      </div>
+    );
+  }
+
+  private renderAggregationControls() {
     const { isAggregationActive } = this.props;
+    return (
+      (isAggregationActive && (
+        <div className="aggregation-controls">
+          {this.renderContextualInfo()}
+          {this.renderTimeIntervals()}
+        </div>
+      )) ||
+      null
+    );
+  }
+
+  public render() {
     const { width, height } = this.state;
+
     return (
       <div className="focus-chart" id="focusChartWrapper">
-        {this.renderEventTooltip()}
         <ShowErrors />
-        {isAggregationActive ? (
-          <AggregationLevels width={width} height={height} toggleTooltip={() => this.toggleEventTooltip(false)} />
-        ) : (
-          <>
-            <svg width={width} height={height} id="focusChart">
-              {this.drawChartData()}
-            </svg>
-            <div className="zoomControlsHolder">
-              <ZoomControls />
-            </div>
-          </>
-        )}
+        {this.renderEventTooltip()}
+        {this.renderAggregationControls()}
+        <>
+          <svg width={width} height={height} id="focusChart">
+            {this.drawChartData()}
+          </svg>
+          <div className="zoomControlsHolder">
+            <ZoomControls />
+          </div>
+        </>
       </div>
     );
   }
@@ -549,12 +869,20 @@ const mapState = (state: RootState) => ({
   activeEventID: getActiveEventID(state),
   currentChartStyle: getCurrentChartStyle(state),
   isAggregationActive: getIsAggregationActive(state),
+  signalRawData: getSignalRawData(state),
+  isSignalRawLoading: getIsSigRawLoading(state),
+  currentPanel: getCurrentActivePanel(state),
+  aggregationCoords: getAggregationWrapperCoords(state),
+  splittedTimeSeries: getSplittedTimeSeries(state),
 });
 
 const mapDispatch = (dispatch: Function) => ({
   setPeriodRange: (period) => dispatch(setTimeseriesPeriod(period)),
   setActiveEvent: (eventID) => dispatch(setActiveEventAction(eventID)),
   setActiveShape: (shape) => dispatch(setActiveShapeAction(shape)),
+  setAggregationLevel: (periodLevel) => dispatch(setAggregationLevelAction(periodLevel)),
+  updateAggZoom: (zoomValue) => dispatch(updateAggregationZoomAction(zoomValue)),
+  setContextInfo: (contextValue) => dispatch(setContextValueAction(contextValue)),
 });
 
 export default connect<StateProps, DispatchProps, {}, RootState>(mapState, mapDispatch)(FocusChart);

@@ -7,7 +7,7 @@ type DropdownOption = {
 };
 
 type FilterOptions = {
-  value: string;
+  value: string | number;
   label: string;
   icon?: string;
   isFixed?: boolean;
