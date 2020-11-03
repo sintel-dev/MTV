@@ -1,0 +1,21 @@
+@import '../../../assets/sass/colors.scss';
+@import '../../../assets/sass/reset';
+@import './general.scss';
+@import './colors.scss';
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    &.homepage{
+        background: $bg-gray;
+    }
+}
+
+.header{
+    width: 100%;
+    height: 50px;
+    padding: 0 35px;
+    background: $main-color;
+}
