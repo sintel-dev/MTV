@@ -40,7 +40,7 @@ import {
 } from '../types';
 import API from '../utils/api';
 import { AUTHENTICATED_USER_ID, AUTH_USER_DATA } from '../utils/constants';
-import { getSignalRawDataAction } from './aggregationLevels';
+import { getSignalRawDataAction, setAggregationLevelAction } from './aggregationLevels';
 import { setActivePanelAction } from './sidebar';
 import { toggleSimilarShapesAction } from './similarShapes';
 
@@ -95,6 +95,7 @@ export function cancelEventEditingAction() {
           stop_time: stop_time * 1000,
         };
         dispatch(updateEventDetailsAction(eventDetails));
+        dispatch(setAggregationLevelAction('30 days'));
       });
     }
 

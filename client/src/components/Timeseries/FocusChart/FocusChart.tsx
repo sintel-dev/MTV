@@ -24,7 +24,7 @@ import {
 import { getIsEditingEventRange, getActiveEventID } from 'src/model/selectors/events';
 import { RootState } from 'src/model/types';
 import { formatDate } from 'src/model/utils/Utils';
-import { getAggregationTimeLevel, getIsSigRawLoading, getSignalRawData } from 'src/model/selectors/aggregationLevels';
+import { getIsSigRawLoading, getSignalRawData } from 'src/model/selectors/aggregationLevels';
 import { getCurrentActivePanel } from 'src/model/selectors/sidebar';
 import {
   setAggregationLevelAction,
@@ -39,7 +39,6 @@ import AddEvent from './FocusChartEvents/AddEvent';
 import ShowErrors from './ShowErrors';
 import { getWrapperSize, getSelectedRange, timeIntervals } from './FocusChartUtils';
 import ZoomControls from './ZoomControls';
-// import AggregationLevels from '../AggregationLevels/AggregationLevels';
 
 import './FocusChart.scss';
 
@@ -111,8 +110,8 @@ export class FocusChart extends Component<Props, State> {
     }
 
     if (
-      this.props.isSignalRawLoading !== prevProps.isSignalRawLoading ||
-      (this.props.isAggregationActive !== prevProps.isAggregationActive && this.props.isAggregationActive)
+      (this.props.isAggregationActive !== prevProps.isAggregationActive && this.props.isAggregationActive) ||
+      prevProps.activeEventID !== this.props.activeEventID
     ) {
       this.updateZoomOnEventSelection();
     }
@@ -552,9 +551,9 @@ export class FocusChart extends Component<Props, State> {
   }
 
   private updateZoomOnEventSelection() {
-    const { isSignalRawLoading, isAggregationActive, setPeriodRange, aggregationCoords } = this.props;
+    const { isAggregationActive, setPeriodRange, aggregationCoords } = this.props;
 
-    if (!isAggregationActive || isSignalRawLoading) {
+    if (!isAggregationActive) {
       return;
     }
     const { width } = this.state;
@@ -770,7 +769,7 @@ export class FocusChart extends Component<Props, State> {
     );
   }
 
-  private renderTimeIntervals() {
+  private renderContextualInfo() {
     const { updateAggZoom, setContextInfo } = this.props;
     const contextInfoValues = [
       { value: 1, label: '1x' },
@@ -797,7 +796,7 @@ export class FocusChart extends Component<Props, State> {
     );
   }
 
-  private renderContextualInfo() {
+  private renderTimeIntervals() {
     const { setAggregationLevel } = this.props;
     const options = timeIntervals.map((interval) => ({ value: interval, label: `${interval}` }));
 
@@ -823,8 +822,8 @@ export class FocusChart extends Component<Props, State> {
     return (
       (isAggregationActive && (
         <div className="aggregation-controls">
-          {this.renderTimeIntervals()}
           {this.renderContextualInfo()}
+          {this.renderTimeIntervals()}
         </div>
       )) ||
       null
@@ -873,7 +872,6 @@ const mapState = (state: RootState) => ({
   signalRawData: getSignalRawData(state),
   isSignalRawLoading: getIsSigRawLoading(state),
   currentPanel: getCurrentActivePanel(state),
-  currentAggregationLevel: getAggregationTimeLevel(state),
   aggregationCoords: getAggregationWrapperCoords(state),
   splittedTimeSeries: getSplittedTimeSeries(state),
 });
