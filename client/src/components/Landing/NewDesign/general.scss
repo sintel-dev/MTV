@@ -1,77 +1,79 @@
 @import './colors.scss';
 
-body{
+body {
     font-size: 14px;
     font-weight: 400;
 }
 
-h1, h2{
+h1,
+h2 {
     font-weight: 700;
 }
 
-h1{
+h1 {
     font-size: 48px;
     line-height: 56px;
 }
-h2{
+h2 {
     font-size: 32px;
 }
 
-h3, h4{
+h3,
+h4 {
     font-weight: 500;
 }
 
-h3{
+h3 {
     font-size: 24px;
 }
 
-h4, h5{
+h4,
+h5 {
     font-size: 20px;
 }
 
-h5{
+h5 {
     font-weight: 400;
 }
 
-
-.subtitle{
+.subtitle {
     font-size: 16px;
     font-weight: 700;
 
-    &._medium{
+    &._medium {
         font-weight: 400;
     }
 
-    &._small{
+    &._small {
         font-size: 14px;
         font-weight: 400;
     }
-    
-    &._smal_bold{
+
+    &._smal_bold {
         font-size: 14px;
         font-weight: 700;
     }
 }
 
-.subheading{
+.subheading {
     font-size: 16px;
     font-weight: 400;
 
-    &._medium{
+    &._medium {
         font-size: 14px;
     }
 }
 
-.caption{
+.caption {
     font-weight: 300;
     font-size: 12px;
-    &._small{
+    &._small {
         font-weight: 500;
         font-size: 10px;
     }
 }
 
-button{
+button {
     font-weight: 700;
     font-size: 14px;
     line-height: 16px;
@@ -81,54 +83,53 @@ button{
     outline: none;
     cursor: pointer;
     background: none;
-    transition: background-color .2s ease-in-out;
+    transition: background-color 0.2s ease-in-out;
     border-radius: 4px;
-    
-    &:disabled{
+
+    &:disabled {
         color: $charcoal;
         cursor: not-allowed;
         background: transparent;
     }
 
-    &:hover{
+    &:hover {
         background: $bg-selections;
     }
 
-    &.blue{
+    &.blue {
         color: $active-blue;
     }
 
-    &.red{
-        color: $err
+    &.red {
+        color: $err;
     }
 
-    &.filled{
+    &.filled {
         color: #fff;
-        &.blue{
+        &.blue {
             background: $active-blue;
-            &:disabled{
+            &:disabled {
                 background: rgba($active-blue, 0.38);
                 color: rgba(#fff, 0.38);
             }
         }
     }
-
 }
 
-span{
-    &.icon{
-        i, span{
+span {
+    &.icon {
+        i,
+        span {
             vertical-align: middle;
             display: inline-block;
         }
-        i{
-            margin-right: 5px;;
+        i {
+            margin-right: 5px;
         }
-        
     }
 }
 
-.filter{
+.filter {
     background: $graphite;
     border: 1px solid $graphite;
     border-radius: 12px;
@@ -136,25 +137,26 @@ span{
     display: inline-block;
     padding: 3px 10px;
     vertical-align: middle;
-    font-size:14px;
-    &:hover{
+    font-size: 14px;
+    &:hover {
         border: 1px solid $gray;
     }
-    span{
+    span {
         margin-right: 5px;
     }
 }
 
-.info-text{
+.info-text {
     padding: 5px 15px;
     border-radius: 4px;
     background: rgba($active-blue, 0.1);
     color: $active-blue;
 }
 
-
-.icon{
-    span, i, svg{
+.icon {
+    span,
+    i,
+    svg {
         vertical-align: middle;
     }
 }
@@ -162,7 +164,8 @@ span{
 // ===== Form elements =====
 
 input {
-    &[type="text"], &[type="password"]{
+    &[type='text'],
+    &[type='password'] {
         border: 1px solid $graphite;
         border-radius: 4px;
         background: $bg-selections;
@@ -171,14 +174,14 @@ input {
         font-size: 14px;
         width: 100%;
         box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2), 0px 4px 5px rgba(0, 0, 0, 0.14), 0px 1px 10px rgba(0, 0, 0, 0.12);
-        transition: all .2s ease-in-out;
-        &:focus{
+        transition: all 0.2s ease-in-out;
+        &:focus {
             border: 1px solid $gray;
         }
     }
 }
 
-.clear{
+.clear {
     clear: both;
     font-size: 0;
     width: 100%;
