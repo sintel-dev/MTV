@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowUp, CloseIcon, DownloadIcon, LogoutIcon, UploadIcon } from 'src/components/Common/icons';
+import SelectDropDown from '../components/SelectDropdown';
 import {
   AddIcon,
   ArrowUpThin,
@@ -20,18 +21,49 @@ import './Styleguide.scss';
 
 const StyleGuide = () => (
   <div className="styleguide">
-    <h1>Heading 1</h1>
-    <h2>Heading 2</h2>
-    <h3>heading 3</h3>
-    <h4>Heading 4</h4>
-    <h5>Heading 5</h5>
-    <div className="subtitle">subtitle</div>
-    <div className="subtitle _medium">Subtitle medium</div>
-    <div className="subtitle _small">Subtitle small</div>
-    <div className="subheading">Subheading</div>
-    <div className="subheading _medium">Subheading medium</div>
-    <div className="caption">Caption</div>
-    <div className="caption _small">Caption small</div>
+    <div className="wrapper">
+      <SelectDropDown
+        onSelect={(value) => console.log(value)}
+        labelValue="Counter Value Dropdown"
+        isMulti
+        closeOnSelect={false}
+        enableCounter
+      />
+    </div>
+    <div className="wrapper">
+      <SelectDropDown
+        onSelect={(value) => console.log(value)}
+        labelValue="Multi option, Close on select - false"
+        isMulti
+        closeOnSelect={false}
+      />
+    </div>
+    <div className="wrapper">
+      <SelectDropDown
+        onSelect={(value) => console.log(value)}
+        labelValue="Multi option, Close on select - true"
+        isMulti
+      />
+    </div>
+    <div className="wrapper">
+      <SelectDropDown onSelect={(value) => console.log(value)} labelValue="Single option" />
+    </div>
+    <div className="wrapper">
+      <SelectDropDown labelValue="Disabled" isDisabled />
+    </div>
+    <h1>Heading 1 f48/w700 </h1>
+    <h2>Heading 2 f32/w700</h2>
+    <h3>heading 3 f24/w500</h3>
+    <h4>Heading 4 f20/w500</h4>
+    <h5>Heading 5 f20/w400</h5>
+    <div className="subtitle">subtitle f16/w700</div>
+    <div className="subtitle _medium">.subtitle ._medium f16/w400</div>
+    <div className="subtitle _small">.subtitle ._small f14/w400</div>
+    <div className="subtitle _small_bold">.subtitle ._small_bold f14/w700</div>
+    <div className="subheading">.subheading f16/w400</div>
+    <div className="subheading _medium">.subheading ._medium f14/w400</div>
+    <div className="caption">.caption f12/w300</div>
+    <div className="caption _small">.caption ._small f10/w500</div>
     <div className="wrapper">
       <div className="subtitle">Icons</div>
       <ul>

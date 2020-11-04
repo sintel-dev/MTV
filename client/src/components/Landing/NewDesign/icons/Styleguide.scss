@@ -1,14 +1,14 @@
 .styleguide{
     width: 900px;
-        margin: 0 auto;
-    div{
-        margin-bottom: 10px;
-        padding-bottom: 10px;
-    }
+    margin: 20px auto 0 auto;
 
     .wrapper{
         margin-bottom: 20px;
         border-bottom: 1px solid #fff;
+        padding-bottom: 20px;
+    }
+    .subtitle{
+        margin-bottom: 10px;
     }
     li{
         display: inline-block;

@@ -9,21 +9,16 @@ h1, h2{
     font-weight: 700;
 }
 
-h3, h4{
-    font-weight: 500;
-}
-
-h5{
-    font-weight: 400;
-}
-
 h1{
     font-size: 48px;
     line-height: 56px;
 }
-
 h2{
     font-size: 32px;
+}
+
+h3, h4{
+    font-weight: 500;
 }
 
 h3{
@@ -34,11 +29,15 @@ h4, h5{
     font-size: 20px;
 }
 
+h5{
+    font-weight: 400;
+}
+
 
 .subtitle{
     font-size: 16px;
     font-weight: 700;
-    
+
     &._medium{
         font-weight: 400;
     }
@@ -46,6 +45,11 @@ h4, h5{
     &._small{
         font-size: 14px;
         font-weight: 400;
+    }
+    
+    &._smal_bold{
+        font-size: 14px;
+        font-weight: 700;
     }
 }
 
@@ -130,9 +134,9 @@ span{
     border-radius: 12px;
     color: #fff;
     display: inline-block;
-    padding: 3px 15px;
+    padding: 3px 10px;
     vertical-align: middle;
-    
+    font-size:14px;
     &:hover{
         border: 1px solid $gray;
     }
@@ -149,18 +153,34 @@ span{
 }
 
 
+.icon{
+    span, i, svg{
+        vertical-align: middle;
+    }
+}
+
 // ===== Form elements =====
 
 input {
     &[type="text"], &[type="password"]{
-        border: 1px solid $charcoal;
+        border: 1px solid $graphite;
         border-radius: 4px;
         background: $bg-selections;
         color: $charcoal;
         padding: 10px 15px;
         font-size: 14px;
+        width: 100%;
         box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2), 0px 4px 5px rgba(0, 0, 0, 0.14), 0px 1px 10px rgba(0, 0, 0, 0.12);
+        transition: all .2s ease-in-out;
+        &:focus{
+            border: 1px solid $gray;
+        }
     }
 }
 
-
+.clear{
+    clear: both;
+    font-size: 0;
+    width: 100%;
+    height: 0;
+}

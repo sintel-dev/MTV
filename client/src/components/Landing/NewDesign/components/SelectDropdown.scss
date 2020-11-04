@@ -1,0 +1,150 @@
+@import '../colors.scss';
+@import '../general.scss';
+$img-path: '../icons/img/';
+
+.select-dropdown{
+    &.disabled{
+        cursor: not-allowed;
+        label{
+            cursor: initial;
+            color: rgba(#fff, 0.38)
+        }
+    }
+
+    .mtv-dropdown__control{
+        background: $bg-selections;
+        border: 1px solid $graphite;
+        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.06), 0px 4px 5px rgba(0, 0, 0, 0.08), 0px 1px 10px rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
+        color: #fff;
+        transition: all .2s ease-in-out;
+         &.mtv-dropdown__control--is-focused{
+            border: 1px solid $gray;
+        }
+        .mtv-dropdown__single-value, .mtv-dropdown__value-container{
+            color: #fff;
+        }
+        .mtv-dropdown__input{
+            color: #fff;
+
+            input{
+                box-shadow: none;
+                transition: none;
+            }
+        }
+        .mtv-dropdown__clear-indicator{
+            cursor: pointer;
+            border-radius: 100%;
+            &:hover{
+                background: rgba($graphite  , 0.5);
+                transition: all .2s ease-in-out;
+            }
+        }
+    }
+
+    .mtv-dropdown__menu {
+        .mtv-dropdown__option{
+            i, span{
+                vertical-align: middle;
+            }
+            i{
+                &.checkbox{
+                    width: 20px;
+                    height: 18px;
+                    margin-right: 4px;;
+                    
+                    display: inline-block;
+                    background: url('#{$img-path}/checkbox-unchecked.png') -4px -4px no-repeat;
+                }
+            }
+
+            &.mtv-dropdown__option--is-selected{
+                i{
+                    background: url('#{$img-path}/checkbox-checked.png') -4px -4px no-repeat
+                }
+            }
+        }
+        .mtv-dropdown__option--is-focused, .mtv-dropdown__option--is-selected{
+            background: rgba($charcoal, 0.2);
+            
+            transition: all .2s ease-in-out;
+        }
+
+        .mtv-dropdown__menu-list::-webkit-scrollbar {
+            width: 7px;
+            height: 9px;
+        }
+
+        .mtv-dropdown__menu-list::-webkit-scrollbar-thumb {
+            height: 3px;
+            border: 2px solid rgba(0, 0, 0, 0);
+            background-clip: padding-box;
+            border-radius: 5px;
+            background-color: #616467;
+            box-shadow: inset -1px -1px 0px rgba(0, 0, 0, 0.05), inset 1px 1px 0px rgba(0, 0, 0, 0.05);
+        }
+
+        .mtv-dropdown__menu-list::-webkit-scrollbar-track {
+            background: #2c3034;
+            border-radius: 5px;
+        }
+    }
+
+    .mtv-dropdown__multi-value {
+        @extend .filter;
+        padding: 0px 10px;
+        div{
+            display: inline-block;
+            vertical-align: middle;
+            color: #fff;
+            font-size: 14px;
+            padding: 0;
+            margin: 0;
+            &.mtv-dropdown__multi-value__remove{
+                height: 15px;
+                margin-left: 3px;
+                &:hover{
+                    background: rgba($bg-selections, 0.5);
+                    cursor: pointer
+                }
+            }
+        }
+    }
+
+    .mtv-dropdown--is-disabled{
+        color: rgba(#fff, 0.38);
+        .mtv-dropdown__control{
+            border: 1px solid rgba($graphite, 0.38)
+        }
+    }
+
+    .mtv-dropdown__value-container{
+        padding-right: 0;
+        .css-b8ldur-Input{
+            opacity: 0;
+        }
+        ul{
+            display: flex;
+            justify-content: space-between;
+            width: 99%;
+            li{
+                margin-right: 0;
+                display: flex;
+                align-items: center;
+            }
+            .filter{
+                padding: 2px 8px
+            }
+        }
+    }
+    
+    .mtv-dropdown__indicator-separator {
+        display: none;
+    }
+
+    .mtv-dropdown__menu{
+        background: $bg-selections;
+        border-radius: 4px;
+        border: 1px solid $graphite;
+    }
+}

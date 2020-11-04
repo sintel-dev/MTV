@@ -1,5 +1,14 @@
 import React from 'react';
 
+export const MtvLogo = () => (
+  <svg width="55" height="18" viewBox="0 0 55 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M5.11719 0.9375L9.5 13.3125L13.8594 0.9375H18.4766V18H14.9492V13.3359L15.3008 5.28516L10.6953 18H8.28125L3.6875 5.29688L4.03906 13.3359V18H0.523438V0.9375H5.11719ZM36.3391 3.78516H31.1125V18H27.5969V3.78516H22.4406V0.9375H36.3391V3.78516ZM47.1469 13.7695L51.0141 0.9375H54.9281L48.9867 18H45.3187L39.4008 0.9375H43.3031L47.1469 13.7695Z"
+      fill="white"
+    />
+  </svg>
+);
+
 export const ClearIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
@@ -243,5 +252,15 @@ export const ExperimentIcon = () => (
 export const NoSelectionIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path opacity="0.5" d="M13.5889 13.2881H10.2529V12.2559H13.5889V13.2881Z" fill="white" />
+  </svg>
+);
+
+export const DropdownArrow = (dir = 'down') => (
+  <svg width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg">
+    {dir === 'down' ? (
+      <path fillRule="evenodd" clipRule="evenodd" d="M0 0H10L5 5L0 0Z" fill="#76797E" />
+    ) : (
+      <path fillRule="evenodd" clipRule="evenodd" d="M0 5H10L5 0L0 5Z" fill="#D5D5D5" />
+    )}
   </svg>
 );
