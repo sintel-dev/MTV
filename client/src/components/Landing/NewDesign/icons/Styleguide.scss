@@ -10,8 +10,10 @@
     .subtitle {
         margin-bottom: 10px;
     }
-    li {
-        display: inline-block;
-        margin-right: 20px;
+    .inline{
+        li {
+            display: inline-block;
+            margin-right: 20px;
+        }
     }
 }

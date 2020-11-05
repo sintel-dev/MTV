@@ -85,6 +85,7 @@ button {
     background: none;
     transition: background-color 0.2s ease-in-out;
     border-radius: 4px;
+    
 
     &:disabled {
         color: $charcoal;
@@ -114,6 +115,22 @@ button {
             }
         }
     }
+
+    &.info{
+        height: 34px;
+        .filter{
+            margin-top: -3px;
+        }
+    }
+
+    .filter{
+        margin-left: 15px;
+        padding: 0px 6px;
+        font-size: 12px;
+        &:hover{
+            border: 1px solid transparent;
+        }
+    }
 }
 
 span {
@@ -138,6 +155,7 @@ span {
     padding: 3px 10px;
     vertical-align: middle;
     font-size: 14px;
+    
     &:hover {
         border: 1px solid $gray;
     }
@@ -181,9 +199,46 @@ input {
     }
 }
 
+.select-dropdown {
+    label{
+        margin-bottom: 15px;
+        display: inline-block;
+    }
+}
+
 .clear {
     clear: both;
     font-size: 0;
     width: 100%;
     height: 0;
+}
+
+.union-list{
+    li{
+        display: inline-block;
+        margin-right: 0;
+        button{
+            border: 1px solid rgba($gray, 0.38);
+            transition: all .2s ease-in-out;
+            border-radius: 0;
+            
+            &:hover, &.active{
+                border: 1px solid $gray;
+            }
+
+        }
+        &:first-child{
+            button{
+                border-top-left-radius: 4px;
+                border-bottom-left-radius: 4px;
+            }
+        }
+
+        &:last-child{
+            button{
+                border-top-right-radius: 4px;
+                border-bottom-right-radius: 4px;
+            }
+        }
+    }
 }

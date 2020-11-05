@@ -18,9 +18,26 @@ import {
   ViewMore,
 } from './icons';
 import './Styleguide.scss';
+import '../general.scss';
 
 const StyleGuide = () => (
   <div className="styleguide">
+    <div className="wrapper">
+      <ul className="union-list">
+        <li>
+          <button type="button" className="info active">
+            <span>Pre-defined</span>
+            <span className="filter">6</span>
+          </button>
+        </li>
+        <li>
+          <button type="button" className="info">
+            <span>Composed</span>
+            <span className="filter">0</span>
+          </button>
+        </li>
+      </ul>
+    </div>
     <div className="wrapper">
       <SelectDropDown
         onSelect={(value) => console.log(value)}
@@ -66,7 +83,7 @@ const StyleGuide = () => (
     <div className="caption _small">.caption ._small f10/w500</div>
     <div className="wrapper">
       <div className="subtitle">Icons</div>
-      <ul>
+      <ul className="inline">
         <li>
           <span className="icon">
             <i>

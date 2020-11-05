@@ -1,7 +1,7 @@
-@import '../../../assets/sass/colors.scss';
+// @import '../../../assets/sass/colors.scss';
 @import '../../../assets/sass/reset';
-@import './general.scss';
 @import './colors.scss';
+@import './general.scss';
 
 * {
     box-sizing: border-box;
@@ -18,7 +18,7 @@ body {
     width: 100%;
     height: 50px;
     padding: 12px 35px;
-    background: $main-color;
+    background: $bg-selections;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -48,15 +48,31 @@ body {
 }
 
 .home-wrapper {
+    min-height: calc(100vh - 50px);
+
     .sidebar {
         width: 310px;
-        height: calc(100vh - 50px);
-        padding: 50px 30px 0 30px;
+        min-height: calc(100vh - 50px);
         background: $bg-selections;
         float: left;
+        padding-top: 49px;
+
+        .item-container{
+            border-bottom: 1px solid #000;
+            margin-bottom: 45px;
+            padding-bottom: 45px;
+            padding: 0px 30px 0 30px;
+            
+            &:last-child{
+                border-bottom: none;
+                margin-bottom: 0;
+                padding-bottom: 0
+            }
+        }   
 
         .heading {
             margin-bottom: 50px;
+
             h5 {
                 margin-top: 0;
                 margin-bottom: 0;
@@ -106,6 +122,7 @@ body {
                 margin-bottom: 25px;
                 display: flex;
                 justify-content: space-between;
+                
                 span {
                     &:first-child {
                         @extend .subtitle;
@@ -119,7 +136,7 @@ body {
     }
 
     .container {
-        width: calc(100% - 305px);
+        width: calc(100% - 310px);
         padding: 50px 0 0 40px;
         float: left;
     }
