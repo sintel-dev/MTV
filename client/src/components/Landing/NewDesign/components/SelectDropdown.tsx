@@ -51,6 +51,7 @@ const SelectDropDown = (selectProps) => {
     closeOnSelect = true,
     enableCounter = false,
     options = dummyOptions,
+    displayLabel = true,
   } = selectProps;
 
   const formatOptionLabel = (dropdownProps) => {
@@ -79,7 +80,7 @@ const SelectDropDown = (selectProps) => {
 
   return (
     <div className={`select-dropdown ${disabledClassName}`}>
-      <label>{labelValue}</label>
+      {displayLabel && <label>{labelValue}</label>}
       <Select
         isMulti={isMulti}
         name="colors"
