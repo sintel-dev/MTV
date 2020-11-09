@@ -1,0 +1,19 @@
+.modal {
+    &.modal-cards {
+        .modal-dialog {
+            max-width: 1124px;
+        }
+    }
+
+    button {
+        &.close {
+            .sr-only {
+                display: none;
+            }
+        }
+    }
+
+    // .data-table {
+    //     margin-top: 20px;
+    // }
+}

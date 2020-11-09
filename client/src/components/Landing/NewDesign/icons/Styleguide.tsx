@@ -46,6 +46,17 @@ const StyleGuide = () => {
       </div>
 
       <div className="wrapper">
+        <div className="custom-checkbox">
+          <input type="checkbox" id="something" className="checkbox" />
+          <label htmlFor="something" />
+        </div>
+        <div className="custom-checkbox">
+          <input type="checkbox" id="filledLabel" className="checkbox" />
+          <label htmlFor="filledLabel">Some label</label>
+        </div>
+      </div>
+
+      <div className="wrapper">
         <ul className="union-list">
           <li>
             <button type="button" className="info active">

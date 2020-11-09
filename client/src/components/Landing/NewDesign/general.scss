@@ -206,7 +206,7 @@ span {
     padding: 3px 10px;
     vertical-align: middle;
     font-size: 14px;
-    height: 24px;
+    // height: 24px;
 
     &:hover {
         border: 1px solid $gray;
@@ -217,10 +217,13 @@ span {
 }
 
 .info-text {
-    padding: 5px 15px;
+    padding: 15px;
     border-radius: 4px;
     background: rgba($active-blue, 0.1);
     color: $active-blue;
+    font-weight: 400;
+    font-size: 16px;
+    display: inline-block;
 }
 
 .icon {
@@ -247,6 +250,40 @@ input {
         color: #fff;
         &:focus {
             border: 1px solid $gray;
+        }
+    }
+}
+
+.custom-checkbox {
+    input {
+        &[type='checkbox'] {
+            width: 0;
+            height: 0;
+            + label {
+                display: inline-block;
+                min-width: 16px;
+                min-height: 16px;
+                position: relative;
+                cursor: pointer;
+                padding-left: 20px;
+                &:before {
+                    content: '';
+                    width: 16px;
+                    height: 16px;
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    background: url('#{$img-path}/checkbox-unchecked.png') -4px -4px no-repeat;
+                }
+            }
+
+            &:checked {
+                + label {
+                    &:before {
+                        background: url('#{$img-path}/checkbox-checked.png') -4px -4px no-repeat;
+                    }
+                }
+            }
         }
     }
 }
@@ -390,6 +427,43 @@ i {
         &:after,
         &:before {
             display: none;
+        }
+    }
+}
+
+.table-wrap {
+    height: 100px;
+    overflow-y: auto;
+}
+table {
+    border-collapse: collapse;
+
+    &.data-table {
+        width: 100%;
+        td,
+        th {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba($graphite, 0.2);
+        }
+
+        th {
+            font-weight: 700;
+            letter-spacing: 1px;
+            position: sticky;
+            top: 0;
+            background-color: $bg-gray;
+        }
+        tbody {
+            max-height: 100px;
+            overflow-y: auto;
+        }
+        tr {
+            &:last-child {
+                td {
+                    border-bottom: none;
+                }
+            }
         }
     }
 }

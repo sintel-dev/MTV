@@ -25,17 +25,17 @@
         flex-direction: column;
         width: 100%;
         pointer-events: auto;
-        border: 1px solid rgba(0,0,0,.2);
+        border: 1px solid rgba(0, 0, 0, 0.2);
         border-radius: 4px;
         padding: 30px;
         background: $second-color;
 
-        .modal-header{
+        .modal-header {
             font-size: 20px;
-            padding: 0 0 30px 0;
+            padding: 0 0 25px 0;
 
-            button{
-                &.close{
+            button {
+                &.close {
                     float: right;
                     background: transparent;
                     font-size: 24px;
@@ -57,12 +57,12 @@
             flex-wrap: wrap;
             align-items: center;
             justify-content: flex-end;
-            border-bottom-right-radius: calc(.3rem - 1px);
-            border-bottom-left-radius: calc(.3rem - 1px);
+            border-bottom-right-radius: calc(0.3rem - 1px);
+            border-bottom-left-radius: calc(0.3rem - 1px);
             color: #fff;
             font-size: 14px;
 
-            button{
+            button {
                 font-size: 14px;
             }
         }
@@ -82,15 +82,15 @@
         overflow: hidden;
         outline: 0;
 
-        &.show{
-            .modal-dialog{
+        &.show {
+            .modal-dialog {
                 transform: none;
             }
         }
 
         &.fade {
             .modal-dialog {
-                transition: transform .3s ease-out;
+                transition: transform 0.3s ease-out;
                 transform: translate(0, -50px);
             }
         }
@@ -111,10 +111,10 @@
     }
 
     &.show {
-        opacity: .5;
+        opacity: 0.5;
     }
 }
 
 .fade {
-    transition: opacity .15s linear;
+    transition: opacity 0.15s linear;
 }

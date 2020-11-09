@@ -250,3 +250,30 @@ body {
         }
     }
 }
+
+// Modal styles
+.modal-section {
+    border: 1px solid $graphite;
+    padding: 8px 0 0 0;
+    border-radius: 8px;
+    .inline-items {
+        margin: 0 8px;
+    }
+    .inline-items {
+        background: rgba($graphite, 0.05);
+        border-radius: 8px;
+        padding: 8px;
+
+        .results-count {
+            text-align: right;
+            float: right;
+            margin: 10px 30px 0 0;
+            span {
+                &:first-child {
+                    margin-right: 5px;
+                    font-weight: bold;
+                }
+            }
+        }
+    }
+}

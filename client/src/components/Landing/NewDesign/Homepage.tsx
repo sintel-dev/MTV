@@ -15,16 +15,112 @@ import {
 } from './icons/icons';
 import SelectDropDown from './components/SelectDropdown';
 import './Homepage.scss';
+import ModalWindow from './components/ModalWindow';
 
 type State = {
   isSortingOpen: boolean;
+  isCardsOpen: boolean;
 };
+
+const CardsContent = () => (
+  <div>
+    <p className="info-text">
+      Filter by selecting from the dropdowns below and then select the desired signalruns to create a composed card
+    </p>
+    <section className="modal-section">
+      <div className="inline-items">
+        <div className="item">
+          <SelectDropDown displayLabel={false} />
+        </div>
+        <div className="item">
+          <SelectDropDown displayLabel={false} />
+        </div>
+        <div className="item">
+          <SelectDropDown displayLabel={false} />
+        </div>
+        <div className="results-count">
+          <span>0</span>
+          <span>Results</span>
+        </div>
+      </div>
+      <div className="table-wrap">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>&nbsp;</th>
+              <th>Signal</th>
+              <th>Pileline Name</th>
+              <th>Aggregation level</th>
+              <th>Date of creation</th>
+              <th>No. of events</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div className="custom-checkbox">
+                  <input type="checkbox" id="signalName" />
+                  <label htmlFor="signalName" />
+                </div>
+              </td>
+              <td>C-1</td>
+              <td>LSTM</td>
+              <td>6h</td>
+              <td>Mon, 03 Sep 2012 11:03:05</td>
+              <td>3</td>
+            </tr>
+            <tr>
+              <td>
+                <div className="custom-checkbox">
+                  <input type="checkbox" id="signalName2" />
+                  <label htmlFor="signalName2" />
+                </div>
+              </td>
+              <td>C-1</td>
+              <td>LSTM</td>
+              <td>6h</td>
+              <td>Mon, 03 Sep 2012 11:03:05</td>
+              <td>3</td>
+            </tr>
+            <tr>
+              <td>
+                <div className="custom-checkbox">
+                  <input type="checkbox" id="signalName3" />
+                  <label htmlFor="signalName3" />
+                </div>
+              </td>
+              <td>C-1</td>
+              <td>LSTM</td>
+              <td>6h</td>
+              <td>Mon, 03 Sep 2012 11:03:05</td>
+              <td>3</td>
+            </tr>
+            <tr>
+              <td>
+                <div className="custom-checkbox">
+                  <input type="checkbox" id="signalName4" />
+                  <label htmlFor="signalName4" />
+                </div>
+              </td>
+              <td>C-1</td>
+              <td>LSTM</td>
+              <td>6h</td>
+              <td>Mon, 03 Sep 2012 11:03:05</td>
+              <td>3</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+);
 
 class Homepage extends Component<{}, State> {
   constructor(props) {
     super(props);
     this.state = {
       isSortingOpen: false,
+      isCardsOpen: true,
     };
   }
 
@@ -43,10 +139,25 @@ class Homepage extends Component<{}, State> {
     return console.log('Homepage onSelect option');
   }
 
+  toggleCards() {
+    const { isCardsOpen } = this.state;
+    this.setState({
+      isCardsOpen: !isCardsOpen,
+    });
+  }
+
   render() {
-    const { isSortingOpen } = this.state;
+    const { isSortingOpen, isCardsOpen } = this.state;
     return (
       <div>
+        <ModalWindow
+          isModalOpen={isCardsOpen}
+          onClose={() => this.toggleCards()}
+          className="modal-cards"
+          heading="Compose Card"
+        >
+          <CardsContent />
+        </ModalWindow>
         <div className="header">
           <NavLink to="/homepage">
             <MtvLogo />
