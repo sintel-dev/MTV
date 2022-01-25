@@ -1,0 +1,139 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Testing Reset password component Should render without crashing 1`] = `
+<div
+  class="session-wrapper"
+>
+  <div
+    class="session-wrapper__body"
+  >
+    <div
+      class="session-wrapper__logo"
+    >
+      <svg
+        height="110"
+        version="1.1"
+        viewBox="0 0 117 60"
+        width="110"
+      >
+        <g
+          fill="none"
+          fill-rule="evenodd"
+          id="Dark-Mode"
+          stroke="none"
+          stroke-width="1"
+        >
+          <g
+            fill="#000000"
+            fill-rule="nonzero"
+            id="Register"
+            transform="translate(-151.000000, -70.000000)"
+          >
+            <g
+              id="MIT_logo"
+              transform="translate(151.000000, 70.000000)"
+            >
+              <g
+                transform="translate(7.000000, 0.000000)"
+              >
+                <path
+                  d="M0.18,0 L0.18,59.76 M20.7,0 L20.7,40.68 M41.22,0 L41.22,59.76 M61.74,0 L61.74,11.88 M82.62,19.08 L82.62,59.76"
+                  id="Shape"
+                  stroke="#A31F34"
+                  stroke-width="12.6"
+                />
+                <line
+                  id="Path"
+                  stroke="#8A8B8C"
+                  stroke-width="12.6"
+                  x1="61.74"
+                  x2="61.74"
+                  y1="19.08"
+                  y2="59.76"
+                />
+                <line
+                  id="Path"
+                  stroke="#A31F34"
+                  stroke-width="11.88"
+                  x1="76.32"
+                  x2="109.44"
+                  y1="5.94"
+                  y2="5.94"
+                />
+              </g>
+            </g>
+          </g>
+        </g>
+      </svg>
+    </div>
+    <div
+      class="session-wrapper__form "
+    >
+      <div
+        class="session-wrapper__header"
+      >
+        <div
+          class="session-wrapper__title"
+        >
+          Reset PASSKEY
+        </div>
+      </div>
+      <div
+        class="field-wrapper"
+      >
+        <div
+          class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+        >
+          <label
+            class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated Mui-required Mui-required"
+            data-shrink="false"
+            for="email"
+            id="email-label"
+          >
+            E-mail
+            <span
+              aria-hidden="true"
+              class="MuiFormLabel-asterisk MuiInputLabel-asterisk"
+            >
+               *
+            </span>
+          </label>
+          <div
+            class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
+          >
+            <input
+              aria-invalid="false"
+              class="MuiInputBase-input MuiInput-input"
+              id="email"
+              name="new-email"
+              required=""
+              type="email"
+              value=""
+            />
+          </div>
+        </div>
+      </div>
+      <div
+        class="button-wrapper"
+      >
+        <button
+          class="MuiButtonBase-root MuiButton-root MuiButton-contained button MuiButton-containedPrimary MuiButton-fullWidth"
+          tabindex="0"
+          type="submit"
+        >
+          <span
+            class="MuiButton-label"
+          >
+            <span>
+              Reset Passkey
+            </span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div
+    class="session-wrapper__splash"
+  />
+</div>
+`;

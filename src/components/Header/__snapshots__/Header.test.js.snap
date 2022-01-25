@@ -1,0 +1,82 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Should render header Renders <Header /> with enzyme 1`] = `
+<header
+  class="main-header"
+  id="header"
+>
+  <div
+    class="header-container"
+  >
+    <a
+      class="logo"
+      href="/"
+    >
+      <b>
+        MTV
+      </b>
+    </a>
+    <a
+      class="page-switch-btn active"
+      href="/experiment/5da7cc6376e3e19307d0db64"
+    >
+      <svg
+        aria-hidden="true"
+        class="svg-inline--fa fa-chevron-right fa-w-10 "
+        data-icon="chevron-right"
+        data-prefix="fas"
+        focusable="false"
+        role="img"
+        viewBox="0 0 320 512"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"
+          fill="currentColor"
+        />
+      </svg>
+    </a>
+    <div
+      class="header-right-wrapper"
+    >
+      <ul
+        class="user-opts"
+      >
+        <li>
+          <img
+            alt="someName"
+            referrerpolicy="no-referrer"
+            src="somePicture"
+          />
+        </li>
+        <li>
+          someName
+        </li>
+        <li>
+          <button
+            class="logout-button"
+            type="button"
+          >
+            <svg
+              fill="none"
+              height="14"
+              viewBox="0 0 14 14"
+              width="14"
+            >
+              <path
+                clip-rule="evenodd"
+                d="M5.7506 1.05448V6.32688C5.7506 6.90872 6.22324 7.38136 6.80508 7.38136C7.38692 7.38136 7.85956 6.90872 7.85956 6.32688V1.05448C7.85956 0.47264 7.38692 0 6.80508 0C6.22324 0 5.7506 0.47264 5.7506 1.05448ZM9.87444 1.6772C10.1449 1.33504 10.6433 1.27568 10.9849 1.54616C12.6212 2.83752 13.5604 4.77176 13.5604 6.8544C13.5604 10.579 10.5296 13.6097 6.80508 13.6097C3.08052 13.6097 0.0498047 10.5795 0.0498047 6.8544C0.0498047 4.77288 0.987805 2.83864 2.62356 1.54784C2.9674 1.27792 3.46412 1.33616 3.7346 1.67888C4.00508 2.02216 3.94628 2.51944 3.60356 2.78992C2.35028 3.77888 1.6318 5.26008 1.6318 6.8544C1.6318 9.70704 3.953 12.0282 6.80564 12.0282C9.65772 12.0282 11.9789 9.70704 11.9789 6.8544C11.9789 5.25952 11.2599 3.77776 10.0055 2.78824C9.66276 2.5172 9.60396 2.01992 9.87444 1.6772Z"
+                fill="white"
+                fill-rule="evenodd"
+              />
+            </svg>
+          </button>
+        </li>
+      </ul>
+      <div
+        class="clear"
+      />
+    </div>
+  </div>
+</header>
+`;
