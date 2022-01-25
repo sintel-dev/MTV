@@ -1,5 +1,4 @@
 -   MTV version:
--   Python version:
 -   Node version:
 -   Operating System:
 

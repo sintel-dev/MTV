@@ -25,15 +25,12 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: Install Package
         run: |
-          cd client
           npm install
-      - name: Test client
+      - name: Built
         run: |
-          cd client
           npm run build --if-present
-      - name: Lint with eslint (typesciprt)
+      - name: Style check
         run: |
-          cd client
           npm run lint
       # - name: Test react
       #   run: |
