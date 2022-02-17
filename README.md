@@ -59,7 +59,7 @@ Your application should run on **port 4200** with the **_production_** environme
 If you want to make changes on the interface and customize it to your own application scenario, you can run the following command:
 
 ```bash
-$ npm -C client start
+$ npm start
 ```
 
 Everytime you make changes on the source code, the interface will be automatically refreshed.
