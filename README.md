@@ -63,3 +63,24 @@ $ npm start
 ```
 
 Everytime you make changes on the source code, the interface will be automatically refreshed.
+
+## Citation
+```bib
+@article{10.1145/3512950,
+  author = {Liu, Dongyu and Alnegheimish, Sarah and Zytek, Alexandra and Veeramachaneni, Kalyan},
+  title = {MTV: Visual Analytics for Detecting, Investigating, and Annotating Anomalies in Multivariate Time Series},
+  year = {2022},
+  issue_date = {April 2022},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  volume = {6},
+  number = {CSCW1},
+  url = {https://doi.org/10.1145/3512950},
+  doi = {10.1145/3512950},
+  journal = {Proc. ACM Hum.-Comput. Interact.},
+  month = {apr},
+  articleno = {103},
+  numpages = {30},
+  keywords = {anomaly detection, human-AI collaboration, collaborative analysis, visual analytics, time series, annotation}
+}
+```
