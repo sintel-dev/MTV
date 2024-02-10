@@ -37,6 +37,7 @@ Once you've downloaded the MTV repository and installed all the prerequisites, y
 ```bash
 $ npm install
 ```
+To avoid version conflicts and dependency issues, we have locked the versions of all packages and their dependencies in `package-lock.json`. The execution of the `npm install` command will, by default, install all packages using exactly the same versions specified in the `package-lock.json`.
 
 ### Running Your Application
 
