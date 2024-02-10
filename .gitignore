@@ -44,7 +44,7 @@ node_modules/
 !/client/public/dist/*.min.js
 /client/public/themes/
 npm-debug.log
-package-lock.json
+# package-lock.json
 coverage/
 logs/
 
